@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>UI Hover Sound Generator</title>
+    <title>Advanced SFX Generator</title>
     <style>
         * {
             margin: 0;
@@ -15,65 +15,132 @@
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
             padding: 20px;
         }
 
         .container {
-            background: rgba(255, 255, 255, 0.95);
+            background: rgba(255, 255, 255, 0.98);
             border-radius: 20px;
-            padding: 40px;
+            padding: 30px;
             box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-            max-width: 600px;
-            width: 100%;
+            max-width: 1400px;
+            margin: 0 auto;
         }
 
         h1 {
             text-align: center;
             color: #333;
-            margin-bottom: 10px;
-            font-size: 2em;
+            margin-bottom: 5px;
+            font-size: 2.2em;
         }
 
         .subtitle {
             text-align: center;
             color: #666;
-            margin-bottom: 30px;
+            margin-bottom: 25px;
             font-size: 0.9em;
         }
 
-        .controls {
+        .main-grid {
+            display: grid;
+            grid-template-columns: 250px 1fr;
+            gap: 25px;
+            margin-bottom: 25px;
+        }
+
+        .preset-panel {
             display: flex;
             flex-direction: column;
+            gap: 10px;
+        }
+
+        .preset-section {
+            background: #f8f9ff;
+            padding: 15px;
+            border-radius: 12px;
+        }
+
+        .preset-title {
+            font-weight: 700;
+            color: #667eea;
+            margin-bottom: 10px;
+            font-size: 0.95em;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .preset-btn {
+            width: 100%;
+            padding: 10px;
+            background: white;
+            color: #333;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.85em;
+            transition: all 0.2s;
+            text-align: left;
+        }
+
+        .preset-btn:hover {
+            border-color: #667eea;
+            background: #f0f4ff;
+            transform: translateX(5px);
+        }
+
+        .controls-panel {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
             gap: 20px;
-            margin-bottom: 30px;
+        }
+
+        .control-section {
+            background: #f8f9ff;
+            padding: 18px;
+            border-radius: 12px;
+            border: 2px solid #e8ecff;
+        }
+
+        .section-title {
+            font-weight: 700;
+            color: #667eea;
+            margin-bottom: 15px;
+            font-size: 1em;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
 
         .control-group {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
+            margin-bottom: 15px;
+        }
+
+        .control-group:last-child {
+            margin-bottom: 0;
         }
 
         label {
             font-weight: 600;
             color: #555;
-            font-size: 0.9em;
+            font-size: 0.85em;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            margin-bottom: 6px;
         }
 
         .value {
             color: #667eea;
             font-weight: 700;
+            font-size: 0.9em;
         }
 
         input[type="range"] {
             width: 100%;
-            height: 6px;
+            height: 5px;
             border-radius: 3px;
             background: linear-gradient(to right, #667eea, #764ba2);
             outline: none;
@@ -82,76 +149,53 @@
 
         input[type="range"]::-webkit-slider-thumb {
             -webkit-appearance: none;
-            appearance: none;
-            width: 20px;
-            height: 20px;
+            width: 16px;
+            height: 16px;
             border-radius: 50%;
             background: white;
             cursor: pointer;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-            transition: transform 0.1s;
-        }
-
-        input[type="range"]::-webkit-slider-thumb:hover {
-            transform: scale(1.2);
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+            border: 2px solid #667eea;
         }
 
         input[type="range"]::-moz-range-thumb {
-            width: 20px;
-            height: 20px;
+            width: 16px;
+            height: 16px;
             border-radius: 50%;
             background: white;
             cursor: pointer;
-            border: none;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-            transition: transform 0.1s;
+            border: 2px solid #667eea;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
         }
 
-        input[type="range"]::-moz-range-thumb:hover {
-            transform: scale(1.2);
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
 
-        .preset-buttons {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-            gap: 10px;
-            margin-bottom: 30px;
-        }
-
-        .preset-btn {
-            padding: 12px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border: none;
-            border-radius: 10px;
+        input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
             cursor: pointer;
-            font-weight: 600;
-            font-size: 0.9em;
-            transition: all 0.2s;
-            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
         }
 
-        .preset-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
-        }
-
-        .preset-btn:active {
-            transform: translateY(0);
-        }
-
-        .action-buttons {
+        .action-bar {
             display: grid;
-            grid-template-columns: 1fr 1fr;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
             gap: 15px;
+            background: #f0f4ff;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
         }
 
         .btn {
-            padding: 15px;
+            padding: 14px 20px;
             border: none;
             border-radius: 10px;
             font-weight: 600;
-            font-size: 1em;
+            font-size: 0.95em;
             cursor: pointer;
             transition: all 0.2s;
             display: flex;
@@ -182,22 +226,66 @@
             box-shadow: 0 6px 20px rgba(245, 87, 108, 0.4);
         }
 
+        .random-btn {
+            background: linear-gradient(135deg, #fbc2eb 0%, #a6c1ee 100%);
+            color: #333;
+        }
+
+        .random-btn:hover {
+            transform: translateY(-2px);
+        }
+
         .btn:active {
             transform: translateY(0);
         }
 
-        .info {
-            background: #f0f4ff;
-            padding: 15px;
-            border-radius: 10px;
-            margin-top: 20px;
-            font-size: 0.85em;
-            color: #555;
-            line-height: 1.6;
+        .settings-bar {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+            background: #fff;
+            padding: 15px 20px;
+            border-radius: 12px;
+            border: 2px solid #e8ecff;
+            flex-wrap: wrap;
         }
 
-        .info strong {
-            color: #667eea;
+        .setting-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .setting-label {
+            font-weight: 600;
+            color: #555;
+            font-size: 0.9em;
+        }
+
+        .radio-group {
+            display: flex;
+            gap: 10px;
+        }
+
+        .radio-btn {
+            padding: 6px 12px;
+            background: white;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.85em;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+
+        .radio-btn.active {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+
+        .radio-btn:hover {
+            border-color: #667eea;
         }
 
         @keyframes pulse {
@@ -208,251 +296,293 @@
         .playing {
             animation: pulse 0.5s ease-in-out;
         }
+
+        @media (max-width: 1024px) {
+            .main-grid {
+                grid-template-columns: 1fr;
+            }
+        }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>🎵 UI Hover Sound</h1>
-        <p class="subtitle">Create the perfect hover sound effect for your UI</p>
+        <h1>🎵 Advanced SFX Generator</h1>
+        <p class="subtitle">Professional sound effects generator for games and UI</p>
 
-        <div class="preset-buttons">
-            <button class="preset-btn" onclick="loadPreset('soft')">Soft Click</button>
-            <button class="preset-btn" onclick="loadPreset('digital')">Digital</button>
-            <button class="preset-btn" onclick="loadPreset('retro')">Retro Game</button>
-            <button class="preset-btn" onclick="loadPreset('modern')">Modern UI</button>
+        <div class="main-grid">
+            <!-- Preset Panel -->
+            <div class="preset-panel">
+                <div class="preset-section">
+                    <div class="preset-title">🎲 Generator</div>
+                    <button class="preset-btn" onclick="randomize()">🎲 Random</button>
+                </div>
+                
+                <div class="preset-section">
+                    <div class="preset-title">🎮 Game Sounds</div>
+                    <button class="preset-btn" onclick="loadPreset('pickup')">💰 Pickup/Coin</button>
+                    <button class="preset-btn" onclick="loadPreset('laser')">🔫 Laser/Shoot</button>
+                    <button class="preset-btn" onclick="loadPreset('explosion')">💥 Explosion</button>
+                    <button class="preset-btn" onclick="loadPreset('powerup')">⚡ Powerup</button>
+                    <button class="preset-btn" onclick="loadPreset('hit')">💢 Hit/Hurt</button>
+                    <button class="preset-btn" onclick="loadPreset('jump')">🦘 Jump</button>
+                </div>
+
+                <div class="preset-section">
+                    <div class="preset-title">🖱️ UI Sounds</div>
+                    <button class="preset-btn" onclick="loadPreset('click')">👆 Click</button>
+                    <button class="preset-btn" onclick="loadPreset('blip')">📍 Blip/Select</button>
+                    <button class="preset-btn" onclick="loadPreset('hover')">✨ Hover</button>
+                </div>
+
+                <div class="preset-section">
+                    <div class="preset-title">🎹 Synth</div>
+                    <button class="preset-btn" onclick="loadPreset('synth')">🎹 Synth</button>
+                    <button class="preset-btn" onclick="loadPreset('tone')">🔊 Tone</button>
+                </div>
+            </div>
+
+            <!-- Controls Panel -->
+            <div class="controls-panel">
+                <!-- Envelope -->
+                <div class="control-section">
+                    <div class="section-title">📊 Envelope</div>
+                    <div class="control-group">
+                        <label>Attack <span class="value" id="attackVal">0.00s</span></label>
+                        <input type="range" id="attack" min="0" max="0.5" value="0" step="0.001">
+                    </div>
+                    <div class="control-group">
+                        <label>Sustain <span class="value" id="sustainVal">0.10s</span></label>
+                        <input type="range" id="sustain" min="0" max="1" value="0.1" step="0.001">
+                    </div>
+                    <div class="control-group">
+                        <label>Punch <span class="value" id="punchVal">0%</span></label>
+                        <input type="range" id="punch" min="0" max="100" value="0" step="1">
+                    </div>
+                    <div class="control-group">
+                        <label>Decay <span class="value" id="decayVal">0.20s</span></label>
+                        <input type="range" id="decay" min="0" max="2" value="0.2" step="0.001">
+                    </div>
+                </div>
+
+                <!-- Frequency -->
+                <div class="control-section">
+                    <div class="section-title">🎵 Frequency</div>
+                    <div class="control-group">
+                        <label>Start <span class="value" id="freqVal">440Hz</span></label>
+                        <input type="range" id="frequency" min="20" max="2000" value="440" step="1">
+                    </div>
+                    <div class="control-group">
+                        <label>Min Cutoff <span class="value" id="minFreqVal">0Hz</span></label>
+                        <input type="range" id="minFreq" min="0" max="2000" value="0" step="1">
+                    </div>
+                    <div class="control-group">
+                        <label>Slide <span class="value" id="slideVal">0</span></label>
+                        <input type="range" id="slide" min="-1" max="1" value="0" step="0.01">
+                    </div>
+                    <div class="control-group">
+                        <label>Delta Slide <span class="value" id="deltaSlideVal">0</span></label>
+                        <input type="range" id="deltaSlide" min="-1" max="1" value="0" step="0.01">
+                    </div>
+                </div>
+
+                <!-- Vibrato -->
+                <div class="control-section">
+                    <div class="section-title">〰️ Vibrato</div>
+                    <div class="control-group checkbox-group">
+                        <input type="checkbox" id="vibratoEnable">
+                        <label style="margin: 0;">Enable Vibrato</label>
+                    </div>
+                    <div class="control-group">
+                        <label>Depth <span class="value" id="vibratoDepthVal">0%</span></label>
+                        <input type="range" id="vibratoDepth" min="0" max="100" value="0" step="1">
+                    </div>
+                    <div class="control-group">
+                        <label>Speed <span class="value" id="vibratoSpeedVal">0Hz</span></label>
+                        <input type="range" id="vibratoSpeed" min="0" max="50" value="0" step="0.1">
+                    </div>
+                </div>
+
+                <!-- Arpeggiation -->
+                <div class="control-section">
+                    <div class="section-title">🎼 Arpeggiation</div>
+                    <div class="control-group checkbox-group">
+                        <input type="checkbox" id="arpEnable">
+                        <label style="margin: 0;">Enable Arpeggio</label>
+                    </div>
+                    <div class="control-group">
+                        <label>Frequency Mult <span class="value" id="arpMultVal">x1.00</span></label>
+                        <input type="range" id="arpMult" min="0.5" max="2" value="1" step="0.01">
+                    </div>
+                    <div class="control-group">
+                        <label>Change Speed <span class="value" id="arpSpeedVal">0.00s</span></label>
+                        <input type="range" id="arpSpeed" min="0" max="1" value="0" step="0.001">
+                    </div>
+                </div>
+
+                <!-- Duty Cycle -->
+                <div class="control-section">
+                    <div class="section-title">⚡ Duty Cycle</div>
+                    <div class="control-group">
+                        <label>Duty Cycle <span class="value" id="dutyVal">50%</span></label>
+                        <input type="range" id="duty" min="0" max="100" value="50" step="1">
+                    </div>
+                    <div class="control-group">
+                        <label>Sweep <span class="value" id="dutySweepVal">0%/s</span></label>
+                        <input type="range" id="dutySweep" min="-100" max="100" value="0" step="1">
+                    </div>
+                </div>
+
+                <!-- Filters -->
+                <div class="control-section">
+                    <div class="section-title">🎚️ Filters</div>
+                    <div class="control-group checkbox-group">
+                        <input type="checkbox" id="lpfEnable">
+                        <label style="margin: 0;">Low-Pass Filter</label>
+                    </div>
+                    <div class="control-group">
+                        <label>LP Cutoff <span class="value" id="lpfVal">22050Hz</span></label>
+                        <input type="range" id="lpf" min="20" max="22050" value="22050" step="1">
+                    </div>
+                    <div class="control-group checkbox-group">
+                        <input type="checkbox" id="hpfEnable">
+                        <label style="margin: 0;">High-Pass Filter</label>
+                    </div>
+                    <div class="control-group">
+                        <label>HP Cutoff <span class="value" id="hpfVal">0Hz</span></label>
+                        <input type="range" id="hpf" min="0" max="5000" value="0" step="1">
+                    </div>
+                </div>
+            </div>
         </div>
 
-        <div class="controls">
-            <div class="control-group">
-                <label>
-                    Frequency
-                    <span class="value" id="freqValue">800 Hz</span>
-                </label>
-                <input type="range" id="frequency" min="200" max="2000" value="800" step="10">
-            </div>
-
-            <div class="control-group">
-                <label>
-                    Duration
-                    <span class="value" id="durationValue">0.08s</span>
-                </label>
-                <input type="range" id="duration" min="0.02" max="0.3" value="0.08" step="0.01">
-            </div>
-
-            <div class="control-group">
-                <label>
-                    Volume
-                    <span class="value" id="volumeValue">30%</span>
-                </label>
-                <input type="range" id="volume" min="0" max="100" value="30" step="1">
-            </div>
-
-            <div class="control-group">
-                <label>
-                    Attack
-                    <span class="value" id="attackValue">0.01s</span>
-                </label>
-                <input type="range" id="attack" min="0.001" max="0.1" value="0.01" step="0.001">
-            </div>
-
-            <div class="control-group">
-                <label>
-                    Decay
-                    <span class="value" id="decayValue">0.05s</span>
-                </label>
-                <input type="range" id="decay" min="0.01" max="0.2" value="0.05" step="0.01">
-            </div>
+        <!-- Action Bar -->
+        <div class="action-bar">
+            <button class="btn play-btn" onclick="playSound()">▶ Play Sound</button>
+            <button class="btn random-btn" onclick="randomize()">🎲 Randomize</button>
+            <button class="btn download-btn" onclick="downloadSound()">⬇ Download WAV</button>
         </div>
 
-        <div class="action-buttons">
-            <button class="btn play-btn" onclick="playSound()">
-                ▶ Play Sound
-            </button>
-            <button class="btn download-btn" onclick="downloadSound()">
-                ⬇ Download WAV
-            </button>
-        </div>
-
-        <div class="info">
-            <strong>💡 Tip:</strong> Hover sounds should be subtle (20-40% volume). Try the presets first, then fine-tune to match your UI style!
+        <!-- Settings Bar -->
+        <div class="settings-bar">
+            <div class="setting-group">
+                <span class="setting-label">Sample Rate:</span>
+                <div class="radio-group">
+                    <button class="radio-btn active" onclick="setSampleRate(44100)">44k</button>
+                    <button class="radio-btn" onclick="setSampleRate(22050)">22k</button>
+                    <button class="radio-btn" onclick="setSampleRate(11025)">11k</button>
+                    <button class="radio-btn" onclick="setSampleRate(5512)">6k</button>
+                </div>
+            </div>
+            <div class="setting-group">
+                <span class="setting-label">Gain:</span>
+                <input type="range" id="gain" min="-30" max="0" value="-10" step="0.1" style="width: 150px;">
+                <span class="value" id="gainVal">-10.0 dB</span>
+            </div>
         </div>
     </div>
 
     <script>
-        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-        
-        // Update value displays
-        document.getElementById('frequency').addEventListener('input', (e) => {
-            document.getElementById('freqValue').textContent = e.target.value + ' Hz';
-        });
-        
-        document.getElementById('duration').addEventListener('input', (e) => {
-            document.getElementById('durationValue').textContent = parseFloat(e.target.value).toFixed(2) + 's';
-        });
-        
-        document.getElementById('volume').addEventListener('input', (e) => {
-            document.getElementById('volumeValue').textContent = e.target.value + '%';
-        });
-        
-        document.getElementById('attack').addEventListener('input', (e) => {
-            document.getElementById('attackValue').textContent = parseFloat(e.target.value).toFixed(3) + 's';
-        });
-        
-        document.getElementById('decay').addEventListener('input', (e) => {
-            document.getElementById('decayValue').textContent = parseFloat(e.target.value).toFixed(2) + 's';
-        });
+        let currentSampleRate = 44100;
+        let audioContext = new (window.AudioContext || window.webkitAudioContext)();
+
+        // Update all value displays
+        const sliders = {
+            attack: 'attackVal', sustain: 'sustainVal', punch: 'punchVal', decay: 'decayVal',
+            frequency: 'freqVal', minFreq: 'minFreqVal', slide: 'slideVal', deltaSlide: 'deltaSlideVal',
+            vibratoDepth: 'vibratoDepthVal', vibratoSpeed: 'vibratoSpeedVal',
+            arpMult: 'arpMultVal', arpSpeed: 'arpSpeedVal',
+            duty: 'dutyVal', dutySweep: 'dutySweepVal',
+            lpf: 'lpfVal', hpf: 'hpfVal', gain: 'gainVal'
+        };
+
+        for (let [slider, display] of Object.entries(sliders)) {
+            document.getElementById(slider).addEventListener('input', updateDisplay);
+        }
+
+        function updateDisplay() {
+            const s = getSettings();
+            document.getElementById('attackVal').textContent = s.attack.toFixed(2) + 's';
+            document.getElementById('sustainVal').textContent = s.sustain.toFixed(2) + 's';
+            document.getElementById('punchVal').textContent = s.punch.toFixed(0) + '%';
+            document.getElementById('decayVal').textContent = s.decay.toFixed(2) + 's';
+            document.getElementById('freqVal').textContent = s.frequency.toFixed(0) + 'Hz';
+            document.getElementById('minFreqVal').textContent = s.minFreq.toFixed(0) + 'Hz';
+            document.getElementById('slideVal').textContent = s.slide.toFixed(2);
+            document.getElementById('deltaSlideVal').textContent = s.deltaSlide.toFixed(2);
+            document.getElementById('vibratoDepthVal').textContent = s.vibratoDepth.toFixed(0) + '%';
+            document.getElementById('vibratoSpeedVal').textContent = s.vibratoSpeed.toFixed(1) + 'Hz';
+            document.getElementById('arpMultVal').textContent = 'x' + s.arpMult.toFixed(2);
+            document.getElementById('arpSpeedVal').textContent = s.arpSpeed.toFixed(3) + 's';
+            document.getElementById('dutyVal').textContent = s.duty.toFixed(0) + '%';
+            document.getElementById('dutySweepVal').textContent = s.dutySweep.toFixed(0) + '%/s';
+            document.getElementById('lpfVal').textContent = s.lpf.toFixed(0) + 'Hz';
+            document.getElementById('hpfVal').textContent = s.hpf.toFixed(0) + 'Hz';
+            document.getElementById('gainVal').textContent = s.gain.toFixed(1) + ' dB';
+        }
 
         function getSettings() {
             return {
-                frequency: parseFloat(document.getElementById('frequency').value),
-                duration: parseFloat(document.getElementById('duration').value),
-                volume: parseFloat(document.getElementById('volume').value) / 100,
                 attack: parseFloat(document.getElementById('attack').value),
-                decay: parseFloat(document.getElementById('decay').value)
+                sustain: parseFloat(document.getElementById('sustain').value),
+                punch: parseFloat(document.getElementById('punch').value),
+                decay: parseFloat(document.getElementById('decay').value),
+                frequency: parseFloat(document.getElementById('frequency').value),
+                minFreq: parseFloat(document.getElementById('minFreq').value),
+                slide: parseFloat(document.getElementById('slide').value),
+                deltaSlide: parseFloat(document.getElementById('deltaSlide').value),
+                vibratoEnable: document.getElementById('vibratoEnable').checked,
+                vibratoDepth: parseFloat(document.getElementById('vibratoDepth').value),
+                vibratoSpeed: parseFloat(document.getElementById('vibratoSpeed').value),
+                arpEnable: document.getElementById('arpEnable').checked,
+                arpMult: parseFloat(document.getElementById('arpMult').value),
+                arpSpeed: parseFloat(document.getElementById('arpSpeed').value),
+                duty: parseFloat(document.getElementById('duty').value),
+                dutySweep: parseFloat(document.getElementById('dutySweep').value),
+                lpfEnable: document.getElementById('lpfEnable').checked,
+                lpf: parseFloat(document.getElementById('lpf').value),
+                hpfEnable: document.getElementById('hpfEnable').checked,
+                hpf: parseFloat(document.getElementById('hpf').value),
+                gain: parseFloat(document.getElementById('gain').value)
             };
+        }
+
+        function setSettings(settings) {
+            for (let key in settings) {
+                const el = document.getElementById(key);
+                if (el) {
+                    if (el.type === 'checkbox') {
+                        el.checked = settings[key];
+                    } else {
+                        el.value = settings[key];
+                    }
+                }
+            }
+            updateDisplay();
         }
 
         function loadPreset(preset) {
             const presets = {
-                soft: { frequency: 800, duration: 0.08, volume: 30, attack: 0.01, decay: 0.05 },
-                digital: { frequency: 1200, duration: 0.06, volume: 25, attack: 0.005, decay: 0.04 },
-                retro: { frequency: 600, duration: 0.1, volume: 35, attack: 0.02, decay: 0.08 },
-                modern: { frequency: 1000, duration: 0.07, volume: 28, attack: 0.008, decay: 0.045 }
+                pickup: { attack: 0, sustain: 0.075, punch: 48, decay: 0.053, frequency: 1243, minFreq: 3, slide: 0, deltaSlide: 0, vibratoEnable: false, vibratoDepth: 0, vibratoSpeed: 0, arpEnable: true, arpMult: 1.18, arpSpeed: 0.085, duty: 50, dutySweep: 0, lpfEnable: false, lpf: 22050, hpfEnable: false, hpf: 0, gain: -10.93 },
+                laser: { attack: 0, sustain: 0.15, punch: 0, decay: 0.3, frequency: 800, minFreq: 100, slide: -0.5, deltaSlide: 0, vibratoEnable: false, vibratoDepth: 0, vibratoSpeed: 0, arpEnable: false, arpMult: 1, arpSpeed: 0, duty: 25, dutySweep: -20, lpfEnable: true, lpf: 8000, hpfEnable: false, hpf: 0, gain: -8 },
+                explosion: { attack: 0, sustain: 0.5, punch: 80, decay: 0.8, frequency: 80, minFreq: 20, slide: -0.3, deltaSlide: 0, vibratoEnable: false, vibratoDepth: 0, vibratoSpeed: 0, arpEnable: false, arpMult: 1, arpSpeed: 0, duty: 50, dutySweep: 0, lpfEnable: true, lpf: 1500, hpfEnable: true, hpf: 100, gain: -6 },
+                powerup: { attack: 0, sustain: 0.2, punch: 0, decay: 0.4, frequency: 200, minFreq: 0, slide: 0.6, deltaSlide: 0.1, vibratoEnable: true, vibratoDepth: 30, vibratoSpeed: 10, arpEnable: false, arpMult: 1, arpSpeed: 0, duty: 50, dutySweep: 0, lpfEnable: false, lpf: 22050, hpfEnable: false, hpf: 0, gain: -12 },
+                hit: { attack: 0, sustain: 0.05, punch: 100, decay: 0.15, frequency: 150, minFreq: 0, slide: -0.8, deltaSlide: 0, vibratoEnable: false, vibratoDepth: 0, vibratoSpeed: 0, arpEnable: false, arpMult: 1, arpSpeed: 0, duty: 50, dutySweep: 0, lpfEnable: true, lpf: 3000, hpfEnable: true, hpf: 50, gain: -8 },
+                jump: { attack: 0, sustain: 0.1, punch: 50, decay: 0.25, frequency: 400, minFreq: 0, slide: 0.4, deltaSlide: 0, vibratoEnable: false, vibratoDepth: 0, vibratoSpeed: 0, arpEnable: false, arpMult: 1, arpSpeed: 0, duty: 50, dutySweep: 0, lpfEnable: false, lpf: 22050, hpfEnable: false, hpf: 0, gain: -10 },
+                click: { attack: 0, sustain: 0.02, punch: 0, decay: 0.05, frequency: 1200, minFreq: 0, slide: 0, deltaSlide: 0, vibratoEnable: false, vibratoDepth: 0, vibratoSpeed: 0, arpEnable: false, arpMult: 1, arpSpeed: 0, duty: 50, dutySweep: 0, lpfEnable: false, lpf: 22050, hpfEnable: false, hpf: 0, gain: -15 },
+                blip: { attack: 0, sustain: 0.04, punch: 0, decay: 0.08, frequency: 800, minFreq: 0, slide: 0, deltaSlide: 0, vibratoEnable: false, vibratoDepth: 0, vibratoSpeed: 0, arpEnable: false, arpMult: 1, arpSpeed: 0, duty: 50, dutySweep: 0, lpfEnable: false, lpf: 22050, hpfEnable: false, hpf: 0, gain: -12 },
+                hover: { attack: 0.01, sustain: 0.06, punch: 0, decay: 0.05, frequency: 1000, minFreq: 0, slide: 0, deltaSlide: 0, vibratoEnable: false, vibratoDepth: 0, vibratoSpeed: 0, arpEnable: false, arpMult: 1, arpSpeed: 0, duty: 50, dutySweep: 0, lpfEnable: false, lpf: 22050, hpfEnable: false, hpf: 0, gain: -18 },
+                synth: { attack: 0.1, sustain: 0.3, punch: 0, decay: 0.2, frequency: 440, minFreq: 0, slide: 0, deltaSlide: 0, vibratoEnable: true, vibratoDepth: 20, vibratoSpeed: 5, arpEnable: false, arpMult: 1, arpSpeed: 0, duty: 50, dutySweep: 0, lpfEnable: false, lpf: 22050, hpfEnable: false, hpf: 0, gain: -10 },
+                tone: { attack: 0.05, sustain: 0.5, punch: 0, decay: 0.1, frequency: 440, minFreq: 0, slide: 0, deltaSlide: 0, vibratoEnable: false, vibratoDepth: 0, vibratoSpeed: 0, arpEnable: false, arpMult: 1, arpSpeed: 0, duty: 50, dutySweep: 0, lpfEnable: false, lpf: 22050, hpfEnable: false, hpf: 0, gain: -12 }
             };
-
-            const p = presets[preset];
-            document.getElementById('frequency').value = p.frequency;
-            document.getElementById('duration').value = p.duration;
-            document.getElementById('volume').value = p.volume;
-            document.getElementById('attack').value = p.attack;
-            document.getElementById('decay').value = p.decay;
-
-            // Update displays
-            document.getElementById('freqValue').textContent = p.frequency + ' Hz';
-            document.getElementById('durationValue').textContent = p.duration.toFixed(2) + 's';
-            document.getElementById('volumeValue').textContent = p.volume + '%';
-            document.getElementById('attackValue').textContent = p.attack.toFixed(3) + 's';
-            document.getElementById('decayValue').textContent = p.decay.toFixed(2) + 's';
-
-            playSound();
-        }
-
-        function playSound() {
-            const settings = getSettings();
-            const oscillator = audioContext.createOscillator();
-            const gainNode = audioContext.createGain();
-
-            oscillator.connect(gainNode);
-            gainNode.connect(audioContext.destination);
-
-            oscillator.frequency.value = settings.frequency;
-            oscillator.type = 'sine';
-
-            const now = audioContext.currentTime;
-            gainNode.gain.setValueAtTime(0, now);
-            gainNode.gain.linearRampToValueAtTime(settings.volume, now + settings.attack);
-            gainNode.gain.exponentialRampToValueAtTime(0.01, now + settings.attack + settings.decay);
-
-            oscillator.start(now);
-            oscillator.stop(now + settings.duration);
-
-            // Visual feedback
-            document.querySelector('.play-btn').classList.add('playing');
-            setTimeout(() => {
-                document.querySelector('.play-btn').classList.remove('playing');
-            }, settings.duration * 1000);
-        }
-
-        function downloadSound() {
-            const settings = getSettings();
-            const sampleRate = 44100;
-            const numSamples = Math.floor(sampleRate * settings.duration);
-            const buffer = audioContext.createBuffer(1, numSamples, sampleRate);
-            const data = buffer.getChannelData(0);
-
-            // Generate waveform
-            for (let i = 0; i < numSamples; i++) {
-                const t = i / sampleRate;
-                const envelope = calculateEnvelope(t, settings);
-                data[i] = Math.sin(2 * Math.PI * settings.frequency * t) * envelope * settings.volume;
-            }
-
-            // Convert to WAV
-            const wav = bufferToWav(buffer);
-            const blob = new Blob([wav], { type: 'audio/wav' });
-            const url = URL.createObjectURL(blob);
             
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = 'ui-hover-sound.wav';
-            a.click();
-            
-            URL.revokeObjectURL(url);
-        }
-
-        function calculateEnvelope(t, settings) {
-            if (t < settings.attack) {
-                return t / settings.attack;
-            } else if (t < settings.attack + settings.decay) {
-                const decayTime = t - settings.attack;
-                return 1 - (decayTime / settings.decay) * 0.99;
-            } else {
-                return 0.01;
+            if (presets[preset]) {
+                setSettings(presets[preset]);
+                playSound();
             }
         }
 
-        function bufferToWav(buffer) {
-            const numChannels = buffer.numberOfChannels;
-            const sampleRate = buffer.sampleRate;
-            const format = 1; // PCM
-            const bitDepth = 16;
-
-            const bytesPerSample = bitDepth / 8;
-            const blockAlign = numChannels * bytesPerSample;
-
-            const data = buffer.getChannelData(0);
-            const dataLength = data.length * bytesPerSample;
-            const bufferLength = 44 + dataLength;
-
-            const arrayBuffer = new ArrayBuffer(bufferLength);
-            const view = new DataView(arrayBuffer);
-
-            // Write WAV header
-            writeString(view, 0, 'RIFF');
-            view.setUint32(4, 36 + dataLength, true);
-            writeString(view, 8, 'WAVE');
-            writeString(view, 12, 'fmt ');
-            view.setUint32(16, 16, true);
-            view.setUint16(20, format, true);
-            view.setUint16(22, numChannels, true);
-            view.setUint32(24, sampleRate, true);
-            view.setUint32(28, sampleRate * blockAlign, true);
-            view.setUint16(32, blockAlign, true);
-            view.setUint16(34, bitDepth, true);
-            writeString(view, 36, 'data');
-            view.setUint32(40, dataLength, true);
-
-            // Write audio data
-            let offset = 44;
-            for (let i = 0; i < data.length; i++) {
-                const sample = Math.max(-1, Math.min(1, data[i]));
-                view.setInt16(offset, sample < 0 ? sample * 0x8000 : sample * 0x7FFF, true);
-                offset += 2;
-            }
-
-            return arrayBuffer;
-        }
-
-        function writeString(view, offset, string) {
-            for (let i = 0; i < string.length; i++) {
-                view.setUint8(offset + i, string.charCodeAt(i));
-            }
-        }
-
-        // Auto-play on load with default preset
-        window.addEventListener('load', () => {
-            setTimeout(() => playSound(), 500);
-        });
-    </script>
-</body>
-</html>
+        function randomize() {
+            const random = {
+                attack: Math.random() * 0.2,
+                sustain: Math.random() * 0.5,
+                punch:
