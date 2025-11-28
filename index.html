@@ -581,8 +581,226 @@
             }
         }
 
-        function randomize() {
+         function randomize() {
             const random = {
                 attack: Math.random() * 0.2,
                 sustain: Math.random() * 0.5,
-                punch:
+                punch: Math.random() * 100,
+                decay: Math.random() * 1,
+                frequency: 100 + Math.random() * 1500,
+                minFreq: Math.random() * 500,
+                slide: (Math.random() - 0.5) * 2,
+                deltaSlide: (Math.random() - 0.5) * 0.5,
+                vibratoEnable: Math.random() > 0.7,
+                vibratoDepth: Math.random() * 50,
+                vibratoSpeed: Math.random() * 30,
+                arpEnable: Math.random() > 0.7,
+                arpMult: 0.5 + Math.random() * 1.5,
+                arpSpeed: Math.random() * 0.5,
+                duty: Math.random() * 100,
+                dutySweep: (Math.random() - 0.5) * 100,
+                lpfEnable: Math.random() > 0.5,
+                lpf: 1000 + Math.random() * 21050,
+                hpfEnable: Math.random() > 0.7,
+                hpf: Math.random() * 1000,
+                gain: -20 + Math.random() * 15
+            };
+            setSettings(random);
+            playSound();
+        }
+
+        function setSampleRate(rate) {
+            currentSampleRate = rate;
+            document.querySelectorAll('.radio-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+        }
+
+        function generateSound() {
+            const s = getSettings();
+            const sampleRate = currentSampleRate;
+            const duration = s.attack + s.sustain + s.decay;
+            const samples = Math.floor(duration * sampleRate);
+            const buffer = audioContext.createBuffer(1, samples, audioContext.sampleRate);
+            const data = buffer.getChannelData(0);
+
+            let phase = 0;
+            let frequency = s.frequency;
+            let slide = s.slide;
+            let duty = s.duty / 100;
+            let arpTime = 0;
+            let arpMult = 1;
+
+            const gainLinear = Math.pow(10, s.gain / 20);
+
+            for (let i = 0; i < samples; i++) {
+                const t = i / sampleRate;
+                
+                // Envelope
+                let envelope = 0;
+                if (t < s.attack) {
+                    envelope = t / s.attack;
+                } else if (t < s.attack + s.sustain) {
+                    envelope = 1;
+                    if (s.punch > 0) {
+                        const punchT = (t - s.attack) / s.sustain;
+                        envelope += (s.punch / 100) * (1 - punchT);
+                    }
+                } else {
+                    const decayT = (t - s.attack - s.sustain) / s.decay;
+                    envelope = 1 - decayT;
+                }
+                envelope = Math.max(0, Math.min(1, envelope));
+
+                // Frequency slide
+                slide += s.deltaSlide / sampleRate;
+                frequency += slide;
+                frequency = Math.max(s.minFreq, frequency);
+
+                // Arpeggiation
+                if (s.arpEnable && s.arpSpeed > 0) {
+                    arpTime += 1 / sampleRate;
+                    if (arpTime > s.arpSpeed) {
+                        arpTime = 0;
+                        arpMult = arpMult === 1 ? s.arpMult : 1;
+                    }
+                }
+
+                let finalFreq = frequency * arpMult;
+
+                // Vibrato
+                if (s.vibratoEnable && s.vibratoDepth > 0) {
+                    const vibrato = Math.sin(t * s.vibratoSpeed * Math.PI * 2) * (s.vibratoDepth / 100);
+                    finalFreq *= 1 + vibrato;
+                }
+
+                // Generate square wave with duty cycle
+                phase += (finalFreq / sampleRate) * Math.PI * 2;
+                const square = (phase % (Math.PI * 2)) < (Math.PI * 2 * duty) ? 1 : -1;
+
+                // Duty sweep
+                duty += (s.dutySweep / 100) / sampleRate;
+                duty = Math.max(0, Math.min(1, duty));
+
+                data[i] = square * envelope * gainLinear;
+            }
+
+            // Apply filters
+            if (s.lpfEnable) {
+                applyLowPassFilter(data, s.lpf, sampleRate);
+            }
+            if (s.hpfEnable) {
+                applyHighPassFilter(data, s.hpf, sampleRate);
+            }
+
+            return buffer;
+        }
+
+        function applyLowPassFilter(data, cutoff, sampleRate) {
+            const RC = 1.0 / (cutoff * 2 * Math.PI);
+            const dt = 1.0 / sampleRate;
+            const alpha = dt / (RC + dt);
+            
+            for (let i = 1; i < data.length; i++) {
+                data[i] = data[i - 1] + alpha * (data[i] - data[i - 1]);
+            }
+        }
+
+        function applyHighPassFilter(data, cutoff, sampleRate) {
+            const RC = 1.0 / (cutoff * 2 * Math.PI);
+            const dt = 1.0 / sampleRate;
+            const alpha = RC / (RC + dt);
+            
+            let y = 0;
+            for (let i = 1; i < data.length; i++) {
+                y = alpha * (y + data[i] - data[i - 1]);
+                data[i] = y;
+            }
+        }
+
+        function playSound() {
+            const buffer = generateSound();
+            const source = audioContext.createBufferSource();
+            source.buffer = buffer;
+            source.connect(audioContext.destination);
+            source.start();
+
+            // Visual feedback
+            document.querySelector('.play-btn').classList.add('playing');
+            setTimeout(() => {
+                document.querySelector('.play-btn').classList.remove('playing');
+            }, 500);
+        }
+
+        function downloadSound() {
+            const buffer = generateSound();
+            const wav = bufferToWave(buffer, buffer.length);
+            const blob = new Blob([wav], { type: 'audio/wav' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'sfx_' + Date.now() + '.wav';
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        function bufferToWave(buffer, len) {
+            const numChannels = buffer.numberOfChannels;
+            const sampleRate = buffer.sampleRate;
+            const format = 1; // PCM
+            const bitDepth = 16;
+
+            const bytesPerSample = bitDepth / 8;
+            const blockAlign = numChannels * bytesPerSample;
+
+            const data = new Int16Array(len * numChannels);
+            const channelData = buffer.getChannelData(0);
+            
+            for (let i = 0; i < len; i++) {
+                const sample = Math.max(-1, Math.min(1, channelData[i]));
+                data[i] = sample < 0 ? sample * 0x8000 : sample * 0x7FFF;
+            }
+
+            const dataLength = data.length * bytesPerSample;
+            const arrayBuffer = new ArrayBuffer(44 + dataLength);
+            const view = new DataView(arrayBuffer);
+
+            // RIFF chunk descriptor
+            writeString(view, 0, 'RIFF');
+            view.setUint32(4, 36 + dataLength, true);
+            writeString(view, 8, 'WAVE');
+
+            // FMT sub-chunk
+            writeString(view, 12, 'fmt ');
+            view.setUint32(16, 16, true); // fmt chunk size
+            view.setUint16(20, format, true);
+            view.setUint16(22, numChannels, true);
+            view.setUint32(24, sampleRate, true);
+            view.setUint32(28, sampleRate * blockAlign, true);
+            view.setUint16(32, blockAlign, true);
+            view.setUint16(34, bitDepth, true);
+
+            // Data sub-chunk
+            writeString(view, 36, 'data');
+            view.setUint32(40, dataLength, true);
+
+            // Write audio data
+            let offset = 44;
+            for (let i = 0; i < data.length; i++) {
+                view.setInt16(offset, data[i], true);
+                offset += 2;
+            }
+
+            return arrayBuffer;
+        }
+
+        function writeString(view, offset, string) {
+            for (let i = 0; i < string.length; i++) {
+                view.setUint8(offset + i, string.charCodeAt(i));
+            }
+        }
+
+        // Initialize
+        updateDisplay();
+    </script>
+</body>
+</html>
