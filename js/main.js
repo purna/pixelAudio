@@ -107,32 +107,33 @@ class SFXGeneratorApp {
         this.audioEngine.downloadWAV(buffer, `sfx_${Date.now()}.wav`);
     }
 
+    loadPreset(presetName) {
+        const preset = this.presets.get(presetName);
+        if (!preset) return;
 
+        const selectedLayer = this.layerManager.getSelectedLayer();
 
-loadPreset(presetName) {
-    const preset = this.presets.get(presetName);
-    if (!preset) return;
-
-    const selectedLayer = this.layerManager.getSelectedLayer();
-
-    if (selectedLayer) {
-        // Apply preset to selected layer
-        this.layerManager.updateLayerSettings(selectedLayer.id, preset);
-        
-        // Sync app's currentSettings and UI
-        this.updateSettings(preset);
-        this.ui.updateDisplay(preset);
-        
-        // Play the updated layer
-        const buffer = this.soundGenerator.generate(preset, this.audioEngine.sampleRate);
-        this.audioEngine.playBuffer(buffer);
-    } else {
-        // Fallback: apply globally
-        this.updateSettings(preset);
-        this.ui.updateDisplay(preset);
-        this.playCurrentSound();
+        if (selectedLayer) {
+            // Apply preset to selected layer
+            this.layerManager.updateLayerSettings(selectedLayer.id, preset);
+            
+            // Sync app's currentSettings and UI
+            this.updateSettings(preset);
+            this.ui.updateDisplay(preset);
+            
+            // Redraw timeline to show updated waveform
+            this.timeline.render();
+            
+            // Play the updated layer
+            const buffer = this.soundGenerator.generate(preset, this.audioEngine.sampleRate);
+            this.audioEngine.playBuffer(buffer);
+        } else {
+            // Fallback: apply globally
+            this.updateSettings(preset);
+            this.ui.updateDisplay(preset);
+            this.playCurrentSound();
+        }
     }
-}
 
     randomize() {
         const randomSettings = this.presets.generateRandom();
