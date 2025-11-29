@@ -295,6 +295,97 @@
             from { opacity: 0; transform: translateY(10px); }
             to { opacity: 1; transform: translateY(0); }
         }
+
+        /* LAYER LIST – RESTORED & IMPROVED */
+#layersList {
+    max-height: 280px;
+    overflow-y: auto;
+    padding-right: 4px;
+}
+#layersList::-webkit-scrollbar {
+    width: 6px;
+}
+#layersList::-webkit-scrollbar-track {
+    background: transparent;
+}
+#layersList::-webkit-scrollbar-thumb {
+    background: rgba(0,255,65,0.3);
+    border-radius: 3px;
+}
+#layersList::-webkit-scrollbar-thumb:hover {
+    background: var(--accent-primary);
+}
+
+.layer-item {
+    background: var(--bg-medium);
+    padding: 10px 12px;
+    border-radius: 8px;
+    margin-bottom: 8px;
+    border: 2px solid var(--border-color);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    user-select: none;
+}
+.layer-item:hover {
+    border-color: var(--accent-primary);
+    background: rgba(0,255,65,0.08);
+}
+.layer-item.active {
+    border-color: var(--accent-primary);
+    background: rgba(0,255,65,0.18);
+    box-shadow: 0 0 15px rgba(0,255,65,0.3);
+    font-weight: 700;
+}
+
+.layer-vis-btn {
+    font-size: 16px;
+    color: var(--text-secondary);
+    cursor: pointer;
+    width: 24px;
+    text-align: center;
+    transition: all 0.2s;
+}
+.layer-vis-btn:hover { color: var(--accent-primary); }
+.layer-vis-btn.hidden-layer {
+    opacity: 0.3;
+    color: #f44336;
+}
+
+.layer-name-input {
+    flex: 1;
+    background: transparent;
+    border: none;
+    color: var(--text-primary);
+    font-weight: 600;
+    font-size: 13px;
+    outline: none;
+    padding: 2px 4px;
+    border-radius: 4px;
+}
+.layer-name-input:focus {
+    background: rgba(0,255,65,0.1);
+    color: var(--accent-primary);
+}
+
+.layer-actions {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+.layer-actions i {
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 4px;
+    transition: all 0.2s;
+}
+.layer-actions i:hover {
+    background: rgba(0,255,65,0.15);
+    color: var(--accent-primary);
+    transform: scale(1.15);
+}
     </style>
 </head>
 <body>
