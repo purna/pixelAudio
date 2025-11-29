@@ -505,6 +505,8 @@
         </div>
 
         <div class="action-bar">
+            <button id="undoBtn" class="action-btn"><i class="fas fa-undo"></i> Undo</button>
+            <button id="redoBtn" class="action-btn"><i class="fas fa-redo"></i> Redo</button>
             <button id="playAll" class="action-btn primary">Play All Layers</button>
             <button id="exportLayer" class="action-btn">Export Selected</button>
             <button id="exportMix" class="action-btn">Export Mix</button>
@@ -562,6 +564,8 @@
         }, 50);
 
         // Action bar
+        document.getElementById('undoBtn').onclick = () => app.undo();
+        document.getElementById('redoBtn').onclick = () => app.redo();
         document.getElementById('playAll').onclick = () => app.layerManager.playAllLayers();
         document.getElementById('exportLayer').onclick = () => {
             const l = app.layerManager.getSelectedLayer();
