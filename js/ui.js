@@ -73,6 +73,21 @@ class UI {
     }
 
     onSettingsChange() {
+        // Save undo state only on first change (debounced)
+        if (!this.settingsChangeTimeout) {
+            this.app.saveUndoState();
+        }
+        
+        // Clear previous timeout
+        if (this.settingsChangeTimeout) {
+            clearTimeout(this.settingsChangeTimeout);
+        }
+        
+        // Debounce to avoid saving too many undo states
+        this.settingsChangeTimeout = setTimeout(() => {
+            this.settingsChangeTimeout = null;
+        }, 500);
+        
         const settings = this.getSettingsFromUI();
         this.app.updateSettings(settings);
         
