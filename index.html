@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Retro SFX Studio Pro</title>
+    <title>Pixel Audio Studio Pro</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Inter:wght@400;500;600;700&display=swap');
@@ -101,40 +101,6 @@
             transform: translateY(-2px);
             box-shadow: 0 4px 15px rgba(0,255,65,0.2);
         }
-        .layer-item {
-            background: var(--bg-medium);
-            padding: 10px 12px;
-            border-radius: 6px;
-            margin-bottom: 8px;
-            border: 2px solid var(--border-color);
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-        .layer-item:hover { border-color: var(--accent-primary); }
-        .layer-item.active { border-color: var(--accent-primary); background: rgba(0,255,65,0.15); box-shadow: 0 0 15px rgba(0,255,65,0.2); }
-        .layer-vis-btn {
-            font-size: 16px;
-            color: var(--text-secondary);
-            cursor: pointer;
-            width: 20px;
-            text-align: center;
-        }
-        .layer-vis-btn.hidden-layer { opacity: 0.3; color: #f44336; }
-        .layer-name-input {
-            flex: 1;
-            background: transparent;
-            border: none;
-            color: var(--text-primary);
-            font-weight: 600;
-            font-size: 13px;
-            outline: none;
-        }
-        .layer-name-input:focus { color: var(--accent-primary); }
-        .layer-actions i { cursor: pointer; transition: transform 0.2s; }
-        .layer-actions i:hover { transform: scale(1.2); }
         main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
         .tab-container {
             background: var(--bg-medium);
@@ -188,23 +154,6 @@
             font-size: 12px;
         }
         .timeline-controls button:hover { border-color: var(--accent-primary); color: var(--accent-primary); }
-        .timeline-controls label {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            font-size: 12px;
-            color: var(--text-secondary);
-        }
-        .timeline-controls input[type="number"] {
-            width: 60px;
-            background: var(--bg-dark);
-            border: 2px solid var(--border-color);
-            color: var(--text-primary);
-            padding: 6px 8px;
-            border-radius: 4px;
-            font-size: 12px;
-            font-weight: bold;
-        }
         #timeDisplay {
             color: var(--accent-tertiary);
             font-family: 'Courier New', monospace;
@@ -237,8 +186,20 @@
         }
         .control-group { margin-bottom: 14px; }
         .control-group.checkbox-group { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
-        label { display: block; margin-bottom: 4px; font-size: 13px; display: flex; align-items: center; gap: 6px; }
-        input[type="range"] { width: 100%; accent-color: var(--accent-primary); height: 8px; border-radius: 4px; background: #333; }
+        label {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 13px;
+            margin-bottom: 4px;
+        }
+        input[type="range"] {
+            width: 100%;
+            accent-color: var(--accent-primary);
+            height: 8px;
+            border-radius: 4px;
+            background: #333;
+        }
         select {
             width: 100%;
             padding: 10px 12px;
@@ -277,11 +238,11 @@
             color: black;
             font-weight: bold;
         }
-        .value { 
-            margin-left: auto; 
-            color: var(--accent-primary); 
-            font-family: 'Courier New', monospace; 
-            font-weight: bold; 
+        .value {
+            margin-left: auto;
+            color: var(--accent-primary);
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
             font-size: 12px;
         }
         .info-icon {
@@ -292,13 +253,6 @@
             transition: all 0.2s;
         }
         .info-icon:hover { opacity: 1; color: var(--accent-tertiary); }
-        .param-hint {
-            font-size: 10px;
-            color: var(--text-secondary);
-            margin-top: 4px;
-            opacity: 0.7;
-            font-style: italic;
-        }
         #waveform-preview {
             width: 100%;
             height: 120px;
@@ -331,6 +285,16 @@
         }
         .action-btn:hover { border-color: var(--accent-primary); background: rgba(0,255,65,0.1); color: var(--accent-primary); }
         .action-btn.primary { border-color: var(--accent-primary); background: rgba(0,255,65,0.15); }
+
+        /* Custom Tooltip */
+        .custom-tooltip {
+            animation: tooltipFadeIn 0.25s ease forwards;
+            pointer-events: none;
+        }
+        @keyframes tooltipFadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
     </style>
 </head>
 <body>
@@ -378,9 +342,9 @@
                 <div class="timeline-header">
                     <h3>Timeline</h3>
                     <div class="timeline-controls">
-                        <button id="playSelected"><i class="fas fa-play"></i> Selected</button>
-                        <button id="playTimeline"><i class="fas fa-play-circle"></i> All</button>
-                        <button id="stopTimeline"><i class="fas fa-stop"></i></button>
+                        <button id="playSelected">Play Selected</button>
+                        <button id="playTimeline">Play All</button>
+                        <button id="stopTimeline">Stop</button>
                         <label>Length: <input type="number" id="totalLength" value="5" min="1" max="60" step="0.5">s</label>
                         <span id="timeDisplay">0.00s</span>
                     </div>
@@ -391,32 +355,33 @@
 
         <div id="settings" class="tab-content">
             <div class="settings-grid">
+
                 <!-- Waveform Type -->
                 <div class="control-section">
                     <div class="section-title">
                         <i class="fas fa-wave-square"></i> Waveform
-                        <i class="fas fa-info-circle info-icon" title="The basic shape of your sound wave"></i>
+                        <i class="fas fa-circle-question info-icon" data-tooltip="Waveform Type\n\nThe raw oscillator shape — the DNA of your sound:\n\n• Square → Classic 8-bit chiptune, harsh & digital\n• Sawtooth → Aggressive, bright, perfect for leads\n• Triangle → Soft, hollow, vintage arcade feel\n• Sine → Pure tone, bell-like, clean\n• Noise → Random static — explosions, wind, hits\n\nTry Square + Duty Sweep for evolving retro tones!"></i>
                     </div>
                     <div class="control-group">
                         <label>Type</label>
                         <select id="waveform">
-                            <option value="square">Square - Retro, Harsh (Classic 8-bit)</option>
-                            <option value="sine">Sine - Pure, Smooth (Soft tones)</option>
-                            <option value="triangle">Triangle - Mellow, Hollow (Vintage)</option>
-                            <option value="sawtooth">Sawtooth - Bright, Buzzy (Brassy)</option>
-                            <option value="noise">Noise - Random, Static (Explosions)</option>
+                            <option value="square">Square - Retro, Harsh</option>
+                            <option value="sine">Sine - Pure, Smooth</option>
+                            <option value="triangle">Triangle - Mellow, Hollow</option>
+                            <option value="sawtooth">Sawtooth - Bright, Buzzy</option>
+                            <option value="noise">Noise - Static, Explosions</option>
                         </select>
                     </div>
                 </div>
 
-                <!-- Waveform Preview -->
+                 <!-- Live Preview -->
                 <div class="control-section">
                     <div class="section-title">
                         <i class="fas fa-eye"></i> Live Preview
                     </div>
                     <canvas id="waveform-preview" width="380" height="120"></canvas>
                     <div style="font-size:11px; color:var(--text-secondary); text-align:center; margin-top:8px;">
-                        Green = Waveform | Yellow dashed = Envelope
+                        Green = Actual Waveform | Yellow = Envelope Shape
                     </div>
                 </div>
 
@@ -424,75 +389,74 @@
                 <div class="control-section">
                     <div class="section-title">
                         <i class="fas fa-chart-line"></i> Envelope
-                        <i class="fas fa-info-circle info-icon" title="Controls volume over time (Attack → Sustain → Decay)"></i>
+                        <i class="fas fa-circle-question info-icon" data-tooltip="ADSR Envelope\n\nControls volume over time:\nAttack → Sustain → Decay\n\n• Attack: Ramp-up speed\n• Sustain: Hold duration at peak\n• Punch: Extra boost at peak\n• Decay: Fade-out time\n\nEssential for making sounds feel alive!"></i>
                     </div>
                     <div class="control-group">
                         <label>Attack <span class="value" id="attackVal">0.00s</span>
-                            <i class="fas fa-info-circle info-icon" title="How fast sound reaches full volume"></i>
+                            <i class="fas fa-circle-question info-icon" data-tooltip="Attack Time (0–1s)\n\nHow fast the sound rises from silence to full volume.\n\n• 0.000 = Instant hit (laser, kick)\n• 0.030 = Fast zap\n• 0.200 = Slow swell (pad, reverse)\n• 1.000 = Very gradual rise\n\nPro tip: Pair with Punch for explosive starts!"></i>
                         </label>
                         <input type="range" id="attack" min="0" max="1" step="0.001" value="0">
                     </div>
                     <div class="control-group">
                         <label>Sustain <span class="value" id="sustainVal">0.10s</span>
-                            <i class="fas fa-info-circle info-icon" title="How long it stays at full volume"></i>
+                            <i class="fas fa-circle-question info-icon" data-tooltip="Sustain Time (0–2s)\n\nHow long the sound stays at full volume after attack.\n\n• 0.000 = No hold (percussive)\n• 0.100 = Short blip\n• 1.000+ = Long drone or note\n\nGreat for jump sounds or sustained lasers."></i>
                         </label>
                         <input type="range" id="sustain" min="0" max="2" step="0.01" value="0.1">
                     </div>
                     <div class="control-group">
                         <label>Punch <span class="value" id="punchVal">0%</span>
-                            <i class="fas fa-info-circle info-icon" title="Extra impact boost at start of sustain"></i>
+                            <i class="fas fa-circle-question info-icon" data-tooltip="Volume Punch (0–100%)\n\nExtra boost at the start of sustain phase.\n\nMakes impacts feel heavier — perfect for:\n• Explosions\n• Kicks\n• Power-ups\n• Hits & hurts"></i>
                         </label>
                         <input type="range" id="punch" min="0" max="100" step="1" value="0">
                     </div>
                     <div class="control-group">
                         <label>Decay <span class="value" id="decayVal">0.20s</span>
-                            <i class="fas fa-info-circle info-icon" title="How long to fade out after sustain"></i>
+                            <i class="fas fa-circle-question info-icon" data-tooltip="Decay Time (0–2s)\n\nHow long the sound takes to fade out after sustain.\n\n• 0.000 = Abrupt stop\n• 0.100 = Quick drop\n• 0.800+ = Long reverb tail\n\nUse short decay for snappy coins, long for echoes."></i>
                         </label>
                         <input type="range" id="decay" min="0" max="2" step="0.01" value="0.2">
                     </div>
                 </div>
-                
 
                 <!-- Frequency -->
                 <div class="control-section">
                     <div class="section-title">
                         <i class="fas fa-wave-square"></i> Frequency
-                        <i class="fas fa-info-circle info-icon" title="Pitch and pitch changes"></i>
+                        <i class="fas fa-circle-question info-icon" data-tooltip="Pitch Control\n\nStart frequency + dynamic changes over time.\n\nUse Slide for swooshes, drops, risers."></i>
                     </div>
                     <div class="control-group">
                         <label>Start <span class="value" id="freqVal">440Hz</span>
-                            <i class="fas fa-info-circle info-icon" title="Base pitch"></i>
+                            <i class="fas fa-circle-question info-icon" data-tooltip="Base Frequency (20–3000Hz)\n\nThe starting pitch of your sound.\n\n• 100–300Hz = Deep bass\n• 440Hz = Classic A4 note\n• 800–2000Hz = Bright leads & beeps\n\nHigher = brighter/sharper tone."></i>
                         </label>
                         <input type="range" id="frequency" min="20" max="3000" step="1" value="440">
                     </div>
                     <div class="control-group">
                         <label>Min Cutoff <span class="value" id="minFreqVal">0Hz</span>
-                            <i class="fas fa-info-circle info-icon" title="Lowest pitch slide can reach"></i>
+                            <i class="fas fa-circle-question info-icon" data-tooltip="Minimum Frequency Limit\n\nPrevents pitch slide from going too low.\n\nUseful when using negative Slide to avoid inaudible rumble."></i>
                         </label>
                         <input type="range" id="minFreq" min="0" max="1000" step="1" value="0">
                     </div>
                     <div class="control-group">
                         <label>Slide <span class="value" id="slideVal">0.00</span>
-                            <i class="fas fa-info-circle info-icon" title="Pitch bend over time (+ up, - down)"></i>
+                            <i class="fas fa-circle-question info-icon" data-tooltip="Pitch Slide (-2 to +2)\n\nChanges pitch over time.\n\n• Negative = Falling pitch (classic laser drop)\n• Positive = Rising pitch (power-up)\n• Combine with Delta Slide for acceleration"></i>
                         </label>
                         <input type="range" id="slide" min="-2" max="2" step="0.01" value="0">
                     </div>
                     <div class="control-group">
                         <label>Delta Slide <span class="value" id="deltaSlideVal">0.00</span>
-                            <i class="fas fa-info-circle info-icon" title="Accelerates/decelerates the slide"></i>
+                            <i class="fas fa-circle-question info-icon" data-tooltip="Slide Acceleration\n\nMakes pitch change faster or slower over time.\n\nCreates dramatic swoops and curves in pitch movement."></i>
                         </label>
                         <input type="range" id="deltaSlide" min="-1" max="1" step="0.01" value="0">
                     </div>
                 </div>
 
-                <!-- Vibrato & Arpeggio -->
+                <!-- Vibrato -->
                 <div class="control-section">
                     <div class="section-title">
                         <i class="fas fa-water"></i> Vibrato
-                        <i class="fas fa-info-circle info-icon" title="Wobbly pitch effect"></i>
+                        <i class="fas fa-circle-question info-icon" data-tooltip="Pitch Wobble\n\nAdds expressive, organic warble to pitch.\n\nGreat for voices, sirens, retro synth leads."></i>
                     </div>
                     <div class="control-group checkbox-group">
-                        <input type="checkbox" id="vibratoEnable"><label>Enable</label>
+                        <input type="checkbox" id="vibratoEnable"><label>Enable Vibrato</label>
                     </div>
                     <div class="control-group">
                         <label>Depth <span class="value" id="vibratoDepthVal">0%</span></label>
@@ -504,13 +468,14 @@
                     </div>
                 </div>
 
+                <!-- Arpeggio -->
                 <div class="control-section">
                     <div class="section-title">
                         <i class="fas fa-sync-alt"></i> Arpeggio
-                        <i class="fas fa-info-circle info-icon" title="Fast alternating notes"></i>
+                        <i class="fas fa-circle-question info-icon" data-tooltip="Rapid Note Switching\n\nQuickly alternates between base pitch and a multiple.\n\nCreates classic 8-bit arpeggios and trills."></i>
                     </div>
                     <div class="control-group checkbox-group">
-                        <input type="checkbox" id="arpEnable"><label>Enable</label>
+                        <input type="checkbox" id="arpEnable"><label>Enable Arpeggio</label>
                     </div>
                     <div class="control-group">
                         <label>Multiplier <span class="value" id="arpMultVal">×1.00</span></label>
@@ -525,8 +490,8 @@
                 <!-- Duty Cycle -->
                 <div class="control-section">
                     <div class="section-title">
-                        <i class="fas fa-percentage"></i> Duty Cycle (Square only)
-                        <i class="fas fa-info-circle info-icon" title="Changes square wave tone thickness"></i>
+                        <i class="fas fa-percentage"></i> Duty Cycle (Square Only)
+                        <i class="fas fa-circle-question info-icon" data-tooltip="Square Wave Tone Shaping\n\nChanges thickness of square wave:\n\n• 0–25% = Thin, nasal beep\n• 50% = Full retro square\n• 75–100% = Thin again (different tone)\n\nSweep creates filtering effect!"></i>
                     </div>
                     <div class="control-group">
                         <label>Cycle <span class="value" id="dutyVal">50%</span></label>
@@ -542,7 +507,7 @@
                 <div class="control-section">
                     <div class="section-title">
                         <i class="fas fa-filter"></i> Filters
-                        <i class="fas fa-info-circle info-icon" title="Cut high or low frequencies"></i>
+                        <i class="fas fa-circle-question info-icon" data-tooltip="Frequency Filtering\n\nRemove parts of the sound spectrum:\n\n• Low-Pass: Cut highs → muffled/dark\n• High-Pass: Cut lows → thin/bright"></i>
                     </div>
                     <div class="control-group checkbox-group">
                         <input type="checkbox" id="lpfEnable"><label>Low-Pass Filter</label>
@@ -560,39 +525,41 @@
                     </div>
                 </div>
 
-                <!-- Output & Volume -->
+                <!-- Output -->
                 <div class="control-section">
                     <div class="section-title">
                         <i class="fas fa-volume-up"></i> Output
-                        <i class="fas fa-info-circle info-icon" title="Final volume controls"></i>
+                        <i class="fas fa-circle-question info-icon" data-tooltip="Final Level Controls\n\nAdjust how loud this layer appears in the mix."></i>
                     </div>
                     <div class="control-group">
                         <label>Layer Volume <span class="value" id="layerVolumeVal">100%</span>
-                            <i class="fas fa-info-circle info-icon" title="Per-layer volume in mix (0–200%)"></i>
+                            <i class="fas fa-circle-question info-icon" data-tooltip="Per-Layer Volume (0–200%)\n\nControls this layer's level in the final mix.\n\n• 0% = Silent\n• 100% = Normal\n• 150–200% = Boosted (use carefully!)\n\nPerfect for balancing bass vs sparkle layers."></i>
                         </label>
                         <input type="range" id="layerVolume" min="0" max="200" step="1" value="100">
-                        <div class="param-hint">Controls this layer's level in the final mix</div>
                     </div>
                     <div class="control-group">
                         <label>Gain <span class="value" id="gainVal">-10.0 dB</span>
-                            <i class="fas fa-info-circle info-icon" title="Final boost/cut in decibels"></i>
+                            <i class="fas fa-circle-question info-icon" data-tooltip="Master Gain (-30 to +6 dB)\n\nFinal volume adjustment in decibels.\n\nUse negative values to prevent clipping when layering many sounds."></i>
                         </label>
                         <input type="range" id="gain" min="-30" max="6" step="0.1" value="-10">
                     </div>
                 </div>
 
-              
+               
             </div>
         </div>
 
         <div class="action-bar">
             <button id="undoBtn" class="action-btn"><i class="fas fa-undo"></i> Undo</button>
             <button id="redoBtn" class="action-btn"><i class="fas fa-redo"></i> Redo</button>
-            <button id="playAll" class="action-btn primary"><i class="fas fa-play"></i> Play All Layers</button>
-            <button id="exportLayer" class="action-btn"><i class="fas fa-download"></i> Export Selected</button>
+            <button id="playAll" class="action-btn primary"><i class="fas fa-play"></i> Play All</button>
+            <button id="exportLayer" class="action-btn"><i class="fas fa-download"></i> Export Layer</button>
             <button id="exportMix" class="action-btn"><i class="fas fa-file-download"></i> Export Mix</button>
         </div>
     </main>
+
+    <!-- Load Tooltip System First -->
+    <script src="js/tooltip.js"></script>
 
     <script src="js/audioEngine.js"></script>
     <script src="js/soundGenerator.js"></script>
@@ -602,8 +569,9 @@
     <script src="js/fileManager.js"></script>
     <script src="js/ui.js"></script>
     <script src="js/main.js"></script>
+
     <script>
-        // Your existing inline scripts remain unchanged...
+        // Tab switching & existing controls (unchanged)
         document.querySelectorAll('.tab-btn').forEach(btn => {
             btn.addEventListener('click', () => {
                 document.querySelectorAll('.tab-btn, .tab-content').forEach(el => el.classList.remove('active'));
