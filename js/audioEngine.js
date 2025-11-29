@@ -156,49 +156,43 @@ class AudioEngine {
         }
     }
 
-    mixBuffers(buffers, volumes = null) {
+    mixBuffers(buffers, volumes = null, offsets = []) {
         if (buffers.length === 0) return null;
-        
-        // Find the longest buffer
+    
+        // Compute max length with offsets
         let maxLength = 0;
-        buffers.forEach(buf => {
-            if (buf.length > maxLength) {
-                maxLength = buf.length;
+        buffers.forEach((buf, idx) => {
+            const off = offsets[idx] || 0;
+            if (buf.length + off > maxLength) {
+                maxLength = buf.length + off;
             }
         });
-
-        // Create output buffer
-        const mixedBuffer = this.context.createBuffer(
-            1,
-            maxLength,
-            this.context.sampleRate
-        );
+    
+        const mixedBuffer = this.context.createBuffer(1, maxLength, this.context.sampleRate);
         const output = mixedBuffer.getChannelData(0);
-
-        // Mix all buffers
+    
+        // Mix with offsets
         buffers.forEach((buffer, idx) => {
             const data = buffer.getChannelData(0);
             const volume = volumes ? volumes[idx] : 1;
-            
+            const off = offsets[idx] || 0;
+    
             for (let i = 0; i < data.length; i++) {
-                output[i] += data[i] * volume;
+                if (i + off < output.length) {
+                    output[i + off] += data[i] * volume;
+                }
             }
         });
-
-        // Normalize to prevent clipping
+    
+        // Normalize
         let max = 0;
         for (let i = 0; i < output.length; i++) {
-            if (Math.abs(output[i]) > max) {
-                max = Math.abs(output[i]);
-            }
+            if (Math.abs(output[i]) > max) max = Math.abs(output[i]);
         }
-        
         if (max > 1) {
-            for (let i = 0; i < output.length; i++) {
-                output[i] /= max;
-            }
+            for (let i = 0; i < output.length; i++) output[i] /= max;
         }
-
+    
         return mixedBuffer;
     }
 }
