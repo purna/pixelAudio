@@ -1,4 +1,4 @@
-// presets.js - Sound presets and random generation
+// presets.js - Sound presets and random generation with waveform support
 
 class Presets {
     constructor() {
@@ -20,6 +20,7 @@ class Presets {
                 arpSpeed: 0.085,
                 duty: 50,
                 dutySweep: 0,
+                waveform: 'square',
                 lpfEnable: false,
                 lpf: 22050,
                 hpfEnable: false,
@@ -43,6 +44,7 @@ class Presets {
                 arpSpeed: 0,
                 duty: 25,
                 dutySweep: -20,
+                waveform: 'square',
                 lpfEnable: true,
                 lpf: 8000,
                 hpfEnable: false,
@@ -66,6 +68,7 @@ class Presets {
                 arpSpeed: 0,
                 duty: 50,
                 dutySweep: 0,
+                waveform: 'noise',
                 lpfEnable: true,
                 lpf: 1500,
                 hpfEnable: true,
@@ -89,6 +92,7 @@ class Presets {
                 arpSpeed: 0,
                 duty: 50,
                 dutySweep: 0,
+                waveform: 'sine',
                 lpfEnable: false,
                 lpf: 22050,
                 hpfEnable: false,
@@ -112,6 +116,7 @@ class Presets {
                 arpSpeed: 0,
                 duty: 50,
                 dutySweep: 0,
+                waveform: 'square',
                 lpfEnable: true,
                 lpf: 3000,
                 hpfEnable: true,
@@ -135,6 +140,7 @@ class Presets {
                 arpSpeed: 0,
                 duty: 50,
                 dutySweep: 0,
+                waveform: 'square',
                 lpfEnable: false,
                 lpf: 22050,
                 hpfEnable: false,
@@ -158,6 +164,7 @@ class Presets {
                 arpSpeed: 0,
                 duty: 50,
                 dutySweep: 0,
+                waveform: 'square',
                 lpfEnable: false,
                 lpf: 22050,
                 hpfEnable: false,
@@ -181,6 +188,7 @@ class Presets {
                 arpSpeed: 0,
                 duty: 50,
                 dutySweep: 0,
+                waveform: 'sine',
                 lpfEnable: false,
                 lpf: 22050,
                 hpfEnable: false,
@@ -204,6 +212,7 @@ class Presets {
                 arpSpeed: 0,
                 duty: 50,
                 dutySweep: 0,
+                waveform: 'triangle',
                 lpfEnable: false,
                 lpf: 22050,
                 hpfEnable: false,
@@ -227,6 +236,7 @@ class Presets {
                 arpSpeed: 0,
                 duty: 50,
                 dutySweep: 0,
+                waveform: 'sawtooth',
                 lpfEnable: false,
                 lpf: 22050,
                 hpfEnable: false,
@@ -250,6 +260,7 @@ class Presets {
                 arpSpeed: 0,
                 duty: 50,
                 dutySweep: 0,
+                waveform: 'sine',
                 lpfEnable: false,
                 lpf: 22050,
                 hpfEnable: false,
@@ -276,6 +287,7 @@ class Presets {
     }
 
     generateRandom() {
+        const waveforms = ['square', 'sine', 'triangle', 'sawtooth', 'noise'];
         return {
             attack: Math.random() * 0.2,
             sustain: Math.random() * 0.5,
@@ -293,6 +305,7 @@ class Presets {
             arpSpeed: Math.random() * 0.5,
             duty: Math.random() * 100,
             dutySweep: (Math.random() - 0.5) * 100,
+            waveform: waveforms[Math.floor(Math.random() * waveforms.length)],
             lpfEnable: Math.random() > 0.5,
             lpf: 1000 + Math.random() * 21050,
             hpfEnable: Math.random() > 0.7,
@@ -315,6 +328,7 @@ class Presets {
                 deltaSlide: [0, 0],
                 vibratoEnable: false,
                 duty: [40, 60],
+                waveform: ['square', 'sine', 'triangle'],
                 gain: [-20, -10]
             },
             game: {
@@ -327,6 +341,7 @@ class Presets {
                 slide: [-0.8, 0.8],
                 deltaSlide: [-0.3, 0.3],
                 duty: [30, 70],
+                waveform: ['square', 'sine', 'triangle', 'sawtooth'],
                 gain: [-15, -5]
             }
         };
@@ -337,8 +352,15 @@ class Presets {
         // Apply template constraints
         for (let key in template) {
             if (Array.isArray(template[key])) {
-                const [min, max] = template[key];
-                settings[key] = min + Math.random() * (max - min);
+                const arr = template[key];
+                if (typeof arr[0] === 'string') {
+                    // Array of string choices (e.g., waveforms)
+                    settings[key] = arr[Math.floor(Math.random() * arr.length)];
+                } else {
+                    // Numeric range
+                    const [min, max] = arr;
+                    settings[key] = min + Math.random() * (max - min);
+                }
             } else {
                 settings[key] = template[key];
             }
