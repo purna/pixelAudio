@@ -144,7 +144,19 @@ class SFXGeneratorApp {
 
     randomize() {
         const randomSettings = this.presets.generateRandom();
-        this.updateSettings(randomSettings);
+        const selectedLayer = this.layerManager.getSelectedLayer();
+        
+        if (selectedLayer) {
+            // Apply to selected layer
+            this.layerManager.updateLayerSettings(selectedLayer.id, randomSettings);
+            this.updateSettings(randomSettings);
+            this.ui.updateDisplay(randomSettings);
+            this.timeline.render();
+        } else {
+            // Fallback: apply globally
+            this.updateSettings(randomSettings);
+        }
+        
         this.playCurrentSound();
     }
 
