@@ -3,71 +3,40 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Advanced SFX Generator</title>
+    <title>Advanced Layered SFX Generator</title>
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
     <div class="container">
         <h1>Advanced SFX Generator</h1>
-        <p class="subtitle">Professional layered sound effects generator</p>
+        <p class="subtitle">Professional layered sound effects editor • Timeline • Export • Presets</p>
 
+        <!-- Top Bar -->
         <div class="top-bar">
             <button id="newProject">New Project</button>
             <button id="saveProject">Save Project (JSON)</button>
-            <input type="file" id="loadProject" accept=".json" style="display:none">
+            <input type="file" id="loadProjectInput" accept=".json" style="display:none">
             <button id="loadProjectBtn">Load Project</button>
-            <button id="exportMix">Export Mix WAV</button>
+            <button id="exportMix">Export Final Mix WAV</button>
         </div>
 
-
-            <div class="main-grid">
-                <!-- Layers Panel -->
-                <div id="layersPanel" class="panel">
-                    <h3>Layers</h3>
-                    <button id="addLayer">+ Add Layer</button>
-                    <div id="layersList"></div>
-                </div>
-            
-                <!-- Right Column: Controls + Timeline -->
-                <div style="display:flex;flex-direction:column;gap:20px;">
-                    <!-- Presets -->
-                    <div class="preset-panel"> ... same as before ... </div>
-            
-                    <!-- Controls -->
-                    <div id="controlsContainer" class="controls-panel">
-                        <!-- Injected by ui.js -->
-                    </div>
-            
-                    <!-- Timeline -->
-                    <div class="timeline-container">
-                        <h3>Timeline</h3>
-                        <div class="timeline-controls">
-                            <button id="playTimeline">Play</button>
-                            <button id="stopTimeline">Stop</button>
-                            <span>Zoom:</span>
-                            <input type="range" id="zoom" min="10" max="200" value="50">
-                            <span id="timeDisplay">0.00s</span>
-                        </div>
-                        <div id="timeline"></div>
-                    </div>
-            
-                    <!-- Action Bar -->
-                    <div class="action-bar">
-                        <button id="playAll" class="btn play-btn">Play All (Preview)</button>
-                        <button id="exportLayer" class="btn download-btn">Export Active Layer</button>
-                        <button id="exportMix" class="btn download-btn">Export Final Mix WAV</button>
-                    </div>
-                </div>
+        <div class="main-grid">
+            <!-- Left: Layers Panel -->
+            <div id="layersPanel" class="panel">
+                <h3>Layers</h3>
+                <button id="addLayer">+ Add Layer</button>
+                <div id="layersList"></div>
             </div>
 
-            <!-- Preset + Controls -->
-            <div>
+            <!-- Right: Presets + Controls + Timeline -->
+            <div style="display:flex; flex-direction:column; gap:20px;">
+                <!-- Presets -->
                 <div class="preset-panel">
-                    <!-- Presets stay the same -->
                     <div class="preset-section">
                         <div class="preset-title">Generator</div>
                         <button class="preset-btn" data-action="randomize">Random</button>
                     </div>
+
                     <div class="preset-section">
                         <div class="preset-title">Game Sounds</div>
                         <button class="preset-btn" data-preset="pickup">Pickup/Coin</button>
@@ -77,6 +46,7 @@
                         <button class="preset-btn" data-preset="hit">Hit/Hurt</button>
                         <button class="preset-btn" data-preset="jump">Jump</button>
                     </div>
+
                     <div class="preset-section">
                         <div class="preset-title">UI Sounds</div>
                         <button class="preset-btn" data-preset="click">Click</button>
@@ -85,12 +55,25 @@
                     </div>
                 </div>
 
-                <div id="controlsContainer" class="controls-panel">
-                    <!-- Controls will be injected here by ui.js -->
+                <!-- Controls (injected by ui.js) -->
+                <div id="controlsContainer" class="controls-panel"></div>
+
+                <!-- Timeline -->
+                <div class="timeline-container">
+                    <h3>Timeline</h3>
+                    <div class="timeline-controls">
+                        <button id="playTimeline">Play</button>
+                        <button id="stopTimeline">Stop</button>
+                        <span>Zoom:</span>
+                        <input type="range" id="zoom" min="20" max="200" value="80">
+                        <span id="timeDisplay">0.00s</span>
+                    </div>
+                    <div id="timeline"></div>
                 </div>
 
+                <!-- Action Bar -->
                 <div class="action-bar">
-                    <button id="playAll" class="btn play-btn">Play All</button>
+                    <button id="playAll" class="btn play-btn">Play All (Preview)</button>
                     <button id="exportLayer" class="btn download-btn">Export Active Layer WAV</button>
                 </div>
             </div>
@@ -99,7 +82,7 @@
 
     <script type="module">
         import { init } from './js/main.js';
-        init();
+        window.addEventListener('DOMContentLoaded', init);
     </script>
 </body>
 </html>
