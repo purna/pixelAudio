@@ -207,10 +207,13 @@ class Timeline {
         if (x >= 0 && x <= this.width) {
             this.ctx.strokeStyle = '#f44336';
             this.ctx.lineWidth = 2;
+            this.ctx.shadowColor = '#f44336';
+            this.ctx.shadowBlur = 10; // Add glow for visibility
             this.ctx.beginPath();
             this.ctx.moveTo(x, 0);
             this.ctx.lineTo(x, this.height);
             this.ctx.stroke();
+            this.ctx.shadowBlur = 0; // Reset
         }
     }
 
