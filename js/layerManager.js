@@ -175,13 +175,22 @@ class LayerManager {
     }
 
     exportMixedAudio(filename = 'mixed_sfx.wav') {
-        const { buffers, volumes } = this.generateLayerBuffers();
-        if (buffers.length === 0) return;
-
-        const mixedBuffer = buffers.length === 1
-            ? buffers[0]
-            : this.app.audioEngine.mixBuffers(buffers, volumes);
-
+        const activeLayers = this.getActiveLayers();
+        if (activeLayers.length === 0) return;
+    
+        const buffers = [];
+        const volumes = [];
+        const offsets = [];
+        const sampleRate = this.app.audioEngine.sampleRate;
+    
+        for (const layer of activeLayers) {
+            const buffer = this.app.soundGenerator.generate(layer.settings, sampleRate);
+            buffers.push(buffer);
+            volumes.push(layer.volume);
+            offsets.push(Math.floor(layer.startTime * sampleRate)); // Samples offset
+        }
+    
+        const mixedBuffer = this.app.audioEngine.mixBuffers(buffers, volumes, offsets);
         this.app.audioEngine.downloadWAV(mixedBuffer, filename);
     }
 
