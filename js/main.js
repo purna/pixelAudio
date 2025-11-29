@@ -11,6 +11,11 @@ class SFXGeneratorApp {
         this.fileManager = null;
         
         this.currentSettings = this.getDefaultSettings();
+        
+        // Undo/Redo stacks
+        this.undoStack = [];
+        this.redoStack = [];
+        this.maxUndoSteps = 50;
     }
 
     async init() {
@@ -58,6 +63,21 @@ class SFXGeneratorApp {
             if ((e.ctrlKey || e.metaKey) && e.key === 'o') {
                 e.preventDefault();
                 this.fileManager.importProject();
+            }
+            // Ctrl/Cmd + Z to undo
+            if ((e.ctrlKey || e.metaKey) && e.key === 'z' && !e.shiftKey) {
+                e.preventDefault();
+                this.undo();
+            }
+            // Ctrl/Cmd + Shift + Z to redo
+            if ((e.ctrlKey || e.metaKey) && e.key === 'z' && e.shiftKey) {
+                e.preventDefault();
+                this.redo();
+            }
+            // Ctrl/Cmd + Y to redo (alternative)
+            if ((e.ctrlKey || e.metaKey) && e.key === 'y') {
+                e.preventDefault();
+                this.redo();
             }
         });
     }
@@ -121,6 +141,9 @@ class SFXGeneratorApp {
         const selectedLayer = this.layerManager.getSelectedLayer();
 
         if (selectedLayer) {
+            // Save state for undo
+            this.saveUndoState();
+            
             // Apply preset to selected layer
             this.layerManager.updateLayerSettings(selectedLayer.id, preset);
             
@@ -136,6 +159,7 @@ class SFXGeneratorApp {
             this.audioEngine.playBuffer(buffer);
         } else {
             // Fallback: apply globally
+            this.saveUndoState();
             this.updateSettings(preset);
             this.ui.updateDisplay(preset);
             this.playCurrentSound();
@@ -145,6 +169,9 @@ class SFXGeneratorApp {
     randomize() {
         const randomSettings = this.presets.generateRandom();
         const selectedLayer = this.layerManager.getSelectedLayer();
+        
+        // Save state for undo
+        this.saveUndoState();
         
         if (selectedLayer) {
             // Apply to selected layer
@@ -158,6 +185,53 @@ class SFXGeneratorApp {
         }
         
         this.playCurrentSound();
+    }
+
+    saveUndoState() {
+        const state = this.getState();
+        this.undoStack.push(JSON.parse(JSON.stringify(state)));
+        
+        // Limit undo stack size
+        if (this.undoStack.length > this.maxUndoSteps) {
+            this.undoStack.shift();
+        }
+        
+        // Clear redo stack when new action is performed
+        this.redoStack = [];
+    }
+
+    undo() {
+        if (this.undoStack.length === 0) {
+            this.ui.showNotification('Nothing to undo', 'info');
+            return;
+        }
+        
+        // Save current state to redo stack
+        const currentState = this.getState();
+        this.redoStack.push(JSON.parse(JSON.stringify(currentState)));
+        
+        // Restore previous state
+        const previousState = this.undoStack.pop();
+        this.setState(previousState);
+        
+        this.ui.showNotification('Undo', 'info');
+    }
+
+    redo() {
+        if (this.redoStack.length === 0) {
+            this.ui.showNotification('Nothing to redo', 'info');
+            return;
+        }
+        
+        // Save current state to undo stack
+        const currentState = this.getState();
+        this.undoStack.push(JSON.parse(JSON.stringify(currentState)));
+        
+        // Restore next state
+        const nextState = this.redoStack.pop();
+        this.setState(nextState);
+        
+        this.ui.showNotification('Redo', 'info');
     }
 
     getState() {
