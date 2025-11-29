@@ -330,6 +330,33 @@
         
         .value { float: right; color: var(--accent-primary); font-family: 'Courier New', monospace; font-weight: bold; }
 
+        /* Info tooltips and hints */
+        .info-icon {
+            font-size: 12px;
+            color: var(--text-secondary);
+            cursor: help;
+            opacity: 0.7;
+            transition: opacity 0.2s;
+        }
+        .info-icon:hover {
+            opacity: 1;
+            color: var(--accent-tertiary);
+        }
+        .info-text {
+            font-size: 11px;
+            color: var(--text-secondary);
+            font-style: italic;
+            margin-bottom: 12px;
+            opacity: 0.8;
+        }
+        .param-hint {
+            font-size: 10px;
+            color: var(--text-secondary);
+            margin-top: 2px;
+            opacity: 0.7;
+            font-style: italic;
+        }
+
         .action-bar {
             padding: 15px 20px;
             background: var(--bg-medium);
@@ -419,64 +446,88 @@
 
                 <!-- Waveform Type -->
                 <div class="control-section">
-                    <div class="section-title"><i class="fas fa-waveform-path"></i> Waveform</div>
+                    <div class="section-title">
+                        <i class="fas fa-waveform-path"></i> Waveform
+                        <i class="fas fa-info-circle info-icon" title="The basic shape of your sound wave"></i>
+                    </div>
+                    <div class="info-text">Choose the basic tone character</div>
                     <div class="control-group">
                         <label>Type</label>
                         <select id="waveform">
-                            <option value="square">Square</option>
-                            <option value="sine">Sine</option>
-                            <option value="triangle">Triangle</option>
-                            <option value="sawtooth">Sawtooth</option>
-                            <option value="noise">Noise</option>
+                            <option value="square">Square - Retro, Harsh (Classic 8-bit)</option>
+                            <option value="sine">Sine - Pure, Smooth (Soft tones)</option>
+                            <option value="triangle">Triangle - Mellow, Hollow (Vintage)</option>
+                            <option value="sawtooth">Sawtooth - Bright, Buzzy (Brassy)</option>
+                            <option value="noise">Noise - Random, Static (Explosions)</option>
                         </select>
                     </div>
                 </div>
 
                 <!-- Envelope -->
                 <div class="control-section">
-                    <div class="section-title"><i class="fas fa-wave-square"></i> Envelope</div>
+                    <div class="section-title">
+                        <i class="fas fa-wave-square"></i> Envelope
+                        <i class="fas fa-info-circle info-icon" title="Controls how the volume changes over time"></i>
+                    </div>
+                    <div class="info-text">Shape your sound's volume over time</div>
                     <div class="control-group">
                         <label>Attack <span class="value" id="attackVal">0.00s</span></label>
                         <input type="range" id="attack" min="0" max="1" step="0.001" value="0">
+                        <div class="param-hint">How quickly the sound reaches full volume</div>
                     </div>
                     <div class="control-group">
                         <label>Sustain <span class="value" id="sustainVal">0.10s</span></label>
                         <input type="range" id="sustain" min="0" max="2" step="0.01" value="0.1">
+                        <div class="param-hint">How long the sound stays at full volume</div>
                     </div>
                     <div class="control-group">
                         <label>Punch <span class="value" id="punchVal">0%</span></label>
                         <input type="range" id="punch" min="0" max="100" step="1" value="0">
+                        <div class="param-hint">Extra volume boost at the start</div>
                     </div>
                     <div class="control-group">
                         <label>Decay <span class="value" id="decayVal">0.20s</span></label>
                         <input type="range" id="decay" min="0" max="2" step="0.01" value="0.2">
+                        <div class="param-hint">How long the sound takes to fade out</div>
                     </div>
                 </div>
 
                 <!-- Oscillator -->
                 <div class="control-section">
-                    <div class="section-title"><i class="fas fa-sliders-h"></i> Frequency</div>
+                    <div class="section-title">
+                        <i class="fas fa-sliders-h"></i> Frequency
+                        <i class="fas fa-info-circle info-icon" title="Controls the pitch of your sound"></i>
+                    </div>
+                    <div class="info-text">Adjust the pitch and how it changes</div>
                     <div class="control-group">
                         <label>Start <span class="value" id="freqVal">440Hz</span></label>
                         <input type="range" id="frequency" min="20" max="3000" step="1" value="440">
+                        <div class="param-hint">Starting pitch (higher = higher note)</div>
                     </div>
                     <div class="control-group">
                         <label>Min Cutoff <span class="value" id="minFreqVal">0Hz</span></label>
                         <input type="range" id="minFreq" min="0" max="1000" step="1" value="0">
+                        <div class="param-hint">Lowest frequency the slide can reach</div>
                     </div>
                     <div class="control-group">
                         <label>Slide <span class="value" id="slideVal">0.00</span></label>
                         <input type="range" id="slide" min="-2" max="2" step="0.01" value="0">
+                        <div class="param-hint">Pitch bend up (+) or down (-)</div>
                     </div>
                     <div class="control-group">
                         <label>Delta Slide <span class="value" id="deltaSlideVal">0.00</span></label>
                         <input type="range" id="deltaSlide" min="-1" max="1" step="0.01" value="0">
+                        <div class="param-hint">Changes slide speed over time</div>
                     </div>
                 </div>
 
                 <!-- Vibrato -->
                 <div class="control-section">
-                    <div class="section-title"><i class="fas fa-water"></i> Vibrato</div>
+                    <div class="section-title">
+                        <i class="fas fa-water"></i> Vibrato
+                        <i class="fas fa-info-circle info-icon" title="Adds a wobble/warble to the pitch"></i>
+                    </div>
+                    <div class="info-text">Add pitch wobble for organic feel</div>
                     <div class="control-group checkbox-group">
                         <input type="checkbox" id="vibratoEnable">
                         <label>Enable</label>
@@ -484,16 +535,22 @@
                     <div class="control-group">
                         <label>Depth <span class="value" id="vibratoDepthVal">0%</span></label>
                         <input type="range" id="vibratoDepth" min="0" max="100" step="1" value="0">
+                        <div class="param-hint">How much the pitch wobbles</div>
                     </div>
                     <div class="control-group">
                         <label>Speed <span class="value" id="vibratoSpeedVal">0.0Hz</span></label>
                         <input type="range" id="vibratoSpeed" min="0" max="50" step="0.1" value="0">
+                        <div class="param-hint">How fast the wobble happens</div>
                     </div>
                 </div>
 
                 <!-- Arpeggio -->
                 <div class="control-section">
-                    <div class="section-title"><i class="fas fa-sync-alt"></i> Arpeggio</div>
+                    <div class="section-title">
+                        <i class="fas fa-sync-alt"></i> Arpeggio
+                        <i class="fas fa-info-circle info-icon" title="Rapidly alternates between two pitches"></i>
+                    </div>
+                    <div class="info-text">Rapidly switch between two notes</div>
                     <div class="control-group checkbox-group">
                         <input type="checkbox" id="arpEnable">
                         <label>Enable</label>
@@ -501,29 +558,41 @@
                     <div class="control-group">
                         <label>Multiplier <span class="value" id="arpMultVal">x1.00</span></label>
                         <input type="range" id="arpMult" min="0.5" max="3" step="0.01" value="1">
+                        <div class="param-hint">Second note's pitch relative to first</div>
                     </div>
                     <div class="control-group">
                         <label>Speed <span class="value" id="arpSpeedVal">0.000s</span></label>
                         <input type="range" id="arpSpeed" min="0" max="1" step="0.001" value="0">
+                        <div class="param-hint">Time between note switches</div>
                     </div>
                 </div>
 
                 <!-- Duty Cycle -->
                 <div class="control-section">
-                    <div class="section-title"><i class="fas fa-exchange-alt"></i> Duty Cycle</div>
+                    <div class="section-title">
+                        <i class="fas fa-exchange-alt"></i> Duty Cycle
+                        <i class="fas fa-info-circle info-icon" title="Only for square waves - changes tone thickness"></i>
+                    </div>
+                    <div class="info-text">Square wave tone shaping (50% = balanced)</div>
                     <div class="control-group">
                         <label>Cycle <span class="value" id="dutyVal">50%</span></label>
                         <input type="range" id="duty" min="0" max="100" step="1" value="50">
+                        <div class="param-hint">Lower = thinner, Higher = thicker tone</div>
                     </div>
                     <div class="control-group">
                         <label>Sweep <span class="value" id="dutySweepVal">0%/s</span></label>
                         <input type="range" id="dutySweep" min="-200" max="200" step="1" value="0">
+                        <div class="param-hint">Changes duty cycle over time</div>
                     </div>
                 </div>
 
                 <!-- Filters -->
                 <div class="control-section">
-                    <div class="section-title"><i class="fas fa-filter"></i> Filters</div>
+                    <div class="section-title">
+                        <i class="fas fa-filter"></i> Filters
+                        <i class="fas fa-info-circle info-icon" title="Remove high or low frequencies"></i>
+                    </div>
+                    <div class="info-text">Shape the sound's frequency content</div>
                     <div class="control-group checkbox-group">
                         <input type="checkbox" id="lpfEnable">
                         <label>Low-Pass</label>
@@ -531,6 +600,7 @@
                     <div class="control-group">
                         <label>Cutoff <span class="value" id="lpfVal">22050Hz</span></label>
                         <input type="range" id="lpf" min="20" max="22050" step="10" value="22050">
+                        <div class="param-hint">Lower = muffle/darken sound</div>
                     </div>
                     <div class="control-group checkbox-group">
                         <input type="checkbox" id="hpfEnable">
@@ -539,19 +609,26 @@
                     <div class="control-group">
                         <label>Cutoff <span class="value" id="hpfVal">0Hz</span></label>
                         <input type="range" id="hpf" min="0" max="5000" step="10" value="0">
+                        <div class="param-hint">Higher = remove bass/rumble</div>
                     </div>
                 </div>
 
                 <!-- Output -->
                 <div class="control-section">
-                    <div class="section-title"><i class="fas fa-volume-up"></i> Output</div>
+                    <div class="section-title">
+                        <i class="fas fa-volume-up"></i> Output
+                        <i class="fas fa-info-circle info-icon" title="Control final loudness"></i>
+                    </div>
+                    <div class="info-text">Control the final output level</div>
                     <div class="control-group">
-                        <label>Volume <span class="value" id="volumeVal">100%</span></label>
+                        <label>Layer Volume <span class="value" id="volumeVal">100%</span></label>
                         <input type="range" id="volume" min="0" max="100" step="1" value="100">
+                        <div class="param-hint">Layer mix level (0-100%)</div>
                     </div>
                     <div class="control-group">
                         <label>Gain <span class="value" id="gainVal">-10.0 dB</span></label>
                         <input type="range" id="gain" min="-30" max="6" step="0.1" value="-10">
+                        <div class="param-hint">Master volume boost/cut (in decibels)</div>
                     </div>
                 </div>
 
