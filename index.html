@@ -3,86 +3,224 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Advanced Layered SFX Generator</title>
-    <link rel="stylesheet" href="css/style.css">
+    <title>Retro SFX Studio Pro</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        
+        :root {
+            --bg-dark: #0f0f1a;
+            --bg-panel: #1a1a2e;
+            --accent: #a8ff35;
+            --accent-glow: rgba(168, 255, 53, 0.4);
+            --text: #e0e7ff;
+            --text-muted: #94a3b8;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #0f0f1a 0%, #16213e 100%);
+            color: var(--text);
+            overflow: hidden;
+            height: 100vh;
+        }
+        
+        .glow-btn {
+            box-shadow: 0 0 20px var(--accent-glow);
+            transition: all 0.3s ease;
+        }
+        .glow-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 0 30px var(--accent-glow);
+        }
+        
+        input[type="range"] {
+            -webkit-appearance: none;
+            height: 8px;
+            border-radius: 4px;
+            background: #334155;
+            outline: none;
+        }
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: var(--accent);
+            cursor: pointer;
+            box-shadow: 0 0 15px var(--accent-glow);
+        }
+        
+        .layer-item {
+            transition: all 0.2s;
+        }
+        .layer-item.active {
+            background: rgba(168, 255, 53, 0.15);
+            border-color: var(--accent) !important;
+            box-shadow: 0 0 15px rgba(168, 255, 53, 0.3);
+        }
+        
+        .timeline-track {
+            height: 60px;
+            border-bottom: 1px dashed #334155;
+            position: relative;
+        }
+        .timeline-layer {
+            position: absolute;
+            top: 10px;
+            height: 40px;
+            min-width: 100px;
+            background: #667eea;
+            border-radius: 8px;
+            padding: 0 12px;
+            display: flex;
+            align-items: center;
+            cursor: move;
+            user-select: none;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.4);
+            font-weight: bold;
+            font-size: 0.85em;
+            transition: all 0.2s;
+        }
+        .timeline-layer.active {
+            outline: 3px solid var(--accent);
+            box-shadow: 0 0 20px var(--accent-glow);
+        }
+        .playhead {
+            position: absolute;
+            top: 0; width: 3px; height: 100%;
+            background: var(--accent);
+            box-shadow: 0 0 20px var(--accent);
+            z-index: 20;
+            pointer-events: none;
+        }
+        .ruler-mark.major {
+            height: 40px;
+            background: #64748b;
+            color: white;
+            font-size: 10px;
+            text-align: center;
+            line-height: 40px;
+        }
+    </style>
 </head>
-<body>
-    <div class="container">
-        <h1>Advanced SFX Generator</h1>
-        <p class="subtitle">Professional layered sound effects editor • Timeline • Export • Presets</p>
+<body class="h-screen flex flex-col md:flex-row overflow-hidden bg-gray-950">
 
-        <!-- Top Bar -->
-        <div class="top-bar">
-            <button id="newProject">New Project</button>
-            <button id="saveProject">Save Project (JSON)</button>
-            <input type="file" id="loadProjectInput" accept=".json" style="display:none">
-            <button id="loadProjectBtn">Load Project</button>
-            <button id="exportMix">Export Final Mix WAV</button>
+    <!-- Sidebar -->
+    <aside class="w-full md:w-80 bg-gradient-to-b from-[#16213e] to-[#0f172a] border-r border-indigo-900/50 flex flex-col p-5 shadow-2xl z-20 overflow-y-auto">
+        
+        <div class="mb-6 text-center">
+            <h1 class="text-3xl font-bold bg-gradient-to-r from-[#a8ff35] to-[#60a5fa] bg-clip-text text-transparent">
+                Retro SFX Studio
+            </h1>
+            <p class="text-xs text-indigo-300 mt-1">Layered Sound Design • v2.0 Pro</p>
         </div>
 
-        <div class="main-grid">
-            <!-- Left: Layers Panel -->
-            <div id="layersPanel" class="panel">
-                <h3>Layers</h3>
-                <button id="addLayer">+ Add Layer</button>
-                <div id="layersList"></div>
+        <!-- Layers Panel -->
+        <div class="mb-6">
+            <div class="flex justify-between items-center mb-3">
+                <h3 class="text-xs font-bold text-indigo-300 uppercase tracking-wider">Layers</h3>
+                <button id="addLayer" class="bg-gradient-to-r from-[#667eea] to-[#764ba2] hover:from-[#764ba2] hover:to-[#667eea] text-white px-4 py-2 rounded-lg text-xs font-bold glow-btn">
+                    + Add Layer
+                </button>
             </div>
+            <div id="layersList" class="space-y-2 max-h-64 overflow-y-auto"></div>
+        </div>
 
-            <!-- Right: Presets + Controls + Timeline -->
-            <div style="display:flex; flex-direction:column; gap:20px;">
-                <!-- Presets -->
-                <div class="preset-panel">
-                    <div class="preset-section">
-                        <div class="preset-title">Generator</div>
-                        <button class="preset-btn" data-action="randomize">Random</button>
-                    </div>
-
-                    <div class="preset-section">
-                        <div class="preset-title">Game Sounds</div>
-                        <button class="preset-btn" data-preset="pickup">Pickup/Coin</button>
-                        <button class="preset-btn" data-preset="laser">Laser/Shoot</button>
-                        <button class="preset-btn" data-preset="explosion">Explosion</button>
-                        <button class="preset-btn" data-preset="powerup">Powerup</button>
-                        <button class="preset-btn" data-preset="hit">Hit/Hurt</button>
-                        <button class="preset-btn" data-preset="jump">Jump</button>
-                    </div>
-
-                    <div class="preset-section">
-                        <div class="preset-title">UI Sounds</div>
-                        <button class="preset-btn" data-preset="click">Click</button>
-                        <button class="preset-btn" data-preset="blip">Blip/Select</button>
-                        <button class="preset-btn" data-preset="hover">Hover</button>
-                    </div>
-                </div>
-
-                <!-- Controls (injected by ui.js) -->
-                <div id="controlsContainer" class="controls-panel"></div>
-
-                <!-- Timeline -->
-                <div class="timeline-container">
-                    <h3>Timeline</h3>
-                    <div class="timeline-controls">
-                        <button id="playTimeline">Play</button>
-                        <button id="stopTimeline">Stop</button>
-                        <span>Zoom:</span>
-                        <input type="range" id="zoom" min="20" max="200" value="80">
-                        <span id="timeDisplay">0.00s</span>
-                    </div>
-                    <div id="timeline"></div>
-                </div>
-
-                <!-- Action Bar -->
-                <div class="action-bar">
-                    <button id="playAll" class="btn play-btn">Play All (Preview)</button>
-                    <button id="exportLayer" class="btn download-btn">Export Active Layer WAV</button>
-                </div>
+        <!-- Presets -->
+        <div class="mb-6">
+            <h3 class="text-xs font-bold text-indigo-300 uppercase tracking-wider mb-3">Presets</h3>
+            <div class="grid grid-cols-2 gap-2 text-xs">
+                <button data-preset="pickup" class="preset-btn bg-[#1e293b] hover:bg-[#334155] border border-indigo-800/50 rounded-lg p-3 text-indigo-200 transition-all hover:border-indigo-500">
+                    Coin
+                </button>
+                <button data-preset="laser" class="preset-btn bg-[#1e293b] hover:bg-[#334155] border border-indigo-800/50 rounded-lg p-3 text-indigo-200 transition-all hover:border-indigo-500">
+                    Laser
+                </button>
+                <button data-preset="explosion" class="preset-btn bg-[#1e293b] hover:bg-[#334155] border border-indigo-800/50 rounded-lg p-3 text-indigo-200 transition-all hover:border-indigo-500">
+                    Explosion
+                </button>
+                <button data-preset="powerup" class="preset-btn bg-[#1e293b] hover:bg-[#334155] border border-indigo-800/50 rounded-lg p-3 text-indigo-200 transition-all hover:border-indigo-500">
+                    Powerup
+                </button>
+                <button data-preset="hit" class="preset-btn bg-[#1e293b] hover:bg-[#334155] border border-indigo-800/50 rounded-lg p-3 text-indigo-200 transition-all hover:border-indigo-500">
+                    Hit
+                </button>
+                <button data-preset="jump" class="preset-btn bg-[#1e293b] hover:bg-[#334155] border border-indigo-800/50 rounded-lg p-3 text-indigo-200 transition-all hover:border-indigo-500">
+                    Jump
+                </button>
+                <button data-preset="random" class="preset-btn col-span-2 bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold rounded-lg p-3 glow-btn">
+                    Randomize
+                </button>
             </div>
         </div>
-    </div>
 
-    <script type="module">
-        import { init } from './js/main.js';
-        window.addEventListener('DOMContentLoaded', init);
-    </script>
+        <!-- Project Controls -->
+        <div class="mt-auto space-y-2">
+            <button id="saveProject" class="w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white py-3 rounded-lg font-bold glow-btn text-sm">
+                Save Project
+            </button>
+            <button id="loadProjectBtn" class="w-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white py-3 rounded-lg font-bold glow-btn text-sm">
+                Load Project
+            </button>
+            <input type="file" id="loadProjectInput" accept=".json" class="hidden">
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-1 flex flex-col">
+
+        <!-- Controls Grid -->
+        <div id="controlsContainer" class="p-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 overflow-y-auto flex-1">
+            <!-- Controls injected by ui.js -->
+        </div>
+
+        <!-- Timeline -->
+        <div class="bg-[#16213e] border-t border-indigo-900/50 p-6">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-lg font-bold text-indigo-300">Timeline</h3>
+                <div class="flex items-center gap-4 text-sm">
+                    <button id="playTimeline" class="bg-green-600 hover:bg-green-500 text-white px-6 py-2 rounded-lg font-bold flex items-center gap-2 glow-btn">
+                        Play
+                    </button>
+                    <button id="stopTimeline" class="bg-red-600 hover:bg-red-500 text-white px-6 py-2 rounded-lg font-bold">
+                        Stop
+                    </button>
+                    <span>Zoom:</span>
+                    <input type="range" id="zoom" min="20" max="200" value="80" class="w-32">
+                    <span id="timeDisplay" class="font-mono text-indigo-300">0.00s</span>
+                </div>
+            </div>
+            <div id="timeline" class="bg-[#0f172a] rounded-xl h-96 overflow-hidden relative border border-indigo-900/50">
+                <div class="ruler absolute top-0 left-0 right-0 h-10 border-b border-indigo-800 z-10 pointer-events-none"></div>
+                <div class="playhead"></div>
+            </div>
+        </div>
+
+        <!-- Action Bar -->
+        <div class="bg-gradient-to-r from-[#16213e] to-[#1a1a2e] p-6 border-t border-indigo-900/50 flex gap-4 justify-center">
+            <button id="playAll" class="bg-gradient-to-r from-[#667eea] to-[#764ba2] hover:from-[#764ba2] hover:to-[#667eea] text-white px-10 py-4 rounded-xl font-bold text-lg glow-btn flex items-center gap-3">
+                Play All
+            </button>
+            <button id="exportLayer" class="bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-500 hover:to-rose-500 text-white px-10 py-4 rounded-xl font-bold text-lg glow-btn">
+                Export Active Layer
+            </button>
+            <button id="exportMix" class="bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-500 hover:to-red-500 text-white px-10 py-4 rounded-xl font-bold text-lg glow-btn">
+                Export Final Mix WAV
+            </button>
+        </div>
+    </main>
+
+    <!-- MODULE SCRIPTS -->
+    <script type="module" src="js/audioEngine.js"></script>
+    <script type="module" src="js/soundGenerator.js"></script>
+    <script type="module" src="js/layerManager.js"></script>
+    <script type="module" src="js/presets.js"></script>
+    <script type="module" src="js/ui.js"></script>
+    <script type="module" src="js/timeline.js"></script>
+    <script type="module" src="js/fileManager.js"></script>
+    <script type="module" src="js/main.js"></script>
 </body>
 </html>
