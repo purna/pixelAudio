@@ -1,4 +1,6 @@
 // js/layerManager.js
+
+import { createLayer, layers, getActiveLayer, setActiveLayer, playAll, exportMixWAV } from './layerManager.js';
 import { generateBuffer } from './soundGenerator.js';
 import { getAudioContext, bufferToWave } from './audioEngine.js';
 import { updateControlsFromLayer, renderLayersList } from './ui.js';
