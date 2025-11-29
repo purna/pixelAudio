@@ -121,11 +121,16 @@ class Timeline {
         this.ctx.fillStyle = '#2d3748';
         this.ctx.fillRect(0, y, this.width, this.trackHeight);
 
-        // Layer name
+        // Layer name and duration
         this.ctx.fillStyle = '#e0e7ff';
         this.ctx.font = 'bold 12px sans-serif';
         this.ctx.textAlign = 'left';
         this.ctx.fillText(layer.name, 10, y + 20);
+        
+        // Show duration
+        this.ctx.font = '11px sans-serif';
+        this.ctx.fillStyle = '#94a3b8';
+        this.ctx.fillText(`${duration.toFixed(2)}s`, 10, y + 35);
 
         if (x + width > 0 && x < this.width && width > 10) {
             // Draw colored block
@@ -264,12 +269,12 @@ class Timeline {
         const rect = this.canvas.getBoundingClientRect();
         const x = e.clientX - rect.left;
         
-        // Snap to 0.5 second grid
-        const snapInterval = 0.5;
+        // Snap to 0.1 second grid for finer control
+        const snapInterval = 0.1;
         let deltaX = x - this.dragStartX;
         let deltaTime = deltaX / this.zoom;
         
-        // Snap deltaTime to nearest 0.5 second
+        // Snap deltaTime to nearest 0.1 second
         deltaTime = Math.round(deltaTime / snapInterval) * snapInterval;
 
         const currentDuration = this.app.soundGenerator.calculateDuration(this.draggedLayer.settings);
@@ -286,16 +291,18 @@ class Timeline {
             newStart = Math.round(newStart / snapInterval) * snapInterval;
             newDuration = currentDuration - (newStart - this.dragStartTime);
         } else if (this.dragMode === 'right') {
-            newDuration = currentDuration + deltaTime;
+            // Limit extension to cursor position only
+            const maxDuration = Math.max(0, (x - this.offsetX) / this.zoom - this.draggedLayer.startTime);
+            newDuration = Math.min(currentDuration + deltaTime, maxDuration);
         }
 
-        // Enforce minimum duration of 0.5 seconds
-        const minDuration = 0.5;
+        // Enforce minimum duration of 0.05 seconds
+        const minDuration = 0.05;
         if (newDuration < minDuration) {
             newDuration = minDuration;
         }
         
-        // Snap newDuration to 0.5 second intervals
+        // Snap newDuration to 0.1 second intervals
         newDuration = Math.round(newDuration / snapInterval) * snapInterval;
         if (newDuration < minDuration) newDuration = minDuration;
         
@@ -326,6 +333,11 @@ class Timeline {
     }
 
     onMouseUp() {
+        if (this.isDragging) {
+            // Save undo state after dragging
+            this.app.saveUndoState();
+        }
+        
         this.isDragging = false;
         this.draggedLayer = null;
         this.dragMode = null;
