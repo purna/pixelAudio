@@ -31,6 +31,7 @@ class UI {
             arpSpeed: document.getElementById('arpSpeed'),
             duty: document.getElementById('duty'),
             dutySweep: document.getElementById('dutySweep'),
+            waveform: document.getElementById('waveform'), // New
             lpfEnable: document.getElementById('lpfEnable'),
             lpf: document.getElementById('lpf'),
             hpfEnable: document.getElementById('hpfEnable'),
@@ -107,6 +108,8 @@ class UI {
             if (el) {
                 if (el.type === 'checkbox') {
                     settings[key] = el.checked;
+                } else if (el.tagName === 'SELECT') {
+                    settings[key] = el.value;
                 } else {
                     settings[key] = parseFloat(el.value);
                 }
