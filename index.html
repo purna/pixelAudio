@@ -409,6 +409,17 @@
                     </div>
                 </div>
 
+                <!-- Waveform Preview -->
+                <div class="control-section">
+                    <div class="section-title">
+                        <i class="fas fa-eye"></i> Live Preview
+                    </div>
+                    <canvas id="waveform-preview" width="380" height="120"></canvas>
+                    <div style="font-size:11px; color:var(--text-secondary); text-align:center; margin-top:8px;">
+                        Green = Waveform | Yellow dashed = Envelope
+                    </div>
+                </div>
+
                 <!-- Envelope -->
                 <div class="control-section">
                     <div class="section-title">
@@ -440,6 +451,7 @@
                         <input type="range" id="decay" min="0" max="2" step="0.01" value="0.2">
                     </div>
                 </div>
+                
 
                 <!-- Frequency -->
                 <div class="control-section">
@@ -569,16 +581,7 @@
                     </div>
                 </div>
 
-                <!-- Waveform Preview -->
-                <div class="control-section">
-                    <div class="section-title">
-                        <i class="fas fa-eye"></i> Live Preview
-                    </div>
-                    <canvas id="waveform-preview" width="380" height="120"></canvas>
-                    <div style="font-size:11px; color:var(--text-secondary); text-align:center; margin-top:8px;">
-                        Green = Waveform | Yellow dashed = Envelope
-                    </div>
-                </div>
+              
             </div>
         </div>
 
