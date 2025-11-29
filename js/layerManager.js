@@ -85,6 +85,13 @@ class LayerManager {
         const layer = this.getLayer(layerId);
         if (layer) {
             layer.settings = { ...layer.settings, ...settings };
+            
+            // If this is the selected layer, update the UI
+            if (layerId === this.selectedLayerId) {
+                this.app.updateSettings(layer.settings);
+                this.app.ui.updateDisplay(layer.settings);
+            }
+            
             this.notifyLayerChange();
         }
     }
@@ -251,9 +258,9 @@ class LayerManager {
         document.dispatchEvent(event);
     }
 
-    // ——————————————————————
+    // ——————————————————————————
     // UI: Render Layer List (like your pixel editor)
-    // ——————————————————————
+    // ——————————————————————————
     renderList() {
         const list = document.getElementById('layersList');
         if (!list) return;
