@@ -1,4 +1,4 @@
-// layerManager.js - Manage multiple sound layers
+// layerManager.js - Manage multiple sound layers + UI rendering
 
 class LayerManager {
     constructor(app) {
@@ -9,13 +9,12 @@ class LayerManager {
     }
 
     init() {
-        // Create initial layer
         this.addLayer('Layer 1');
+        this.renderList(); // Initial render
     }
 
     addLayer(name = null) {
         const layerName = name || `Layer ${this.nextLayerId}`;
-        
         const layer = {
             id: this.nextLayerId++,
             name: layerName,
@@ -28,26 +27,32 @@ class LayerManager {
             fadeOut: 0,
             color: this.generateRandomColor()
         };
-        
+
         this.layers.push(layer);
         this.selectedLayerId = layer.id;
-        
+
         this.notifyLayerChange();
         return layer;
     }
 
     removeLayer(layerId) {
         const index = this.layers.findIndex(l => l.id === layerId);
-        if (index !== -1) {
-            this.layers.splice(index, 1);
-            
-            // Select another layer if this was selected
-            if (this.selectedLayerId === layerId) {
-                this.selectedLayerId = this.layers.length > 0 ? this.layers[0].id : null;
-            }
-            
-            this.notifyLayerChange();
+        if (index === -1) return;
+
+        if (this.layers.length <= 1) {
+            this.app.ui.showNotification('Cannot delete the last layer', 'error');
+            return;
         }
+
+        if (!confirm(`Delete layer "${this.layers[index].name}"?`)) return;
+
+        this.layers.splice(index, 1);
+
+        if (this.selectedLayerId === layerId) {
+            this.selectedLayerId = this.layers.length > 0 ? this.layers[0].id : null;
+        }
+
+        this.notifyLayerChange();
     }
 
     getLayer(layerId) {
@@ -84,28 +89,12 @@ class LayerManager {
     }
 
     renameLayer(layerId, newName) {
+        if (!newName || newName.trim() === '') return;
         const layer = this.getLayer(layerId);
         if (layer) {
-            layer.name = newName;
+            layer.name = newName.trim();
             this.notifyLayerChange();
         }
-    }
-
-    duplicateLayer(layerId) {
-        const layer = this.getLayer(layerId);
-        if (layer) {
-            const newLayer = {
-                ...layer,
-                id: this.nextLayerId++,
-                name: `${layer.name} (Copy)`,
-                settings: { ...layer.settings }
-            };
-            this.layers.push(newLayer);
-            this.selectedLayerId = newLayer.id;
-            this.notifyLayerChange();
-            return newLayer;
-        }
-        return null;
     }
 
     toggleMute(layerId) {
@@ -135,7 +124,6 @@ class LayerManager {
     moveLayer(layerId, direction) {
         const index = this.layers.findIndex(l => l.id === layerId);
         if (index === -1) return;
-        
         const newIndex = direction === 'up' ? index - 1 : index + 1;
         if (newIndex >= 0 && newIndex < this.layers.length) {
             [this.layers[index], this.layers[newIndex]] = [this.layers[newIndex], this.layers[index]];
@@ -148,24 +136,19 @@ class LayerManager {
         return `hsl(${hue}, 70%, 60%)`;
     }
 
-    // Get all active layers for mixing
     getActiveLayers() {
         const hasSolo = this.layers.some(l => l.solo);
-        
         return this.layers.filter(layer => {
-            if (hasSolo) {
-                return layer.solo;
-            }
+            if (hasSolo) return layer.solo;
             return !layer.muted;
         });
     }
 
-    // Generate buffers for all active layers
     generateLayerBuffers() {
         const activeLayers = this.getActiveLayers();
         const buffers = [];
         const volumes = [];
-        
+
         for (const layer of activeLayers) {
             const buffer = this.app.soundGenerator.generate(
                 layer.settings,
@@ -174,19 +157,14 @@ class LayerManager {
             buffers.push(buffer);
             volumes.push(layer.volume);
         }
-        
+
         return { buffers, volumes };
     }
 
-    // Play all active layers mixed together
     playAllLayers() {
         const { buffers, volumes } = this.generateLayerBuffers();
-        
-        if (buffers.length === 0) {
-            console.warn('No active layers to play');
-            return;
-        }
-        
+        if (buffers.length === 0) return;
+
         if (buffers.length === 1) {
             this.app.audioEngine.playBuffer(buffers[0]);
         } else {
@@ -195,23 +173,17 @@ class LayerManager {
         }
     }
 
-    // Export mixed audio
     exportMixedAudio(filename = 'mixed_sfx.wav') {
         const { buffers, volumes } = this.generateLayerBuffers();
-        
-        if (buffers.length === 0) {
-            console.warn('No active layers to export');
-            return;
-        }
-        
-        const mixedBuffer = buffers.length === 1 
-            ? buffers[0] 
+        if (buffers.length === 0) return;
+
+        const mixedBuffer = buffers.length === 1
+            ? buffers[0]
             : this.app.audioEngine.mixBuffers(buffers, volumes);
-            
+
         this.app.audioEngine.downloadWAV(mixedBuffer, filename);
     }
 
-    // State management for save/load
     getState() {
         return {
             layers: this.layers.map(l => ({ ...l })),
@@ -224,15 +196,12 @@ class LayerManager {
         this.layers = state.layers.map(l => ({ ...l }));
         this.nextLayerId = state.nextLayerId;
         this.selectedLayerId = state.selectedLayerId;
-        
-        // Update UI with selected layer
+
         if (this.selectedLayerId) {
             const layer = this.getLayer(this.selectedLayerId);
-            if (layer) {
-                this.app.updateSettings(layer.settings);
-            }
+            if (layer) this.app.updateSettings(layer.settings);
         }
-        
+
         this.notifyLayerChange();
     }
 
@@ -243,12 +212,71 @@ class LayerManager {
         this.notifyLayerChange();
     }
 
-    // Notify other components of layer changes
     notifyLayerChange() {
-        // Dispatch custom event for UI updates
+        this.renderList(); // Now handled internally
         const event = new CustomEvent('layersChanged', {
             detail: { layers: this.layers, selectedId: this.selectedLayerId }
         });
         document.dispatchEvent(event);
+    }
+
+    // ——————————————————————
+    // UI: Render Layer List (like your pixel editor)
+    // ——————————————————————
+    renderList() {
+        const list = document.getElementById('layersList');
+        if (!list) return;
+
+        list.innerHTML = '';
+
+        // Show layers from top to bottom (reverse order)
+        const displayLayers = [...this.layers].reverse();
+
+        displayLayers.forEach(layer => {
+            const div = document.createElement('div');
+            div.className = `layer-item ${layer.id === this.selectedLayerId ? 'active' : ''}`;
+
+            // Mute / Visibility toggle
+            const muteBtn = document.createElement('i');
+            muteBtn.className = `fas fa-eye${layer.muted ? '-slash' : ''} layer-vis-btn ${layer.muted ? 'hidden-layer' : ''}`;
+            muteBtn.onclick = (e) => {
+                e.stopPropagation();
+                this.toggleMute(layer.id);
+            };
+
+            // Layer name (editable)
+            const nameInput = document.createElement('input');
+            nameInput.type = 'text';
+            nameInput.className = 'layer-name-input';
+            nameInput.value = layer.name;
+            nameInput.onclick = e => e.stopPropagation();
+            nameInput.onblur = () => this.renameLayer(layer.id, nameInput.value.trim() || 'Layer');
+            nameInput.onkeydown = e => {
+                if (e.key === 'Enter') nameInput.blur();
+            };
+
+            // Delete button
+            const delBtn = document.createElement('i');
+            delBtn.className = 'fas fa-trash';
+            delBtn.style.color = '#f44336';
+            delBtn.style.fontSize = '12px';
+            delBtn.onclick = (e) => {
+                e.stopPropagation();
+                this.removeLayer(layer.id);
+            };
+
+            div.appendChild(muteBtn);
+            div.appendChild(nameInput);
+            div.appendChild(delBtn);
+
+            // Click = select layer + go to Settings tab
+            div.onclick = (e) => {
+                if (e.target === nameInput || e.target === muteBtn || e.target === delBtn) return;
+                this.selectLayer(layer.id);
+                document.querySelector('[data-tab="settings"]')?.click();
+            };
+
+            list.appendChild(div);
+        });
     }
 }
