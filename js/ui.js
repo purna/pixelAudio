@@ -31,7 +31,7 @@ class UI {
             arpSpeed: document.getElementById('arpSpeed'),
             duty: document.getElementById('duty'),
             dutySweep: document.getElementById('dutySweep'),
-            waveform: document.getElementById('waveform'), // New
+            waveform: document.getElementById('waveform'), // Waveform selector
             lpfEnable: document.getElementById('lpfEnable'),
             lpf: document.getElementById('lpf'),
             hpfEnable: document.getElementById('hpfEnable'),
@@ -62,13 +62,19 @@ class UI {
     }
 
     setupEventListeners() {
-        // Add input listeners to all sliders
+        // Add input listeners to all sliders and selects
         for (let key in this.elements) {
             const element = this.elements[key];
             if (element) {
                 element.addEventListener('input', () => {
                     this.onSettingsChange();
                 });
+                // Also listen to 'change' for select elements
+                if (element.tagName === 'SELECT') {
+                    element.addEventListener('change', () => {
+                        this.onSettingsChange();
+                    });
+                }
             }
         }
     }
@@ -126,6 +132,8 @@ class UI {
             if (el) {
                 if (el.type === 'checkbox') {
                     el.checked = settings[key];
+                } else if (el.tagName === 'SELECT') {
+                    el.value = settings[key];
                 } else {
                     el.value = settings[key];
                 }
