@@ -163,15 +163,36 @@ class LayerManager {
     }
 
     playAllLayers() {
-        const { buffers, volumes } = this.generateLayerBuffers();
-        if (buffers.length === 0) return;
-
-        if (buffers.length === 1) {
-            this.app.audioEngine.playBuffer(buffers[0]);
-        } else {
-            const mixedBuffer = this.app.audioEngine.mixBuffers(buffers, volumes);
-            this.app.audioEngine.playBuffer(mixedBuffer);
-        }
+        const activeLayers = this.getActiveLayers();
+        if (activeLayers.length === 0) return;
+    
+        this.app.audioEngine.stopAll(); // Clear any ongoing playback
+    
+        activeLayers.forEach(layer => {
+            const buffer = this.app.soundGenerator.generate(layer.settings, this.app.audioEngine.sampleRate);
+            const source = this.app.audioEngine.context.createBufferSource();
+            source.buffer = buffer;
+    
+            // Create gain node for volume and fades
+            const gainNode = this.app.audioEngine.context.createGain();
+            gainNode.gain.value = layer.volume;
+            source.connect(gainNode);
+            gainNode.connect(this.app.audioEngine.context.destination);
+    
+            // Apply fades (linear ramp)
+            if (layer.fadeIn > 0) {
+                gainNode.gain.setValueAtTime(0, this.app.audioEngine.context.currentTime + layer.startTime);
+                gainNode.gain.linearRampToValueAtTime(layer.volume, this.app.audioEngine.context.currentTime + layer.startTime + layer.fadeIn);
+            }
+            if (layer.fadeOut > 0) {
+                const duration = this.app.soundGenerator.calculateDuration(layer.settings);
+                gainNode.gain.setValueAtTime(layer.volume, this.app.audioEngine.context.currentTime + layer.startTime + duration - layer.fadeOut);
+                gainNode.gain.linearRampToValueAtTime(0, this.app.audioEngine.context.currentTime + layer.startTime + duration);
+            }
+    
+            // Schedule start
+            source.start(this.app.audioEngine.context.currentTime + layer.startTime);
+        });
     }
 
     exportMixedAudio(filename = 'mixed_sfx.wav') {
