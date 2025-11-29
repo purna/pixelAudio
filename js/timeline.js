@@ -256,11 +256,13 @@ class Timeline {
     }
 
     onMouseMove(e) {
-        if (!this.isDragging || !this.draggedLayer) return;
 
+        if (!this.isDragging || !this.draggedLayer) return;
+    
         const rect = this.canvas.getBoundingClientRect();
         const x = e.clientX - rect.left;
-        const deltaX = x - this.dragStartX;
+        let deltaX = x - this.dragStartX;
+        deltaX = Math.round(deltaX / 5) * 5; // Snap every 5px for less responsiveness
         const deltaTime = deltaX / this.zoom;
 
         const currentDuration = this.app.soundGenerator.calculateDuration(this.draggedLayer.settings);
