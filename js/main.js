@@ -108,19 +108,30 @@ class SFXGeneratorApp {
     }
 
 
-        loadPreset(presetName) {
-            const preset = this.presets.get(presetName);
-            if (preset) {
-                const selected = this.layerManager.getSelectedLayer();
-                if (selected) {
-                    this.layerManager.updateLayerSettings(selected.id, preset);
-                    this.ui.updateDisplay(preset);
-                } else {
-                    this.updateSettings(preset);
-                }
-                this.layerManager.playAllLayers(); // Refresh preview
-            }
-        }
+
+loadPreset(presetName) {
+    const preset = this.presets.get(presetName);
+    if (!preset) return;
+
+    const selectedLayer = this.layerManager.getSelectedLayer();
+
+    if (selectedLayer) {
+        // Apply preset ONLY to selected layer
+        this.layerManager.updateLayerSettings(selectedLayer.id, preset);
+        
+        // Update UI sliders to reflect the new values
+        this.ui.updateDisplay(preset);
+        
+        // Optional: Play the updated layer so you hear it instantly
+        const buffer = this.soundGenerator.generate(preset, this.audioEngine.sampleRate);
+        this.audioEngine.playBuffer(buffer);
+    } else {
+        // Fallback: if no layer selected, apply globally (rare case)
+        this.updateSettings(preset);
+        this.ui.updateDisplay(preset);
+        this.playCurrentSound();
+    }
+}
 
     randomize() {
         const randomSettings = this.presets.generateRandom();
