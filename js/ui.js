@@ -1,6 +1,5 @@
 // js/ui.js
-import { createLayer } from './layerManager.js'; // ← ADD THIS LINE
-import { layers, getActiveLayer, setActiveLayer } from './layerManager.js';
+import { layers, getActiveLayer, setActiveLayer, createLayer } from './layerManager.js';
 import { refreshTimeline } from './timeline.js';
 
 const controlsHTML = `
@@ -8,11 +7,11 @@ const controlsHTML = `
     <div class="control-section">
         <div class="section-title">Envelope</div>
         <div class="control-group">
-            <label>Attack <span class="value" id="attackVal">0.00s</span></label>
+            <label>Attack <span class="value" id="attackVal">0.000s</span></label>
             <input type="range" id="attack" min="0" max="0.5" value="0" step="0.001">
         </div>
         <div class="control-group">
-            <label>Sustain <span class="value" id="sustainVal">0.10s</span></label>
+            <label>Sustain <span class="value" id="sustainVal">0.100s</span></label>
             <input type="range" id="sustain" min="0" max="1" value="0.1" step="0.001">
         </div>
         <div class="control-group">
@@ -20,7 +19,7 @@ const controlsHTML = `
             <input type="range" id="punch" min="0" max="100" value="0" step="1">
         </div>
         <div class="control-group">
-            <label>Decay <span class="value" id="decayVal">0.20s</span></label>
+            <label>Decay <span class="value" id="decayVal">0.200s</span></label>
             <input type="range" id="decay" min="0" max="2" value="0.2" step="0.001">
         </div>
     </div>
@@ -114,7 +113,7 @@ const controlsHTML = `
         </div>
     </div>
 
-    <!-- Gain -->
+    <!-- Output -->
     <div class="control-section">
         <div class="section-title">Output</div>
         <div class="control-group">
@@ -138,7 +137,7 @@ function attachControlListeners() {
             const key = input.id;
             const value = input.type === 'checkbox' ? input.checked : parseFloat(input.value);
             layer.settings[key] = value;
-            layer.buffer = null; // invalidate cache
+            layer.buffer = null; // invalidate cached buffer
             updateValueDisplays();
             refreshTimeline();
         });
@@ -147,11 +146,15 @@ function attachControlListeners() {
 
 export function updateControlsFromLayer(layer) {
     if (!layer) return;
+
     Object.keys(layer.settings).forEach(key => {
         const el = document.getElementById(key);
         if (el) {
-            if (el.type === 'checkbox') el.checked = layer.settings[key];
-            else el.value = layer.settings[key];
+            if (el.type === 'checkbox') {
+                el.checked = layer.settings[key];
+            } else {
+                el.value = layer.settings[key];
+            }
         }
     });
     updateValueDisplays();
@@ -159,12 +162,98 @@ export function updateControlsFromLayer(layer) {
 
 export function updateValueDisplays() {
     const s = getActiveLayer()?.settings || {};
-    document.getElementById('attackVal').textContent = s.attack?.toFixed(3) + 's';
-    document.getElementById('sustainVal').textContent = s.sustain?.toFixed(3) + 's';
-    document.getElementById('punchVal').textContent = (s.punch || 0) + '%';
-    document.getElementById('decayVal').textContent = s.decay?.toFixed(3) + 's';
-    document.getElementById('freqVal').textContent = (s.frequency || 440) + 'Hz';
-    document.getElementById('minFreqVal').textContent = (s.minFreq || 0) + 'Hz';
+    document.getElementById('attackVal').textContent = (s.attack ?? 0).toFixed(3) + 's';
+    document.getElementById('sustainVal').textContent = (s.sustain ?? 0.1).toFixed(3) + 's';
+    document.getElementById('punchVal').textContent = Math.round(s.punch || 0) + '%';
+    document.getElementById('decayVal').textContent = (s.decay ?? 0.2).toFixed(3) + 's';
+    document.getElementById('freqVal').textContent = Math.round(s.frequency || 440) + 'Hz';
+    document.getElementById('minFreqVal').textContent = Math.round(s.minFreq || 0) + 'Hz';
     document.getElementById('slideVal').textContent = (s.slide || 0).toFixed(2);
     document.getElementById('deltaSlideVal').textContent = (s.deltaSlide || 0).toFixed(2);
-    document.getElementById('vibratoDepth
+    document.getElementById('vibratoDepthVal').textContent = Math.round(s.vibratoDepth || 0) + '%';
+    document.getElementById('vibratoSpeedVal').textContent = (s.vibratoSpeed || 0).toFixed(1) + 'Hz';
+    document.getElementById('arpMultVal').textContent = 'x' + (s.arpMult || 1).toFixed(2);
+    document.getElementById('arpSpeedVal').textContent = (s.arpSpeed || 0).toFixed(3) + 's';
+    document.getElementById('dutyVal').textContent = Math.round(s.duty || 50) + '%';
+    document.getElementById('dutySweepVal').textContent = Math.round(s.dutySweep || 0) + '%/s';
+    document.getElementById('lpfVal').textContent = Math.round(s.lpf || 22050) + 'Hz';
+    document.getElementById('hpfVal').textContent = Math.round(s.hpf || 0) + 'Hz';
+    document.getElementById('gainVal').textContent = (s.gain || -10).toFixed(1) + ' dB';
+}
+
+export function renderLayersList() {
+    const list = document.getElementById('layersList');
+    list.innerHTML = layers.map(l => `
+        <div class="layer-item ${getActiveLayer()?.id === l.id ? 'active' : ''}" data-id="${l.id}">
+            <input class="layer-name" value="${l.name}" data-id="${l.id}">
+            <button class="solo" data-id="${l.id}" title="Solo">${l.solo ? 'S' : '◦'}</button>
+            <button class="mute" data-id="${l.id}" title="Mute">${l.muted ? 'M' : '◦'}</button>
+            <button class="delete" data-id="${l.id}" title="Delete">×</button>
+        </div>
+    `).join('');
+
+    // Layer name editing
+    document.querySelectorAll('.layer-name').forEach(input => {
+        input.addEventListener('change', e => {
+            const layer = layers.find(l => l.id == e.target.dataset.id);
+            if (layer) layer.name = e.target.value.trim() || 'Untitled';
+        });
+    });
+
+    // Click to select layer
+    document.querySelectorAll('.layer-item').forEach(div => {
+        div.addEventListener('click', e => {
+            if (!e.target.classList.contains('delete') && 
+                !e.target.classList.contains('solo') && 
+                !e.target.classList.contains('mute')) {
+                setActiveLayer(div.dataset.id);
+            }
+        });
+    });
+
+    // Solo
+    document.querySelectorAll('.solo').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const layer = layers.find(l => l.id == btn.dataset.id);
+            if (layer) {
+                layer.solo = !layer.solo;
+                renderLayersList();
+            }
+        });
+    });
+
+    // Mute
+    document.querySelectorAll('.mute').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const layer = layers.find(l => l.id == btn.dataset.id);
+            if (layer) {
+                layer.muted = !layer.muted;
+                renderLayersList();
+                refreshTimeline();
+            }
+        });
+    });
+
+    // Delete
+    document.querySelectorAll('.delete').forEach(btn => {
+        btn.addEventListener('click', () => {
+            if (confirm('Delete this layer?')) {
+                const layerId = btn.dataset.id;
+                const index = layers.findIndex(l => l.id == layerId);
+                if (index !== -1) {
+                    layers.splice(index, 1);
+
+                    if (layers.length === 0) {
+                        const newLayer = createLayer("Layer 1");
+                        setActiveLayer(newLayer.id);
+                    } else {
+                        setActiveLayer(layers[0].id);
+                    }
+
+                    renderLayersList();
+                    refreshTimeline();
+                }
+            }
+        });
+    });
+}
