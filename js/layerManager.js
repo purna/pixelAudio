@@ -77,9 +77,9 @@ class LayerManager {
         if (layer) {
             this.selectedLayerId = layerId;
             
-            // Update app settings and UI
-            if (this.app.ui && this.app.ui.elements) {
-                this.app.updateSettings(layer.settings);
+            // ALWAYS update app settings and UI when selecting a layer
+            this.app.currentSettings = { ...layer.settings };
+            if (this.app.ui) {
                 this.app.ui.updateDisplay(layer.settings);
             }
             
@@ -100,10 +100,12 @@ class LayerManager {
         if (layer) {
             layer.settings = { ...layer.settings, ...settings };
             
-            // If this is the selected layer, update the UI
-            if (layerId === this.selectedLayerId && this.app.ui && this.app.ui.elements) {
-                this.app.updateSettings(layer.settings);
-                this.app.ui.updateDisplay(layer.settings);
+            // If this is the selected layer, update the app and UI immediately
+            if (layerId === this.selectedLayerId) {
+                this.app.currentSettings = { ...layer.settings };
+                if (this.app.ui) {
+                    this.app.ui.updateDisplay(layer.settings);
+                }
             }
             
             this.notifyLayerChange();
@@ -272,9 +274,9 @@ class LayerManager {
         document.dispatchEvent(event);
     }
 
-    // ——————————————————————————
+    // ——————————————————————————————————
     // UI: Render Layer List (like your pixel editor)
-    // ——————————————————————————
+    // ——————————————————————————————————
     renderList() {
         const list = document.getElementById('layersList');
         if (!list) return;
@@ -325,7 +327,7 @@ class LayerManager {
             div.onclick = (e) => {
                 if (e.target === nameInput || e.target === muteBtn || e.target === delBtn) return;
                 this.selectLayer(layer.id);
-                document.querySelector('[data-tab="settings"]')?.click();
+                // Don't auto-switch to settings tab - let user stay where they are
             };
 
             list.appendChild(div);
