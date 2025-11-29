@@ -440,6 +440,22 @@
 
     <!-- UI LOGIC -->
     <script>
+
+        // Play only selected layer
+        document.getElementById('playSelected').onclick = () => {
+            const layer = app.layerManager.getSelectedLayer();
+            if (layer) {
+                const buffer = app.soundGenerator.generate(layer.settings, app.audioEngine.sampleRate);
+                app.audioEngine.playBuffer(buffer);
+            }
+        };
+    
+        // Timeline total length
+        document.getElementById('totalLength').onchange = (e) => {
+            app.timeline.totalLength = parseFloat(e.target.value) || 5;
+            app.timeline.render();
+        };
+        
         // Tab switching
         document.querySelectorAll('.tab-btn').forEach(btn => {
             btn.addEventListener('click', () => {
