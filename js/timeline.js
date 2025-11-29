@@ -1,4 +1,4 @@
-// timeline.js - Now with edge dragging, total length, dark theme
+// timeline.js - Fixed version with proper rendering
 
 class Timeline {
     constructor(app) {
@@ -28,7 +28,10 @@ class Timeline {
 
     init() {
         this.canvas = document.getElementById('timeline-canvas');
-        if (!this.canvas) return;
+        if (!this.canvas) {
+            console.error('Timeline canvas not found');
+            return;
+        }
         this.ctx = this.canvas.getContext('2d');
         this.resize();
         this.setupEventListeners();
@@ -55,6 +58,8 @@ class Timeline {
 
     render() {
         if (!this.ctx) return;
+        
+        // Clear canvas
         this.ctx.fillStyle = '#1a1a2e';
         this.ctx.fillRect(0, 0, this.width, this.height);
 
@@ -103,6 +108,11 @@ class Timeline {
     }
 
     drawTracks() {
+        if (!this.app || !this.app.layerManager || !this.app.layerManager.layers) {
+            console.error('LayerManager or layers not available');
+            return;
+        }
+
         const layers = this.app.layerManager.layers;
         const startY = this.rulerHeight;
 
@@ -113,6 +123,11 @@ class Timeline {
     }
 
     drawTrack(layer, y) {
+        if (!layer || !layer.settings) {
+            console.error('Invalid layer', layer);
+            return;
+        }
+
         const duration = this.app.soundGenerator.calculateDuration(layer.settings);
         const x = layer.startTime * this.zoom + this.offsetX;
         const width = duration * this.zoom;
@@ -127,12 +142,13 @@ class Timeline {
         this.ctx.textAlign = 'left';
         this.ctx.fillText(layer.name, 10, y + 20);
         
-        // Show duration
+        // Show duration and volume
         this.ctx.font = '11px sans-serif';
         this.ctx.fillStyle = '#94a3b8';
-        this.ctx.fillText(`${duration.toFixed(2)}s`, 10, y + 35);
+        this.ctx.fillText(`${duration.toFixed(2)}s | Vol: ${(layer.volume * 100).toFixed(0)}%`, 10, y + 35);
 
-        if (x + width > 0 && x < this.width && width > 10) {
+        // Only draw waveform if it's visible
+        if (x + width > 0 && x < this.width && width > 2) {
             // Draw colored block
             this.ctx.fillStyle = layer.color;
             this.ctx.globalAlpha = layer.muted ? 0.25 : 0.7;
@@ -152,57 +168,69 @@ class Timeline {
                 this.ctx.fillRect(x + width - 4, y + 5, 8, this.trackHeight - 10);
             }
 
-            // WAVEFORM VISUALIZATION
-            try {
-                const buffer = this.app.soundGenerator.generate(layer.settings, 44100);
-                const raw = buffer.getChannelData(0);
-                const samples = raw.length;
-                const step = Math.max(1, Math.floor(samples / width));
-                const amp = (this.trackHeight - 16) / 2;
-
-                this.ctx.save();
-                this.ctx.translate(x, y + 5 + (this.trackHeight - 10) / 2);
-                this.ctx.strokeStyle = layer.id === this.app.layerManager.selectedLayerId ? '#ffffff' : '#e0e7ff';
-                this.ctx.lineWidth = layer.id === this.app.layerManager.selectedLayerId ? 2 : 1.2;
-                this.ctx.globalAlpha = layer.muted ? 0.4 : 0.9;
-
-                this.ctx.beginPath();
-                let first = true;
-
-                for (let i = 0; i < width; i += 1) {
-                    const sampleIndex = Math.floor(i * samples / width);
-                    const val = raw[sampleIndex] || 0;
-                    const h = val * amp;
-
-                    if (first) {
-                        this.ctx.moveTo(i, h);
-                        first = false;
-                    } else {
-                        this.ctx.lineTo(i, h);
+            // WAVEFORM VISUALIZATION - Only draw if width is reasonable
+            if (width > 10) {
+                try {
+                    const buffer = this.app.soundGenerator.generate(layer.settings, 44100);
+                    if (!buffer || !buffer.getChannelData) {
+                        throw new Error('Invalid audio buffer');
                     }
-                }
+                    
+                    const raw = buffer.getChannelData(0);
+                    const samples = raw.length;
+                    
+                    if (samples === 0) {
+                        throw new Error('Empty audio buffer');
+                    }
+                    
+                    const amp = (this.trackHeight - 16) / 2;
 
-                // Mirror for symmetric waveform
-                for (let i = width; i >= 0; i -= 1) {
-                    const sampleIndex = Math.floor(i * samples / width);
-                    const val = raw[sampleIndex] || 0;
-                    const h = val * amp;
-                    this.ctx.lineTo(i, -h);
-                }
+                    this.ctx.save();
+                    this.ctx.translate(x, y + 5 + (this.trackHeight - 10) / 2);
+                    this.ctx.strokeStyle = layer.id === this.app.layerManager.selectedLayerId ? '#ffffff' : '#e0e7ff';
+                    this.ctx.lineWidth = layer.id === this.app.layerManager.selectedLayerId ? 2 : 1.2;
+                    this.ctx.globalAlpha = layer.muted ? 0.4 : 0.9;
 
-                this.ctx.closePath();
-                this.ctx.stroke();
-                this.ctx.restore();
-            } catch (e) {
-                // Fallback: just draw a simple pulse
-                this.ctx.fillStyle = '#ffffff44';
-                this.ctx.fillRect(x + width * 0.3, y + 15, width * 0.4, 20);
+                    this.ctx.beginPath();
+                    let first = true;
+
+                    for (let i = 0; i < width; i += 1) {
+                        const sampleIndex = Math.floor(i * samples / width);
+                        const val = raw[sampleIndex] || 0;
+                        const h = val * amp;
+
+                        if (first) {
+                            this.ctx.moveTo(i, h);
+                            first = false;
+                        } else {
+                            this.ctx.lineTo(i, h);
+                        }
+                    }
+
+                    // Mirror for symmetric waveform
+                    for (let i = width; i >= 0; i -= 1) {
+                        const sampleIndex = Math.floor(i * samples / width);
+                        const val = raw[sampleIndex] || 0;
+                        const h = val * amp;
+                        this.ctx.lineTo(i, -h);
+                    }
+
+                    this.ctx.closePath();
+                    this.ctx.stroke();
+                    this.ctx.restore();
+                } catch (e) {
+                    console.error('Error drawing waveform:', e);
+                    // Fallback: just draw a simple pulse
+                    this.ctx.fillStyle = '#ffffff44';
+                    this.ctx.fillRect(x + width * 0.3, y + 15, width * 0.4, 20);
+                }
             }
 
             // Mute indicator
             if (layer.muted) {
                 this.ctx.fillStyle = '#f44336';
-                this.ctx.fillText('M', this.width - 30, y + 20);
+                this.ctx.font = 'bold 14px sans-serif';
+                this.ctx.fillText('M', this.width - 30, y + 25);
             }
         }
     }
