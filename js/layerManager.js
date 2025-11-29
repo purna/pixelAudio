@@ -36,6 +36,34 @@ class LayerManager {
         return layer;
     }
 
+    // NEW: Duplicate layer functionality
+    duplicateLayer(sourceLayer) {
+        const layer = {
+            id: this.nextLayerId++,
+            name: sourceLayer.name + ' Copy',
+            settings: { ...sourceLayer.settings },
+            muted: sourceLayer.muted,
+            solo: false, // Don't duplicate solo state
+            volume: sourceLayer.volume,
+            startTime: sourceLayer.startTime + 0.5, // Offset slightly
+            fadeIn: sourceLayer.fadeIn,
+            fadeOut: sourceLayer.fadeOut,
+            color: this.generateRandomColor()
+        };
+
+        this.layers.push(layer);
+        this.selectedLayerId = layer.id;
+        
+        // Update app settings and UI to reflect the new layer
+        this.app.currentSettings = { ...layer.settings };
+        if (this.app.ui) {
+            this.app.ui.updateDisplay(layer.settings);
+        }
+
+        this.notifyLayerChange();
+        return layer;
+    }
+
     removeLayer(layerId) {
         const index = this.layers.findIndex(l => l.id === layerId);
         if (index === -1) return;
@@ -274,9 +302,9 @@ class LayerManager {
         document.dispatchEvent(event);
     }
 
-    // ——————————————————————————————————
-    // UI: Render Layer List (like your pixel editor)
-    // ——————————————————————————————————
+    // ————————————————————————————————————————————————————————
+    // UI: Render Layer List with volume controls
+    // ————————————————————————————————————————————————————————
     renderList() {
         const list = document.getElementById('layersList');
         if (!list) return;
@@ -293,6 +321,7 @@ class LayerManager {
             // Mute / Visibility toggle
             const muteBtn = document.createElement('i');
             muteBtn.className = `fas fa-eye${layer.muted ? '-slash' : ''} layer-vis-btn ${layer.muted ? 'hidden-layer' : ''}`;
+            muteBtn.title = layer.muted ? 'Unmute layer' : 'Mute layer';
             muteBtn.onclick = (e) => {
                 e.stopPropagation();
                 this.toggleMute(layer.id);
@@ -309,25 +338,77 @@ class LayerManager {
                 if (e.key === 'Enter') nameInput.blur();
             };
 
+            // Volume control
+            const volumeContainer = document.createElement('div');
+            volumeContainer.className = 'layer-volume-container';
+            volumeContainer.onclick = e => e.stopPropagation();
+            
+            const volumeSlider = document.createElement('input');
+            volumeSlider.type = 'range';
+            volumeSlider.className = 'layer-volume-slider';
+            volumeSlider.min = '0';
+            volumeSlider.max = '100';
+            volumeSlider.value = (layer.volume * 100).toFixed(0);
+            volumeSlider.title = `Volume: ${(layer.volume * 100).toFixed(0)}%`;
+            volumeSlider.oninput = (e) => {
+                e.stopPropagation();
+                const newVolume = parseFloat(e.target.value) / 100;
+                this.setLayerVolume(layer.id, newVolume);
+                e.target.title = `Volume: ${(newVolume * 100).toFixed(0)}%`;
+            };
+            
+            const volumeIcon = document.createElement('i');
+            volumeIcon.className = 'fas fa-volume-up';
+            volumeIcon.style.fontSize = '10px';
+            volumeIcon.style.color = 'var(--text-secondary)';
+            volumeIcon.style.marginRight = '4px';
+            
+            volumeContainer.appendChild(volumeIcon);
+            volumeContainer.appendChild(volumeSlider);
+
+            // Action buttons container
+            const actionsContainer = document.createElement('div');
+            actionsContainer.className = 'layer-actions';
+            actionsContainer.onclick = e => e.stopPropagation();
+
+            // Duplicate button
+            const dupBtn = document.createElement('i');
+            dupBtn.className = 'fas fa-copy';
+            dupBtn.style.color = 'var(--accent-tertiary)';
+            dupBtn.style.fontSize = '12px';
+            dupBtn.title = 'Duplicate layer';
+            dupBtn.onclick = (e) => {
+                e.stopPropagation();
+                this.app.saveUndoState();
+                this.duplicateLayer(layer);
+                this.app.ui.showNotification('Layer duplicated', 'success');
+            };
+
             // Delete button
             const delBtn = document.createElement('i');
             delBtn.className = 'fas fa-trash';
             delBtn.style.color = '#f44336';
             delBtn.style.fontSize = '12px';
+            delBtn.title = 'Delete layer';
             delBtn.onclick = (e) => {
                 e.stopPropagation();
+                this.app.saveUndoState();
                 this.removeLayer(layer.id);
             };
 
+            actionsContainer.appendChild(dupBtn);
+            actionsContainer.appendChild(delBtn);
+
             div.appendChild(muteBtn);
             div.appendChild(nameInput);
-            div.appendChild(delBtn);
+            div.appendChild(volumeContainer);
+            div.appendChild(actionsContainer);
 
-            // Click = select layer + go to Settings tab
+            // Click = select layer
             div.onclick = (e) => {
-                if (e.target === nameInput || e.target === muteBtn || e.target === delBtn) return;
+                if (e.target === nameInput || e.target === muteBtn || e.target === delBtn || 
+                    e.target === volumeSlider || e.target === dupBtn) return;
                 this.selectLayer(layer.id);
-                // Don't auto-switch to settings tab - let user stay where they are
             };
 
             list.appendChild(div);
