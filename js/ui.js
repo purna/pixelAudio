@@ -1,4 +1,5 @@
 // js/ui.js
+import { createLayer } from './layerManager.js'; // ← ADD THIS LINE
 import { layers, getActiveLayer, setActiveLayer } from './layerManager.js';
 import { refreshTimeline } from './timeline.js';
 
