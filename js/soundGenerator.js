@@ -41,6 +41,7 @@ class SoundGenerator {
         let arpMult = 1;
 
         const gainLinear = Math.pow(10, s.gain / 20);
+        const waveform = s.waveform || 'square';
 
         for (let i = 0; i < data.length; i++) {
             const t = i / sampleRate;
@@ -70,15 +71,47 @@ class SoundGenerator {
                 finalFreq *= 1 + vibrato;
             }
 
-            // Generate square wave with duty cycle
+            // Generate waveform based on type
             phase += (finalFreq / sampleRate) * Math.PI * 2;
-            const square = (phase % (Math.PI * 2)) < (Math.PI * 2 * duty) ? 1 : -1;
+            let sample = 0;
 
-            // Duty sweep
-            duty += (s.dutySweep / 100) / sampleRate;
-            duty = Math.max(0, Math.min(1, duty));
+            switch (waveform) {
+                case 'sine':
+                    sample = Math.sin(phase);
+                    break;
+                
+                case 'triangle':
+                    // Triangle wave: -1 to 1 linear
+                    const trianglePhase = (phase % (Math.PI * 2)) / (Math.PI * 2);
+                    sample = trianglePhase < 0.5 
+                        ? -1 + 4 * trianglePhase 
+                        : 3 - 4 * trianglePhase;
+                    break;
+                
+                case 'sawtooth':
+                    // Sawtooth wave: linear ramp from -1 to 1
+                    sample = -1 + 2 * ((phase % (Math.PI * 2)) / (Math.PI * 2));
+                    break;
+                
+                case 'noise':
+                    // White noise: random between -1 and 1
+                    sample = Math.random() * 2 - 1;
+                    break;
+                
+                case 'square':
+                default:
+                    // Square wave with duty cycle
+                    sample = (phase % (Math.PI * 2)) < (Math.PI * 2 * duty) ? 1 : -1;
+                    break;
+            }
 
-            data[i] = square * envelope * gainLinear;
+            // Duty sweep (only applies to square wave)
+            if (waveform === 'square') {
+                duty += (s.dutySweep / 100) / sampleRate;
+                duty = Math.max(0, Math.min(1, duty));
+            }
+
+            data[i] = sample * envelope * gainLinear;
         }
     }
 
