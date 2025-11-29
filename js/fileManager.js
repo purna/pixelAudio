@@ -1,40 +1,280 @@
-// js/fileManager.js
-import { layers, createLayer, setActiveLayer } from './layerManager.js';
+// fileManager.js - Project import/export and file management
 
-export function saveProject() {
-    const data = {
-        layers: layers.map(l => ({ name: l.name, settings: l.settings, muted: l.muted, solo: l.solo }))
-    };
-    const blob = new Blob([JSON.stringify(data, null, 2)], {type: 'application/json'});
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url; a.download = 'sfx-project.json'; a.click();
-}
+class FileManager {
+    constructor(app) {
+        this.app = app;
+        this.autoSaveKey = 'sfx_generator_autosave';
+        this.autoSaveInterval = null;
+    }
 
-export function loadProjectFromFile(e) {
-    const file = e.target.files[0];
-    const reader = new FileReader();
-    reader.onload = ev => {
-        const data = JSON.parse(ev.target.result);
-        layers.length = 0;
-        data.layers.forEach(l => {
-            const layer = createLayer(l.name);
-            Object.assign(layer.settings, l.settings);
-            layer.muted = l.muted; layer.solo = l.solo;
+    // Export entire project as JSON
+    exportProject(filename = null) {
+        const projectData = {
+            version: '1.0',
+            timestamp: Date.now(),
+            name: filename || 'SFX Project',
+            state: this.app.getState()
+        };
+
+        const json = JSON.stringify(projectData, null, 2);
+        const blob = new Blob([json], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = (filename || 'sfx_project') + '.json';
+        a.click();
+        
+        URL.revokeObjectURL(url);
+        
+        this.app.ui.showNotification('Project exported successfully!', 'success');
+    }
+
+    // Import project from JSON file
+    importProject() {
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = '.json';
+        
+        input.onchange = (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                try {
+                    const projectData = JSON.parse(event.target.result);
+                    
+                    // Validate project data
+                    if (!projectData.version || !projectData.state) {
+                        throw new Error('Invalid project file format');
+                    }
+                    
+                    // Load project state
+                    this.app.setState(projectData.state);
+                    
+                    this.app.ui.showNotification('Project loaded successfully!', 'success');
+                } catch (error) {
+                    console.error('Error loading project:', error);
+                    this.app.ui.showNotification('Error loading project: ' + error.message, 'error');
+                }
+            };
+            
+            reader.readAsText(file);
+        };
+        
+        input.click();
+    }
+
+    // Export single layer as WAV
+    exportLayer(layerId, filename = null) {
+        const layer = this.app.layerManager.getLayer(layerId);
+        if (!layer) {
+            console.error('Layer not found:', layerId);
+            return;
+        }
+
+        const buffer = this.app.soundGenerator.generate(
+            layer.settings,
+            this.app.audioEngine.sampleRate
+        );
+
+        const name = filename || `${layer.name.replace(/[^a-z0-9]/gi, '_')}_${Date.now()}.wav`;
+        this.app.audioEngine.downloadWAV(buffer, name);
+        
+        this.app.ui.showNotification(`Layer "${layer.name}" exported!`, 'success');
+    }
+
+    // Export all layers individually
+    exportAllLayers() {
+        const layers = this.app.layerManager.layers;
+        
+        if (layers.length === 0) {
+            this.app.ui.showNotification('No layers to export', 'error');
+            return;
+        }
+
+        layers.forEach((layer, index) => {
+            setTimeout(() => {
+                this.exportLayer(layer.id);
+            }, index * 100); // Stagger downloads to avoid browser blocking
         });
-        setActiveLayer(layers[0].id);
-    };
-    reader.readAsText(file);
-}
+        
+        this.app.ui.showNotification(`Exporting ${layers.length} layer(s)...`, 'info');
+    }
 
-export function autoSave() {
-    const data = { layers: layers.map(l => ({name: l.name, settings: l.settings})) };
-    localStorage.setItem('sfx-auto-save', JSON.stringify(data));
-}
+    // Export mixed output
+    exportMixedOutput(filename = null) {
+        const name = filename || `mixed_output_${Date.now()}.wav`;
+        this.app.layerManager.exportMixedAudio(name);
+        this.app.ui.showNotification('Mixed output exported!', 'success');
+    }
 
-export function autoLoad() {
-    const saved = localStorage.getItem('sfx-auto-save');
-    if (saved) {
-        // same as load logic
+    // Auto-save functionality
+    enableAutoSave(intervalMinutes = 2) {
+        this.disableAutoSave(); // Clear any existing interval
+        
+        this.autoSaveInterval = setInterval(() => {
+            this.saveToLocalStorage();
+        }, intervalMinutes * 60 * 1000);
+        
+        // Also save on page unload
+        window.addEventListener('beforeunload', () => {
+            this.saveToLocalStorage();
+        });
+    }
+
+    disableAutoSave() {
+        if (this.autoSaveInterval) {
+            clearInterval(this.autoSaveInterval);
+            this.autoSaveInterval = null;
+        }
+    }
+
+    saveToLocalStorage() {
+        try {
+            const state = this.app.getState();
+            const data = {
+                timestamp: Date.now(),
+                state: state
+            };
+            localStorage.setItem(this.autoSaveKey, JSON.stringify(data));
+            console.log('Auto-saved to local storage');
+        } catch (error) {
+            console.error('Error auto-saving:', error);
+        }
+    }
+
+    loadFromLocalStorage() {
+        try {
+            const data = localStorage.getItem(this.autoSaveKey);
+            if (data) {
+                const parsed = JSON.parse(data);
+                this.app.setState(parsed.state);
+                
+                const date = new Date(parsed.timestamp);
+                this.app.ui.showNotification(
+                    `Restored from auto-save (${date.toLocaleString()})`, 
+                    'info'
+                );
+                return true;
+            }
+        } catch (error) {
+            console.error('Error loading auto-save:', error);
+        }
+        return false;
+    }
+
+    clearAutoSave() {
+        try {
+            localStorage.removeItem(this.autoSaveKey);
+            this.app.ui.showNotification('Auto-save cleared', 'info');
+        } catch (error) {
+            console.error('Error clearing auto-save:', error);
+        }
+    }
+
+    // Import settings from JSON
+    importSettings() {
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = '.json';
+        
+        input.onchange = (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                try {
+                    const settings = JSON.parse(event.target.result);
+                    
+                    // Validate settings
+                    if (typeof settings !== 'object') {
+                        throw new Error('Invalid settings format');
+                    }
+                    
+                    this.app.updateSettings(settings);
+                    this.app.ui.showNotification('Settings imported!', 'success');
+                } catch (error) {
+                    console.error('Error importing settings:', error);
+                    this.app.ui.showNotification('Error importing settings: ' + error.message, 'error');
+                }
+            };
+            
+            reader.readAsText(file);
+        };
+        
+        input.click();
+    }
+
+    // Export current settings as JSON
+    exportSettings(filename = null) {
+        const settings = this.app.currentSettings;
+        const json = JSON.stringify(settings, null, 2);
+        const blob = new Blob([json], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = (filename || 'sfx_settings') + '.json';
+        a.click();
+        
+        URL.revokeObjectURL(url);
+        
+        this.app.ui.showNotification('Settings exported!', 'success');
+    }
+
+    // Create preset from current settings
+    saveAsPreset(name) {
+        if (!name || name.trim() === '') {
+            this.app.ui.showNotification('Please provide a preset name', 'error');
+            return;
+        }
+
+        this.app.presets.add(name, this.app.currentSettings);
+        
+        // Save custom presets to localStorage
+        this.saveCustomPresets();
+        
+        this.app.ui.showNotification(`Preset "${name}" saved!`, 'success');
+    }
+
+    saveCustomPresets() {
+        try {
+            const customPresets = {};
+            const allPresets = this.app.presets.presets;
+            
+            // Filter out default presets (simple check - you may want to track this differently)
+            const defaultPresets = ['pickup', 'laser', 'explosion', 'powerup', 'hit', 'jump', 
+                                   'click', 'blip', 'hover', 'synth', 'tone'];
+            
+            for (let key in allPresets) {
+                if (!defaultPresets.includes(key)) {
+                    customPresets[key] = allPresets[key];
+                }
+            }
+            
+            localStorage.setItem('sfx_custom_presets', JSON.stringify(customPresets));
+        } catch (error) {
+            console.error('Error saving custom presets:', error);
+        }
+    }
+
+    loadCustomPresets() {
+        try {
+            const data = localStorage.getItem('sfx_custom_presets');
+            if (data) {
+                const customPresets = JSON.parse(data);
+                
+                for (let key in customPresets) {
+                    this.app.presets.add(key, customPresets[key]);
+                }
+                
+                console.log('Loaded custom presets:', Object.keys(customPresets));
+            }
+        } catch (error) {
+            console.error('Error loading custom presets:', error);
+        }
     }
 }
