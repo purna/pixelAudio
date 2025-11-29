@@ -67,7 +67,8 @@ class LayerManager {
         const layer = this.getLayer(layerId);
         if (layer) {
             this.selectedLayerId = layerId;
-            this.app.updateSettings(layer.settings);
+            this.app.updateSettings(layer.settings);  // This triggers UI update
+            this.app.ui.updateDisplay(layer.settings); // Force immediate UI sync
             this.notifyLayerChange();
         }
     }
