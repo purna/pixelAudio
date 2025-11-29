@@ -19,12 +19,45 @@
             <button id="exportMix">Export Mix WAV</button>
         </div>
 
-        <div class="main-grid">
-            <!-- Layers Panel -->
-            <div id="layersPanel" class="panel">
-                <h3>Layers</h3>
-                <button id="addLayer">+ Add Layer</button>
-                <div id="layersList"></div>
+
+            <div class="main-grid">
+                <!-- Layers Panel -->
+                <div id="layersPanel" class="panel">
+                    <h3>Layers</h3>
+                    <button id="addLayer">+ Add Layer</button>
+                    <div id="layersList"></div>
+                </div>
+            
+                <!-- Right Column: Controls + Timeline -->
+                <div style="display:flex;flex-direction:column;gap:20px;">
+                    <!-- Presets -->
+                    <div class="preset-panel"> ... same as before ... </div>
+            
+                    <!-- Controls -->
+                    <div id="controlsContainer" class="controls-panel">
+                        <!-- Injected by ui.js -->
+                    </div>
+            
+                    <!-- Timeline -->
+                    <div class="timeline-container">
+                        <h3>Timeline</h3>
+                        <div class="timeline-controls">
+                            <button id="playTimeline">Play</button>
+                            <button id="stopTimeline">Stop</button>
+                            <span>Zoom:</span>
+                            <input type="range" id="zoom" min="10" max="200" value="50">
+                            <span id="timeDisplay">0.00s</span>
+                        </div>
+                        <div id="timeline"></div>
+                    </div>
+            
+                    <!-- Action Bar -->
+                    <div class="action-bar">
+                        <button id="playAll" class="btn play-btn">Play All (Preview)</button>
+                        <button id="exportLayer" class="btn download-btn">Export Active Layer</button>
+                        <button id="exportMix" class="btn download-btn">Export Final Mix WAV</button>
+                    </div>
+                </div>
             </div>
 
             <!-- Preset + Controls -->
