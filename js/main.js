@@ -16,6 +16,9 @@ class SFXGeneratorApp {
         this.undoStack = [];
         this.redoStack = [];
         this.maxUndoSteps = 50;
+        
+        // Copy/paste layer clipboard
+        this.copiedLayer = null;
     }
 
     async init() {
@@ -79,7 +82,53 @@ class SFXGeneratorApp {
                 e.preventDefault();
                 this.redo();
             }
+            // Ctrl/Cmd + C to copy layer
+            if ((e.ctrlKey || e.metaKey) && e.key === 'c' && !this.isTyping()) {
+                e.preventDefault();
+                this.copyLayer();
+            }
+            // Ctrl/Cmd + V to paste layer
+            if ((e.ctrlKey || e.metaKey) && e.key === 'v' && !this.isTyping()) {
+                e.preventDefault();
+                this.pasteLayer();
+            }
+            // Ctrl/Cmd + D to duplicate layer
+            if ((e.ctrlKey || e.metaKey) && e.key === 'd' && !this.isTyping()) {
+                e.preventDefault();
+                this.duplicateLayer();
+            }
         });
+    }
+
+    copyLayer() {
+        const layer = this.layerManager.getSelectedLayer();
+        if (layer) {
+            this.copiedLayer = JSON.parse(JSON.stringify(layer));
+            this.ui.showNotification('Layer copied', 'success');
+        }
+    }
+
+    pasteLayer() {
+        if (!this.copiedLayer) {
+            this.ui.showNotification('No layer to paste', 'error');
+            return;
+        }
+        this.saveUndoState();
+        const newLayer = this.layerManager.duplicateLayer(this.copiedLayer);
+        if (newLayer) {
+            this.ui.showNotification('Layer pasted', 'success');
+        }
+    }
+
+    duplicateLayer() {
+        const layer = this.layerManager.getSelectedLayer();
+        if (layer) {
+            this.saveUndoState();
+            const newLayer = this.layerManager.duplicateLayer(layer);
+            if (newLayer) {
+                this.ui.showNotification('Layer duplicated', 'success');
+            }
+        }
     }
 
     isTyping() {
@@ -105,6 +154,7 @@ class SFXGeneratorApp {
             arpSpeed: 0,
             duty: 50,
             dutySweep: 0,
+            waveform: 'square', // New: waveform type
             lpfEnable: false,
             lpf: 22050,
             hpfEnable: false,
