@@ -3,11 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Retro SFX Studio Pro</title>
+    <title>Pixel Audio Studio Pro</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Inter:wght@400;500;600;700&display=swap');
-
         :root {
             --bg-darkest: #0f0f1b;
             --bg-dark: #1a1a2e;
@@ -21,7 +20,6 @@
             --border-color: #2d3748;
             --border-glow: rgba(0, 255, 65, 0.3);
         }
-
         * { margin:0; padding:0; box-sizing:border-box; }
         body {
             font-family: 'Inter', sans-serif;
@@ -41,7 +39,6 @@
             pointer-events: none;
             z-index: 1;
         }
-
         aside {
             width: 340px;
             background: var(--bg-dark);
@@ -66,7 +63,6 @@
             text-shadow: 0 0 20px var(--accent-primary);
         }
         .logo p { font-size: 10px; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 2px; }
-
         .panel { margin-bottom: 25px; }
         .panel-title {
             font-size: 11px;
@@ -79,8 +75,6 @@
             align-items: center;
             gap: 8px;
         }
-
-        /* PRESETS WITH ICONS */
         .preset-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -107,8 +101,192 @@
             transform: translateY(-2px);
             box-shadow: 0 4px 15px rgba(0,255,65,0.2);
         }
+        main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+        .tab-container {
+            background: var(--bg-medium);
+            border-bottom: 2px solid var(--border-color);
+            padding: 8px 20px;
+            display: flex;
+            gap: 4px;
+        }
+        .tab-btn {
+            padding: 10px 20px;
+            background: transparent;
+            border: 2px solid transparent;
+            color: var(--text-secondary);
+            font-weight: 600;
+            cursor: pointer;
+        }
+        .tab-btn.active {
+            border-color: var(--accent-primary);
+            background: rgba(0,255,65,0.1);
+            color: var(--accent-primary);
+        }
+        .tab-content { flex: 1; overflow-y: auto; padding: 20px; display: none; }
+        .tab-content.active { display: block; }
+        .timeline-wrapper {
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            background: var(--bg-light);
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 0 20px rgba(0,0,0,0.4);
+        }
+        .timeline-header {
+            padding: 12px 16px;
+            background: var(--bg-medium);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border-color);
+            gap: 12px;
+        }
+        .timeline-header h3 { font-family: 'Press Start 2P'; font-size: 14px; color: var(--accent-primary); }
+        .timeline-controls button {
+            background: var(--bg-dark);
+            border: 2px solid var(--border-color);
+            color: var(--text-primary);
+            padding: 8px 14px;
+            cursor: pointer;
+            font-weight: bold;
+            border-radius: 4px;
+            font-size: 12px;
+        }
+        .timeline-controls button:hover { border-color: var(--accent-primary); color: var(--accent-primary); }
+        #timeDisplay {
+            color: var(--accent-tertiary);
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+            font-size: 13px;
+            min-width: 60px;
+            text-align: right;
+        }
+        #timeline-canvas { flex: 1; background: #1a1a2e; cursor: grab; }
+        #timeline-canvas:active { cursor: grabbing; }
+        .settings-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+            gap: 20px;
+        }
+        .control-section {
+            background: var(--bg-medium);
+            padding: 18px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+        }
+        .section-title {
+            font-family: 'Press Start 2P';
+            font-size: 12px;
+            color: var(--accent-tertiary);
+            margin-bottom: 14px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .control-group { margin-bottom: 14px; }
+        .control-group.checkbox-group { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+        label {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 13px;
+            margin-bottom: 4px;
+        }
+        input[type="range"] {
+            width: 100%;
+            accent-color: var(--accent-primary);
+            height: 8px;
+            border-radius: 4px;
+            background: #333;
+        }
+        select {
+            width: 100%;
+            padding: 10px 12px;
+            background: var(--bg-dark);
+            border: 2px solid var(--border-color);
+            border-radius: 6px;
+            color: var(--text-primary);
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        select:hover, select:focus {
+            border-color: var(--accent-primary);
+            outline: none;
+            box-shadow: 0 0 10px rgba(0,255,65,0.3);
+        }
+        input[type="checkbox"] {
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border: 2px solid var(--border-color);
+            border-radius: 4px;
+            background: var(--bg-dark);
+            cursor: pointer;
+            position: relative;
+        }
+        input[type="checkbox"]:checked {
+            background: var(--accent-primary);
+            border-color: var(--accent-primary);
+        }
+        input[type="checkbox"]:checked::after {
+            content: '✓';
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            color: black;
+            font-weight: bold;
+        }
+        .value {
+            margin-left: auto;
+            color: var(--accent-primary);
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+            font-size: 12px;
+        }
+        .info-icon {
+            color: var(--text-secondary);
+            cursor: help;
+            opacity: 0.7;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+        .info-icon:hover { opacity: 1; color: var(--accent-tertiary); }
+        #waveform-preview {
+            width: 100%;
+            height: 120px;
+            background: var(--bg-darkest);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            margin-top: 10px;
+            image-rendering: pixelated;
+        }
+        .action-bar {
+            padding: 15px 20px;
+            background: var(--bg-medium);
+            border-top: 2px solid var(--border-color);
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+        .action-btn {
+            padding: 12px 24px;
+            font-weight: bold;
+            border: 2px solid var(--border-color);
+            background: var(--bg-dark);
+            color: var(--text-primary);
+            cursor: pointer;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .action-btn:hover { border-color: var(--accent-primary); background: rgba(0,255,65,0.1); color: var(--accent-primary); }
+        .action-btn.primary { border-color: var(--accent-primary); background: rgba(0,255,65,0.15); }
 
-        /* LAYER LIST */
+            /* LAYER LIST */
         .layer-item {
             background: var(--bg-medium);
             padding: 10px 12px;
@@ -157,249 +335,32 @@
             transform: scale(1.2);
         }
 
-        main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
-
-        .tab-container {
-            background: var(--bg-medium);
-            border-bottom: 2px solid var(--border-color);
-            padding: 8px 20px;
-            display: flex;
-            gap: 4px;
+        /* Custom Tooltip */
+        .custom-tooltip {
+            animation: tooltipFadeIn 0.25s ease forwards;
+            pointer-events: none;
         }
-        .tab-btn {
-            padding: 10px 20px;
-            background: transparent;
-            border: 2px solid transparent;
-            color: var(--text-secondary);
-            font-weight: 600;
-            cursor: pointer;
+        @keyframes tooltipFadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
-        .tab-btn.active {
-            border-color: var(--accent-primary);
-            background: rgba(0,255,65,0.1);
-            color: var(--accent-primary);
-        }
-
-        .tab-content { flex: 1; overflow-y: auto; padding: 20px; display: none; }
-        .tab-content.active { display: block; }
-
-        .timeline-wrapper {
-            height: 100%;
-            display: flex;
-            flex-direction: column;
-            background: var(--bg-light);
-            border-radius: 8px;
-            overflow: hidden;
-            box-shadow: 0 0 20px rgba(0,0,0,0.4);
-        }
-        .timeline-header {
-            padding: 12px 16px;
-            background: var(--bg-medium);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 1px solid var(--border-color);
-            gap: 12px;
-        }
-        .timeline-header h3 { font-family: 'Press Start 2P'; font-size: 14px; color: var(--accent-primary); }
-        .timeline-controls { 
-            display: flex; 
-            align-items: center; 
-            gap: 8px;
-        }
-        .timeline-controls button {
-            background: var(--bg-dark);
-            border: 2px solid var(--border-color);
-            color: var(--text-primary);
-            padding: 8px 14px;
-            cursor: pointer;
-            font-weight: bold;
-            border-radius: 4px;
-            font-size: 12px;
-        }
-        .timeline-controls button:hover { border-color: var(--accent-primary); color: var(--accent-primary); }
-        .timeline-controls label {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            font-size: 12px;
-            color: var(--text-secondary);
-            margin: 0;
-        }
-        .timeline-controls input[type="number"] {
-            width: 60px;
-            background: var(--bg-dark);
-            border: 2px solid var(--border-color);
-            color: var(--text-primary);
-            padding: 6px 8px;
-            border-radius: 4px;
-            font-size: 12px;
-            font-weight: bold;
-        }
-        .timeline-controls input[type="number"]:focus {
-            outline: none;
-            border-color: var(--accent-primary);
-        }
-        #timeDisplay {
-            color: var(--accent-tertiary);
-            font-family: 'Courier New', monospace;
-            font-weight: bold;
-            font-size: 13px;
-            min-width: 60px;
-            text-align: right;
-        }
-        #timeline-canvas { flex: 1; background: #1a1a2e; cursor: grab; }
-        #timeline-canvas:active { cursor: grabbing; }
-
-        .settings-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-            gap: 20px;
-        }
-        .control-section {
-            background: var(--bg-medium);
-            padding: 18px;
-            border-radius: 8px;
-            border: 1px solid var(--border-color);
-        }
-        .section-title {
-            font-family: 'Press Start 2P';
-            font-size: 12px;
-            color: var(--accent-tertiary);
-            margin-bottom: 14px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        .control-group { margin-bottom: 14px; }
-        .control-group.checkbox-group { display: flex; align-items: center; gap: 8px; }
-        label { display: block; margin-bottom: 4px; font-size: 13px; }
-        input[type="range"] { width: 100%; accent-color: var(--accent-primary); }
-        
-        /* Waveform select styling */
-        select {
-            width: 100%;
-            padding: 8px 12px;
-            background: var(--bg-dark);
-            border: 2px solid var(--border-color);
-            border-radius: 6px;
-            color: var(--text-primary);
-            font-size: 13px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-        select:hover {
-            border-color: var(--accent-primary);
-        }
-        select:focus {
-            outline: none;
-            border-color: var(--accent-primary);
-            box-shadow: 0 0 10px rgba(0, 255, 65, 0.3);
-        }
-        
-        /* Checkbox styling */
-        input[type="checkbox"] {
-            appearance: none;
-            width: 20px;
-            height: 20px;
-            border: 2px solid var(--border-color);
-            border-radius: 4px;
-            background: var(--bg-dark);
-            cursor: pointer;
-            position: relative;
-            transition: all 0.2s;
-        }
-        input[type="checkbox"]:hover {
-            border-color: var(--accent-primary);
-        }
-        input[type="checkbox"]:checked {
-            background: var(--accent-primary);
-            border-color: var(--accent-primary);
-        }
-        input[type="checkbox"]:checked::after {
-            content: '✓';
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            color: var(--bg-darkest);
-            font-size: 14px;
-            font-weight: bold;
-        }
-        
-        .value { float: right; color: var(--accent-primary); font-family: 'Courier New', monospace; font-weight: bold; }
-
-        /* Info tooltips and hints */
-        .info-icon {
-            font-size: 12px;
-            color: var(--text-secondary);
-            cursor: help;
-            opacity: 0.7;
-            transition: opacity 0.2s;
-        }
-        .info-icon:hover {
-            opacity: 1;
-            color: var(--accent-tertiary);
-        }
-        .info-text {
-            font-size: 11px;
-            color: var(--text-secondary);
-            font-style: italic;
-            margin-bottom: 12px;
-            opacity: 0.8;
-        }
-        .param-hint {
-            font-size: 10px;
-            color: var(--text-secondary);
-            margin-top: 2px;
-            opacity: 0.7;
-            font-style: italic;
-        }
-
-        .action-bar {
-            padding: 15px 20px;
-            background: var(--bg-medium);
-            border-top: 2px solid var(--border-color);
-            display: flex;
-            gap: 12px;
-            justify-content: center;
-            flex-shrink: 0;
-        }
-        .action-btn {
-            padding: 12px 24px;
-            font-weight: bold;
-            border: 2px solid var(--border-color);
-            background: var(--bg-dark);
-            color: var(--text-primary);
-            cursor: pointer;
-            border-radius: 6px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        .action-btn:hover { border-color: var(--accent-primary); background: rgba(0,255,65,0.1); color: var(--accent-primary); }
-        .action-btn.primary { border-color: var(--accent-primary); background: rgba(0,255,65,0.15); }
     </style>
 </head>
 <body>
-
     <aside>
         <div class="logo">
             <h1>Pixel Audio</h1>
             <p>Studio Pro</p>
         </div>
-
         <div class="panel">
-            <div class="panel-title">Layers</div>
+            <div class="panel-title"><i class="fas fa-layer-group"></i> Layers</div>
             <button onclick="app.layerManager.addLayer()" class="action-btn" style="width:100%; margin-bottom:10px;">
-                Add Layer
+                <i class="fas fa-plus"></i> Add Layer
             </button>
             <div id="layersList"></div>
         </div>
-
         <div class="panel">
-            <div class="panel-title">Presets</div>
+            <div class="panel-title"><i class="fas fa-save"></i> Presets</div>
             <div class="preset-grid">
                 <button class="preset-btn" onclick="loadPreset('pickup')"><i class="fas fa-coins"></i> Pickup</button>
                 <button class="preset-btn" onclick="loadPreset('laser')"><i class="fas fa-bolt"></i> Laser</button>
@@ -414,7 +375,7 @@
                 <button class="preset-btn" onclick="loadPreset('tone')"><i class="fas fa-bell"></i> Tone</button>
             </div>
             <button onclick="randomize()" class="action-btn" style="width:100%; margin-top:12px;">
-                Randomize
+                <i class="fas fa-dice"></i> Randomize
             </button>
         </div>
     </aside>
@@ -447,18 +408,17 @@
                 <!-- Waveform Type -->
                 <div class="control-section">
                     <div class="section-title">
-                        <i class="fas fa-waveform-path"></i> Waveform
-                        <i class="fas fa-info-circle info-icon" title="The basic shape of your sound wave"></i>
+                        <i class="fas fa-wave-square"></i> Waveform
+                        <i class="fas fa-circle-question info-icon" data-tooltip="Waveform Type\n\nThe raw oscillator shape — the DNA of your sound:\n\n• Square → Classic 8-bit chiptune, harsh & digital\n• Sawtooth → Aggressive, bright, perfect for leads\n• Triangle → Soft, hollow, vintage arcade feel\n• Sine → Pure tone, bell-like, clean\n• Noise → Random static — explosions, wind, hits\n\nTry Square + Duty Sweep for evolving retro tones!"></i>
                     </div>
-                    <div class="info-text">Choose the basic tone character</div>
                     <div class="control-group">
                         <label>Type</label>
                         <select id="waveform">
-                            <option value="square">Square - Retro, Harsh (Classic 8-bit)</option>
-                            <option value="sine">Sine - Pure, Smooth (Soft tones)</option>
-                            <option value="triangle">Triangle - Mellow, Hollow (Vintage)</option>
-                            <option value="sawtooth">Sawtooth - Bright, Buzzy (Brassy)</option>
-                            <option value="noise">Noise - Random, Static (Explosions)</option>
+                            <option value="square">Square - Retro, Harsh</option>
+                            <option value="sine">Sine - Pure, Smooth</option>
+                            <option value="triangle">Triangle - Mellow, Hollow</option>
+                            <option value="sawtooth">Sawtooth - Bright, Buzzy</option>
+                            <option value="noise">Noise - Static, Explosions</option>
                         </select>
                     </div>
                 </div>
@@ -466,58 +426,64 @@
                 <!-- Envelope -->
                 <div class="control-section">
                     <div class="section-title">
-                        <i class="fas fa-wave-square"></i> Envelope
-                        <i class="fas fa-info-circle info-icon" title="Controls how the volume changes over time"></i>
+                        <i class="fas fa-chart-line"></i> Envelope
+                        <i class="fas fa-circle-question info-icon" data-tooltip="ADSR Envelope\n\nControls volume over time:\nAttack → Sustain → Decay\n\n• Attack: Ramp-up speed\n• Sustain: Hold duration at peak\n• Punch: Extra boost at peak\n• Decay: Fade-out time\n\nEssential for making sounds feel alive!"></i>
                     </div>
-                    <div class="info-text">Shape your sound's volume over time</div>
                     <div class="control-group">
-                        <label>Attack <span class="value" id="attackVal">0.00s</span></label>
+                        <label>Attack <span class="value" id="attackVal">0.00s</span>
+                            <i class="fas fa-circle-question info-icon" data-tooltip="Attack Time (0–1s)\n\nHow fast the sound rises from silence to full volume.\n\n• 0.000 = Instant hit (laser, kick)\n• 0.030 = Fast zap\n• 0.200 = Slow swell (pad, reverse)\n• 1.000 = Very gradual rise\n\nPro tip: Pair with Punch for explosive starts!"></i>
+                        </label>
                         <input type="range" id="attack" min="0" max="1" step="0.001" value="0">
-                        <div class="param-hint">How quickly the sound reaches full volume</div>
                     </div>
                     <div class="control-group">
-                        <label>Sustain <span class="value" id="sustainVal">0.10s</span></label>
+                        <label>Sustain <span class="value" id="sustainVal">0.10s</span>
+                            <i class="fas fa-circle-question info-icon" data-tooltip="Sustain Time (0–2s)\n\nHow long the sound stays at full volume after attack.\n\n• 0.000 = No hold (percussive)\n• 0.100 = Short blip\n• 1.000+ = Long drone or note\n\nGreat for jump sounds or sustained lasers."></i>
+                        </label>
                         <input type="range" id="sustain" min="0" max="2" step="0.01" value="0.1">
-                        <div class="param-hint">How long the sound stays at full volume</div>
                     </div>
                     <div class="control-group">
-                        <label>Punch <span class="value" id="punchVal">0%</span></label>
+                        <label>Punch <span class="value" id="punchVal">0%</span>
+                            <i class="fas fa-circle-question info-icon" data-tooltip="Volume Punch (0–100%)\n\nExtra boost at the start of sustain phase.\n\nMakes impacts feel heavier — perfect for:\n• Explosions\n• Kicks\n• Power-ups\n• Hits & hurts"></i>
+                        </label>
                         <input type="range" id="punch" min="0" max="100" step="1" value="0">
-                        <div class="param-hint">Extra volume boost at the start</div>
                     </div>
                     <div class="control-group">
-                        <label>Decay <span class="value" id="decayVal">0.20s</span></label>
+                        <label>Decay <span class="value" id="decayVal">0.20s</span>
+                            <i class="fas fa-circle-question info-icon" data-tooltip="Decay Time (0–2s)\n\nHow long the sound takes to fade out after sustain.\n\n• 0.000 = Abrupt stop\n• 0.100 = Quick drop\n• 0.800+ = Long reverb tail\n\nUse short decay for snappy coins, long for echoes."></i>
+                        </label>
                         <input type="range" id="decay" min="0" max="2" step="0.01" value="0.2">
-                        <div class="param-hint">How long the sound takes to fade out</div>
                     </div>
                 </div>
 
-                <!-- Oscillator -->
+                <!-- Frequency -->
                 <div class="control-section">
                     <div class="section-title">
-                        <i class="fas fa-sliders-h"></i> Frequency
-                        <i class="fas fa-info-circle info-icon" title="Controls the pitch of your sound"></i>
+                        <i class="fas fa-wave-square"></i> Frequency
+                        <i class="fas fa-circle-question info-icon" data-tooltip="Pitch Control\n\nStart frequency + dynamic changes over time.\n\nUse Slide for swooshes, drops, risers."></i>
                     </div>
-                    <div class="info-text">Adjust the pitch and how it changes</div>
                     <div class="control-group">
-                        <label>Start <span class="value" id="freqVal">440Hz</span></label>
+                        <label>Start <span class="value" id="freqVal">440Hz</span>
+                            <i class="fas fa-circle-question info-icon" data-tooltip="Base Frequency (20–3000Hz)\n\nThe starting pitch of your sound.\n\n• 100–300Hz = Deep bass\n• 440Hz = Classic A4 note\n• 800–2000Hz = Bright leads & beeps\n\nHigher = brighter/sharper tone."></i>
+                        </label>
                         <input type="range" id="frequency" min="20" max="3000" step="1" value="440">
-                        <div class="param-hint">Starting pitch (higher = higher note)</div>
                     </div>
                     <div class="control-group">
-                        <label>Min Cutoff <span class="value" id="minFreqVal">0Hz</span></label>
+                        <label>Min Cutoff <span class="value" id="minFreqVal">0Hz</span>
+                            <i class="fas fa-circle-question info-icon" data-tooltip="Minimum Frequency Limit\n\nPrevents pitch slide from going too low.\n\nUseful when using negative Slide to avoid inaudible rumble."></i>
+                        </label>
                         <input type="range" id="minFreq" min="0" max="1000" step="1" value="0">
-                        <div class="param-hint">Lowest frequency the slide can reach</div>
                     </div>
                     <div class="control-group">
-                        <label>Slide <span class="value" id="slideVal">0.00</span></label>
+                        <label>Slide <span class="value" id="slideVal">0.00</span>
+                            <i class="fas fa-circle-question info-icon" data-tooltip="Pitch Slide (-2 to +2)\n\nChanges pitch over time.\n\n• Negative = Falling pitch (classic laser drop)\n• Positive = Rising pitch (power-up)\n• Combine with Delta Slide for acceleration"></i>
+                        </label>
                         <input type="range" id="slide" min="-2" max="2" step="0.01" value="0">
-                        <div class="param-hint">Pitch bend up (+) or down (-)</div>
                     </div>
                     <div class="control-group">
-                        <label>Delta Slide <span class="value" id="deltaSlideVal">0.00</span></label>
+                        <label>Delta Slide <span class="value" id="deltaSlideVal">0.00</span>
+                            <i class="fas fa-circle-question info-icon" data-tooltip="Slide Acceleration\n\nMakes pitch change faster or slower over time.\n\nCreates dramatic swoops and curves in pitch movement."></i>
+                        </label>
                         <input type="range" id="deltaSlide" min="-1" max="1" step="0.01" value="0">
-                        <div class="param-hint">Changes slide speed over time</div>
                     </div>
                 </div>
 
@@ -525,22 +491,18 @@
                 <div class="control-section">
                     <div class="section-title">
                         <i class="fas fa-water"></i> Vibrato
-                        <i class="fas fa-info-circle info-icon" title="Adds a wobble/warble to the pitch"></i>
+                        <i class="fas fa-circle-question info-icon" data-tooltip="Pitch Wobble\n\nAdds expressive, organic warble to pitch.\n\nGreat for voices, sirens, retro synth leads."></i>
                     </div>
-                    <div class="info-text">Add pitch wobble for organic feel</div>
                     <div class="control-group checkbox-group">
-                        <input type="checkbox" id="vibratoEnable">
-                        <label>Enable</label>
+                        <input type="checkbox" id="vibratoEnable"><label>Enable Vibrato</label>
                     </div>
                     <div class="control-group">
                         <label>Depth <span class="value" id="vibratoDepthVal">0%</span></label>
                         <input type="range" id="vibratoDepth" min="0" max="100" step="1" value="0">
-                        <div class="param-hint">How much the pitch wobbles</div>
                     </div>
                     <div class="control-group">
                         <label>Speed <span class="value" id="vibratoSpeedVal">0.0Hz</span></label>
                         <input type="range" id="vibratoSpeed" min="0" max="50" step="0.1" value="0">
-                        <div class="param-hint">How fast the wobble happens</div>
                     </div>
                 </div>
 
@@ -548,41 +510,34 @@
                 <div class="control-section">
                     <div class="section-title">
                         <i class="fas fa-sync-alt"></i> Arpeggio
-                        <i class="fas fa-info-circle info-icon" title="Rapidly alternates between two pitches"></i>
+                        <i class="fas fa-circle-question info-icon" data-tooltip="Rapid Note Switching\n\nQuickly alternates between base pitch and a multiple.\n\nCreates classic 8-bit arpeggios and trills."></i>
                     </div>
-                    <div class="info-text">Rapidly switch between two notes</div>
                     <div class="control-group checkbox-group">
-                        <input type="checkbox" id="arpEnable">
-                        <label>Enable</label>
+                        <input type="checkbox" id="arpEnable"><label>Enable Arpeggio</label>
                     </div>
                     <div class="control-group">
-                        <label>Multiplier <span class="value" id="arpMultVal">x1.00</span></label>
+                        <label>Multiplier <span class="value" id="arpMultVal">×1.00</span></label>
                         <input type="range" id="arpMult" min="0.5" max="3" step="0.01" value="1">
-                        <div class="param-hint">Second note's pitch relative to first</div>
                     </div>
                     <div class="control-group">
                         <label>Speed <span class="value" id="arpSpeedVal">0.000s</span></label>
                         <input type="range" id="arpSpeed" min="0" max="1" step="0.001" value="0">
-                        <div class="param-hint">Time between note switches</div>
                     </div>
                 </div>
 
                 <!-- Duty Cycle -->
                 <div class="control-section">
                     <div class="section-title">
-                        <i class="fas fa-exchange-alt"></i> Duty Cycle
-                        <i class="fas fa-info-circle info-icon" title="Only for square waves - changes tone thickness"></i>
+                        <i class="fas fa-percentage"></i> Duty Cycle (Square Only)
+                        <i class="fas fa-circle-question info-icon" data-tooltip="Square Wave Tone Shaping\n\nChanges thickness of square wave:\n\n• 0–25% = Thin, nasal beep\n• 50% = Full retro square\n• 75–100% = Thin again (different tone)\n\nSweep creates filtering effect!"></i>
                     </div>
-                    <div class="info-text">Square wave tone shaping (50% = balanced)</div>
                     <div class="control-group">
                         <label>Cycle <span class="value" id="dutyVal">50%</span></label>
                         <input type="range" id="duty" min="0" max="100" step="1" value="50">
-                        <div class="param-hint">Lower = thinner, Higher = thicker tone</div>
                     </div>
                     <div class="control-group">
                         <label>Sweep <span class="value" id="dutySweepVal">0%/s</span></label>
                         <input type="range" id="dutySweep" min="-200" max="200" step="1" value="0">
-                        <div class="param-hint">Changes duty cycle over time</div>
                     </div>
                 </div>
 
@@ -590,26 +545,21 @@
                 <div class="control-section">
                     <div class="section-title">
                         <i class="fas fa-filter"></i> Filters
-                        <i class="fas fa-info-circle info-icon" title="Remove high or low frequencies"></i>
+                        <i class="fas fa-circle-question info-icon" data-tooltip="Frequency Filtering\n\nRemove parts of the sound spectrum:\n\n• Low-Pass: Cut highs → muffled/dark\n• High-Pass: Cut lows → thin/bright"></i>
                     </div>
-                    <div class="info-text">Shape the sound's frequency content</div>
                     <div class="control-group checkbox-group">
-                        <input type="checkbox" id="lpfEnable">
-                        <label>Low-Pass</label>
+                        <input type="checkbox" id="lpfEnable"><label>Low-Pass Filter</label>
                     </div>
                     <div class="control-group">
                         <label>Cutoff <span class="value" id="lpfVal">22050Hz</span></label>
                         <input type="range" id="lpf" min="20" max="22050" step="10" value="22050">
-                        <div class="param-hint">Lower = muffle/darken sound</div>
                     </div>
                     <div class="control-group checkbox-group">
-                        <input type="checkbox" id="hpfEnable">
-                        <label>High-Pass</label>
+                        <input type="checkbox" id="hpfEnable"><label>High-Pass Filter</label>
                     </div>
                     <div class="control-group">
                         <label>Cutoff <span class="value" id="hpfVal">0Hz</span></label>
                         <input type="range" id="hpf" min="0" max="5000" step="10" value="0">
-                        <div class="param-hint">Higher = remove bass/rumble</div>
                     </div>
                 </div>
 
@@ -617,32 +567,46 @@
                 <div class="control-section">
                     <div class="section-title">
                         <i class="fas fa-volume-up"></i> Output
-                        <i class="fas fa-info-circle info-icon" title="Control final loudness"></i>
-                    </div>
-                    <div class="info-text">Control the final output level</div>
-                    <div class="control-group">
-                        <label>Layer Volume <span class="value" id="volumeVal">100%</span></label>
-                        <input type="range" id="volume" min="0" max="100" step="1" value="100">
-                        <div class="param-hint">Layer mix level (0-100%)</div>
+                        <i class="fas fa-circle-question info-icon" data-tooltip="Final Level Controls\n\nAdjust how loud this layer appears in the mix."></i>
                     </div>
                     <div class="control-group">
-                        <label>Gain <span class="value" id="gainVal">-10.0 dB</span></label>
+                        <label>Layer Volume <span class="value" id="layerVolumeVal">100%</span>
+                            <i class="fas fa-circle-question info-icon" data-tooltip="Per-Layer Volume (0–200%)\n\nControls this layer's level in the final mix.\n\n• 0% = Silent\n• 100% = Normal\n• 150–200% = Boosted (use carefully!)\n\nPerfect for balancing bass vs sparkle layers."></i>
+                        </label>
+                        <input type="range" id="layerVolume" min="0" max="200" step="1" value="100">
+                    </div>
+                    <div class="control-group">
+                        <label>Gain <span class="value" id="gainVal">-10.0 dB</span>
+                            <i class="fas fa-circle-question info-icon" data-tooltip="Master Gain (-30 to +6 dB)\n\nFinal volume adjustment in decibels.\n\nUse negative values to prevent clipping when layering many sounds."></i>
+                        </label>
                         <input type="range" id="gain" min="-30" max="6" step="0.1" value="-10">
-                        <div class="param-hint">Master volume boost/cut (in decibels)</div>
                     </div>
                 </div>
 
+                <!-- Live Preview -->
+                <div class="control-section">
+                    <div class="section-title">
+                        <i class="fas fa-eye"></i> Live Preview
+                    </div>
+                    <canvas id="waveform-preview" width="380" height="120"></canvas>
+                    <div style="font-size:11px; color:var(--text-secondary); text-align:center; margin-top:8px;">
+                        Green = Actual Waveform | Yellow = Envelope Shape
+                    </div>
+                </div>
             </div>
         </div>
 
         <div class="action-bar">
             <button id="undoBtn" class="action-btn"><i class="fas fa-undo"></i> Undo</button>
             <button id="redoBtn" class="action-btn"><i class="fas fa-redo"></i> Redo</button>
-            <button id="playAll" class="action-btn primary">Play All Layers</button>
-            <button id="exportLayer" class="action-btn">Export Selected</button>
-            <button id="exportMix" class="action-btn">Export Mix</button>
+            <button id="playAll" class="action-btn primary"><i class="fas fa-play"></i> Play All</button>
+            <button id="exportLayer" class="action-btn"><i class="fas fa-download"></i> Export Layer</button>
+            <button id="exportMix" class="action-btn"><i class="fas fa-file-download"></i> Export Mix</button>
         </div>
     </main>
+
+    <!-- Load Tooltip System First -->
+    <script src="js/tooltip.js"></script>
 
     <script src="js/audioEngine.js"></script>
     <script src="js/soundGenerator.js"></script>
@@ -654,7 +618,7 @@
     <script src="js/main.js"></script>
 
     <script>
-        // Tab switching
+        // Tab switching & existing controls (unchanged)
         document.querySelectorAll('.tab-btn').forEach(btn => {
             btn.addEventListener('click', () => {
                 document.querySelectorAll('.tab-btn, .tab-content').forEach(el => el.classList.remove('active'));
@@ -663,7 +627,6 @@
             });
         });
 
-        // Play selected layer
         document.getElementById('playSelected').onclick = () => {
             const layer = app.layerManager.getSelectedLayer();
             if (layer) {
@@ -672,13 +635,11 @@
             }
         };
 
-        // Timeline length
         document.getElementById('totalLength').onchange = (e) => {
             app.timeline.totalLength = parseFloat(e.target.value) || 5;
             app.timeline.render();
         };
 
-        // Playback controls
         document.getElementById('playTimeline').onclick = () => {
             if (!app.timeline.isPlaying) {
                 app.layerManager.playAllLayers();
@@ -687,14 +648,12 @@
         };
         document.getElementById('stopTimeline').onclick = () => app.timeline.stopPlayback();
 
-        // Time display
         setInterval(() => {
             if (app.timeline.isPlaying) {
                 document.getElementById('timeDisplay').textContent = app.timeline.playheadPosition.toFixed(2) + 's';
             }
         }, 50);
 
-        // Action bar
         document.getElementById('undoBtn').onclick = () => app.undo();
         document.getElementById('redoBtn').onclick = () => app.redo();
         document.getElementById('playAll').onclick = () => app.layerManager.playAllLayers();
@@ -706,3 +665,5 @@
     </script>
 </body>
 </html>
+
+    
