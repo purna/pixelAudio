@@ -36,6 +36,7 @@ class UI {
             lpf: document.getElementById('lpf'),
             hpfEnable: document.getElementById('hpfEnable'),
             hpf: document.getElementById('hpf'),
+            volume: document.getElementById('volume'),
             gain: document.getElementById('gain')
         };
 
@@ -57,6 +58,7 @@ class UI {
             dutySweepVal: document.getElementById('dutySweepVal'),
             lpfVal: document.getElementById('lpfVal'),
             hpfVal: document.getElementById('hpfVal'),
+            volumeVal: document.getElementById('volumeVal'),
             gainVal: document.getElementById('gainVal')
         };
     }
@@ -116,6 +118,9 @@ class UI {
                     settings[key] = el.checked;
                 } else if (el.tagName === 'SELECT') {
                     settings[key] = el.value;
+                } else if (key === 'volume') {
+                    // Convert 0-100 to 0-1
+                    settings[key] = parseFloat(el.value) / 100;
                 } else {
                     settings[key] = parseFloat(el.value);
                 }
@@ -134,6 +139,9 @@ class UI {
                     el.checked = settings[key];
                 } else if (el.tagName === 'SELECT') {
                     el.value = settings[key];
+                } else if (key === 'volume') {
+                    // Convert 0-1 to 0-100 for the slider
+                    el.value = (settings[key] * 100).toFixed(0);
                 } else {
                     el.value = settings[key];
                 }
@@ -157,6 +165,7 @@ class UI {
         this.displays.dutySweepVal.textContent = settings.dutySweep.toFixed(0) + '%/s';
         this.displays.lpfVal.textContent = settings.lpf.toFixed(0) + 'Hz';
         this.displays.hpfVal.textContent = settings.hpf.toFixed(0) + 'Hz';
+        this.displays.volumeVal.textContent = (settings.volume * 100).toFixed(0) + '%';
         this.displays.gainVal.textContent = settings.gain.toFixed(1) + ' dB';
     }
 
