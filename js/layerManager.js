@@ -303,7 +303,7 @@ class LayerManager {
     }
 
     // ————————————————————————————————————————————————————————
-    // UI: Render Layer List with volume controls
+    // UI: Render Layer List (simplified without volume)
     // ————————————————————————————————————————————————————————
     renderList() {
         const list = document.getElementById('layersList');
@@ -337,34 +337,6 @@ class LayerManager {
             nameInput.onkeydown = e => {
                 if (e.key === 'Enter') nameInput.blur();
             };
-
-            // Volume control
-            const volumeContainer = document.createElement('div');
-            volumeContainer.className = 'layer-volume-container';
-            volumeContainer.onclick = e => e.stopPropagation();
-            
-            const volumeSlider = document.createElement('input');
-            volumeSlider.type = 'range';
-            volumeSlider.className = 'layer-volume-slider';
-            volumeSlider.min = '0';
-            volumeSlider.max = '100';
-            volumeSlider.value = (layer.volume * 100).toFixed(0);
-            volumeSlider.title = `Volume: ${(layer.volume * 100).toFixed(0)}%`;
-            volumeSlider.oninput = (e) => {
-                e.stopPropagation();
-                const newVolume = parseFloat(e.target.value) / 100;
-                this.setLayerVolume(layer.id, newVolume);
-                e.target.title = `Volume: ${(newVolume * 100).toFixed(0)}%`;
-            };
-            
-            const volumeIcon = document.createElement('i');
-            volumeIcon.className = 'fas fa-volume-up';
-            volumeIcon.style.fontSize = '10px';
-            volumeIcon.style.color = 'var(--text-secondary)';
-            volumeIcon.style.marginRight = '4px';
-            
-            volumeContainer.appendChild(volumeIcon);
-            volumeContainer.appendChild(volumeSlider);
 
             // Action buttons container
             const actionsContainer = document.createElement('div');
@@ -401,13 +373,11 @@ class LayerManager {
 
             div.appendChild(muteBtn);
             div.appendChild(nameInput);
-            div.appendChild(volumeContainer);
             div.appendChild(actionsContainer);
 
             // Click = select layer
             div.onclick = (e) => {
-                if (e.target === nameInput || e.target === muteBtn || e.target === delBtn || 
-                    e.target === volumeSlider || e.target === dupBtn) return;
+                if (e.target === nameInput || e.target === muteBtn || e.target === delBtn || e.target === dupBtn) return;
                 this.selectLayer(layer.id);
             };
 
