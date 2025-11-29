@@ -1,96 +1,148 @@
-// js/soundGenerator.js
-import { getAudioContext } from './audioEngine.js';
+// soundGenerator.js - Core sound synthesis
 
-export function generateBuffer(settings) {
-    const ctx = getAudioContext();
-    const sampleRate = ctx.sampleRate;
-    const duration = settings.attack + settings.sustain + settings.decay + 0.1;
-    const buffer = ctx.createBuffer(1, Math.ceil(duration * sampleRate), sampleRate);
-    const data = buffer.getChannelData(0);
+class SoundGenerator {
+    constructor() {
+        this.audioEngine = null;
+    }
 
-    // Same algorithm as your original (cleaned up)
-    let phase = 0;
-    let freq = settings.frequency;
-    let slide = settings.slide;
-    let duty = settings.duty / 100;
-    let arpTime = 0;
-    let arpMult = 1;
-    const gain = Math.pow(10, settings.gain / 20);
+    setAudioEngine(audioEngine) {
+        this.audioEngine = audioEngine;
+    }
 
-    for (let i = 0; i < data.length; i++) {
-        const t = i / sampleRate;
+    generate(settings, sampleRate = 44100) {
+        const duration = settings.attack + settings.sustain + settings.decay;
+        const samples = Math.floor(duration * sampleRate);
+        
+        // Create buffer through audio engine if available
+        const context = new (window.AudioContext || window.webkitAudioContext)();
+        const buffer = context.createBuffer(1, samples, context.sampleRate);
+        const data = buffer.getChannelData(0);
 
-        // Envelope
-        let env = 0;
-        if (t < settings.attack) env = t / settings.attack;
-        else if (t < settings.attack + settings.sustain) {
-            env = 1 + (settings.punch / 100) * Math.max(0, 1 - (t - settings.attack) / settings.sustain);
-        } else if (t < settings.attack + settings.sustain + settings.decay) {
-            env = 1 - (t - settings.attack - settings.sustain) / settings.decay;
+        // Generate audio data
+        this.generateWaveform(data, settings, sampleRate);
+
+        // Apply filters
+        if (settings.lpfEnable) {
+            this.applyLowPassFilter(data, settings.lpf, sampleRate);
         }
-        env = Math.max(0, Math.min(1, env));
+        if (settings.hpfEnable) {
+            this.applyHighPassFilter(data, settings.hpf, sampleRate);
+        }
 
-        // Frequency slide
-        slide += settings.deltaSlide / sampleRate;
-        freq += slide;
-        freq = Math.max(settings.minFreq, freq);
+        return buffer;
+    }
 
-        // Arpeggio
-        if (settings.arpEnable && settings.arpSpeed > 0) {
-            arpTime += 1 / sampleRate;
-            if (arpTime >= settings.arpSpeed) {
-                arpTime = 0;
-                arpMult = arpMult === 1 ? settings.arpMult : 1;
+    generateWaveform(data, s, sampleRate) {
+        let phase = 0;
+        let frequency = s.frequency;
+        let slide = s.slide;
+        let duty = s.duty / 100;
+        let arpTime = 0;
+        let arpMult = 1;
+
+        const gainLinear = Math.pow(10, s.gain / 20);
+
+        for (let i = 0; i < data.length; i++) {
+            const t = i / sampleRate;
+            
+            // Calculate envelope
+            const envelope = this.calculateEnvelope(t, s);
+
+            // Frequency slide
+            slide += s.deltaSlide / sampleRate;
+            frequency += slide;
+            frequency = Math.max(s.minFreq, frequency);
+
+            // Arpeggiation
+            if (s.arpEnable && s.arpSpeed > 0) {
+                arpTime += 1 / sampleRate;
+                if (arpTime > s.arpSpeed) {
+                    arpTime = 0;
+                    arpMult = arpMult === 1 ? s.arpMult : 1;
+                }
             }
+
+            let finalFreq = frequency * arpMult;
+
+            // Vibrato
+            if (s.vibratoEnable && s.vibratoDepth > 0) {
+                const vibrato = Math.sin(t * s.vibratoSpeed * Math.PI * 2) * (s.vibratoDepth / 100);
+                finalFreq *= 1 + vibrato;
+            }
+
+            // Generate square wave with duty cycle
+            phase += (finalFreq / sampleRate) * Math.PI * 2;
+            const square = (phase % (Math.PI * 2)) < (Math.PI * 2 * duty) ? 1 : -1;
+
+            // Duty sweep
+            duty += (s.dutySweep / 100) / sampleRate;
+            duty = Math.max(0, Math.min(1, duty));
+
+            data[i] = square * envelope * gainLinear;
         }
+    }
 
-        let f = freq * arpMult;
-
-        // Vibrato
-        if (settings.vibratoEnable) {
-            const vib = Math.sin(t * settings.vibratoSpeed * Math.PI * 2) * (settings.vibratoDepth / 100);
-            f *= 1 + vib;
+    calculateEnvelope(t, settings) {
+        let envelope = 0;
+        
+        if (t < settings.attack) {
+            // Attack phase
+            envelope = t / settings.attack;
+        } else if (t < settings.attack + settings.sustain) {
+            // Sustain phase
+            envelope = 1;
+            
+            // Apply punch if enabled
+            if (settings.punch > 0) {
+                const punchT = (t - settings.attack) / settings.sustain;
+                envelope += (settings.punch / 100) * (1 - punchT);
+            }
+        } else {
+            // Decay phase
+            const decayT = (t - settings.attack - settings.sustain) / settings.decay;
+            envelope = 1 - decayT;
         }
-
-        // Square wave
-        phase += f / sampleRate * Math.PI * 2;
-        const sq = (phase % (Math.PI * 2)) < (Math.PI * 2 * duty) ? 1 : -1;
-
-        // Duty sweep
-        duty += settings.dutySweep / 100 / sampleRate;
-        duty = Math.clamp(0, 1);
-
-        data[i] = sq * env * gain;
+        
+        return Math.max(0, Math.min(1, envelope));
     }
 
-    // Filters (simple IIR)
-    if (settings.lpfEnable) applyLPF(data, settings.lpf, sampleRate);
-    if (settings.hpfEnable) applyHPF(data, settings.hpf, sampleRate);
+    applyLowPassFilter(data, cutoff, sampleRate) {
+        const RC = 1.0 / (cutoff * 2 * Math.PI);
+        const dt = 1.0 / sampleRate;
+        const alpha = dt / (RC + dt);
+        
+        for (let i = 1; i < data.length; i++) {
+            data[i] = data[i - 1] + alpha * (data[i] - data[i - 1]);
+        }
+    }
 
-    return buffer;
-}
+    applyHighPassFilter(data, cutoff, sampleRate) {
+        const RC = 1.0 / (cutoff * 2 * Math.PI);
+        const dt = 1.0 / sampleRate;
+        const alpha = RC / (RC + dt);
+        
+        let y = 0;
+        for (let i = 1; i < data.length; i++) {
+            y = alpha * (y + data[i] - data[i - 1]);
+            data[i] = y;
+        }
+    }
 
-function applyLPF(data, cutoff, sr) {
-    const rc = 1 / (cutoff * 2 * Math.PI);
-    const dt = 1 / sr;
-    const a = dt / (rc + dt);
-    for (let i = 1; i < data.length; i++) {
-        data[i] = data[i-1] + a * (data[i] - data[i-1]);
+    calculateDuration(settings) {
+        return settings.attack + settings.sustain + settings.decay;
+    }
+
+    // Generate multiple samples for waveform preview
+    generatePreviewSamples(settings, numSamples = 200) {
+        const duration = this.calculateDuration(settings);
+        const samples = [];
+        
+        for (let i = 0; i < numSamples; i++) {
+            const t = (i / numSamples) * duration;
+            const envelope = this.calculateEnvelope(t, settings);
+            samples.push(envelope);
+        }
+        
+        return samples;
     }
 }
-
-function applyHPF(data, cutoff, sr) {
-    const rc = 1 / (cutoff * 2 * Math.PI);
-    const dt = 1 / sr;
-    const a = rc / (rc + dt);
-    let prev = 0;
-    for (let i = 1; i < data.length; i++) {
-        const high = a * (prev + data[i] - data[i-1]);
-        data[i] = high;
-        prev = high;
-    }
-}
-
-Number.prototype.clamp = function(min, max) {
-    return Math.min(Math.max(this, min), max);
-};
