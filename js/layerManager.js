@@ -10,6 +10,7 @@ class LayerManager {
 
     init() {
         this.addLayer('Layer 1');
+        this.selectLayer(1); // Select the first layer
         this.renderList(); // Initial render
     }
 
@@ -48,8 +49,16 @@ class LayerManager {
 
         this.layers.splice(index, 1);
 
+        // FAILSAFE: Always ensure at least one layer exists
+        if (this.layers.length === 0) {
+            this.addLayer('Layer 1');
+            return;
+        }
+
+        // Select another layer if we deleted the selected one
         if (this.selectedLayerId === layerId) {
-            this.selectedLayerId = this.layers.length > 0 ? this.layers[0].id : null;
+            const newSelectedLayer = this.layers[Math.min(index, this.layers.length - 1)];
+            this.selectLayer(newSelectedLayer.id);
         }
 
         this.notifyLayerChange();
@@ -67,8 +76,13 @@ class LayerManager {
         const layer = this.getLayer(layerId);
         if (layer) {
             this.selectedLayerId = layerId;
-            this.app.updateSettings(layer.settings);  // This triggers UI update
-            this.app.ui.updateDisplay(layer.settings); // Force immediate UI sync
+            
+            // Update app settings and UI
+            if (this.app.ui && this.app.ui.elements) {
+                this.app.updateSettings(layer.settings);
+                this.app.ui.updateDisplay(layer.settings);
+            }
+            
             this.notifyLayerChange();
         }
     }
@@ -87,7 +101,7 @@ class LayerManager {
             layer.settings = { ...layer.settings, ...settings };
             
             // If this is the selected layer, update the UI
-            if (layerId === this.selectedLayerId) {
+            if (layerId === this.selectedLayerId && this.app.ui && this.app.ui.elements) {
                 this.app.updateSettings(layer.settings);
                 this.app.ui.updateDisplay(layer.settings);
             }
