@@ -272,15 +272,18 @@
         <div class="panel">
             <div class="panel-title">Presets</div>
             <div class="preset-grid">
-                <button onclick="loadPreset('pickup')" class="preset-btn">Pickup/Coin</button>
-                <button onclick="loadPreset('laser')" class="preset-btn">Laser/Shoot</button>
-                <button onclick="loadPreset('explosion')" class="preset-btn">Explosion</button>
-                <button onclick="loadPreset('powerup')" class="preset-btn">Powerup</button>
-                <button onclick="loadPreset('hit')" class="preset-btn">Hit/Hurt</button>
-                <button onclick="loadPreset('jump')" class="preset-btn">Jump</button>
-                <button onclick="loadPreset('click')" class="preset-btn">Click</button>
-                <button onclick="loadPreset('blip')" class="preset-btn">Blip/Select</button>
-            </div>
+                <button class="preset-btn" onclick="loadPreset('pickup')"><i class="fas fa-coins"></i> Pickup</button>
+<button class="preset-btn" onclick="loadPreset('laser')"><i class="fas fa-bolt"></i> Laser</button>
+<button class="preset-btn" onclick="loadPreset('explosion')"><i class="fas fa-bomb"></i> Explosion</button>
+<button class="preset-btn" onclick="loadPreset('powerup')"><i class="fas fa-rocket"></i> Powerup</button>
+<button class="preset-btn" onclick="loadPreset('hit')"><i class="fas fa-gavel"></i> Hit</button>
+<button class="preset-btn" onclick="loadPreset('jump')"><i class="fas fa-angle-double-up"></i> Jump</button>
+<button class="preset-btn" onclick="loadPreset('click')"><i class="fas fa-mouse-pointer"></i> Click</button>
+<button class="preset-btn" onclick="loadPreset('blip')"><i class="fas fa-dot-circle"></i> Blip</button>
+<button class="preset-btn" onclick="loadPreset('hover')"><i class="fas fa-hand-pointer"></i> Hover</button>
+<button class="preset-btn" onclick="loadPreset('synth')"><i class="fas fa-music"></i> Synth</button>
+<button class="preset-btn" onclick="loadPreset('tone')"><i class="fas fa-bell"></i> Tone</button>
+               </div>
             <button onclick="randomize()" class="action-btn" style="width:100%; margin-top:12px;">
                 Randomize
             </button>
@@ -314,7 +317,7 @@
 
                 <!-- Envelope -->
                 <div class="control-section">
-                    <div class="section-title">Envelope</div>
+                    <div class="section-title"><i class="fas fa-wave-square"></i> Envelope</div>
                     <div class="control-group">
                         <label>Attack <span class="value" id="attackVal">0.00s</span></label>
                         <input type="range" id="attack" min="0" max="1" step="0.001" value="0">
@@ -335,7 +338,7 @@
 
                 <!-- Oscillator -->
                 <div class="control-section">
-                    <div class="section-title">Frequency</div>
+                    <div class="section-title"><i class="fas fa-sliders-h"></i> Frequency</div>
                     <div class="control-group">
                         <label>Start <span class="value" id="freqVal">440Hz</span></label>
                         <input type="range" id="frequency" min="20" max="3000" step="1" value="440">
@@ -356,7 +359,7 @@
 
                 <!-- Vibrato -->
                 <div class="control-section">
-                    <div class="section-title">Vibrato</div>
+                    <div class="section-title"><i class="fas fa-vibrate"></i> Vibrato</div> <!-- Assuming a new class or typo fix for vibrato -->
                     <div class="control-group checkbox-group">
                         <input type="checkbox" id="vibratoEnable">
                         <label>Enable</label>
@@ -373,7 +376,7 @@
 
                 <!-- Arpeggio -->
                 <div class="control-section">
-                    <div class="section-title">Arpeggio</div>
+                    <div class="section-title"><i class="fas fa-sync-alt"></i> Arpeggio</div>
                     <div class="control-group checkbox-group">
                         <input type="checkbox" id="arpEnable">
                         <label>Enable</label>
@@ -390,7 +393,7 @@
 
                 <!-- Duty Cycle -->
                 <div class="control-section">
-                    <div class="section-title">Duty Cycle</div>
+                    <div class="section-title"><i class="fas fa-exchange-alt"></i> Duty Cycle</div>
                     <div class="control-group">
                         <label>Cycle <span class="value" id="dutyVal">50%</span></label>
                         <input type="range" id="duty" min="0" max="100" step="1" value="50">
@@ -403,7 +406,7 @@
 
                 <!-- Filters -->
                 <div class="control-section">
-                    <div class="section-title">Filters</div>
+                    <div class="section-title"><i class="fas fa-filter"></i> Filters</div>
                     <div class="control-group checkbox-group">
                         <input type="checkbox" id="lpfEnable">
                         <label>Low-Pass</label>
@@ -424,7 +427,7 @@
 
                 <!-- Output -->
                 <div class="control-section">
-                    <div class="section-title">Output</div>
+                    <div class="section-title"><i class="fas fa-volume-up"></i> Output</div>
                     <div class="control-group">
                         <label>Gain <span class="value" id="gainVal">-10.0 dB</span></label>
                         <input type="range" id="gain" min="-30" max="6" step="0.1" value="-10">
