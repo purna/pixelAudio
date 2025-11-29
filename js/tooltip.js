@@ -31,29 +31,32 @@ class Tooltip {
         document.body.appendChild(this.tooltip);
     }
 
-    show(text, element) {
-        this.tooltip.textContent = text;
-        this.tooltip.style.opacity = '1';
-        this.tooltip.style.transform = 'translateY(0)';
+   show(text, element) {
+    // Convert \n to <br> and allow basic formatting
+    this.tooltip.innerHTML = text
+        .replace(/\n/g, '<br>')
+        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')  // optional bold
+        .replace(/--(.*?)--/g, '<em>$1</em>');               // optional italic
 
-        const rect = element.getBoundingClientRect();
-        const tooltipRect = this.tooltip.getBoundingClientRect();
+    this.tooltip.style.opacity = '1';
+    this.tooltip.style.transform = 'translateY(0)';
 
-        let top = rect.bottom + 8;
-        let left = rect.left + rect.width / 2 - tooltipRect.width / 2;
+    const rect = element.getBoundingClientRect();
+    const tooltipRect = this.tooltip.getBoundingClientRect();
 
-        // Keep within viewport
-        if (left < 10) left = 10;
-        if (left + tooltipRect.width > window.innerWidth - 10) {
-            left = window.innerWidth - tooltipRect.width - 10;
-        }
-        if (top + tooltipRect.height > window.innerHeight - 10) {
-            top = rect.top - tooltipRect.height - 8;
-        }
+    let top = rect.bottom + 8;
+    let left = rect.left + rect.width / 2 - tooltipRect.width / 2;
 
-        this.tooltip.style.top = top + window.scrollY + 'px';
-        this.tooltip.style.left = left + window.scrollX + 'px';
-    }
+    // Keep inside viewport
+    if (left < 10) left = 10;
+    if (left + tooltipRect.width > window.innerWidth - 10)
+        left = window.innerWidth - tooltipRect.width - 10;
+    if (top + tooltipRect.height > window.innerHeight - 10)
+        top = rect.top - tooltipRect.height - 8;
+
+    this.tooltip.style.top = top + window.scrollY + 'px';
+    this.tooltip.style.left = left + window.scrollX + 'px';
+}
 
     hide() {
         this.tooltip.style.opacity = '0';
