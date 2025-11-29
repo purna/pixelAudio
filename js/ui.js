@@ -38,6 +38,7 @@ class UI {
             lpf: document.getElementById('lpf'),
             hpfEnable: document.getElementById('hpfEnable'),
             hpf: document.getElementById('hpf'),
+            waveform: document.getElementById('waveform'),
             gain: document.getElementById('gain'),
             volume: document.getElementById('layerVolume')  // FIXED: was layerVolume
         };
@@ -78,6 +79,13 @@ class UI {
             }
         }
 
+        // Waveform is a select element, handle it specially
+        if (this.elements.waveform) {
+            this.elements.waveform.addEventListener('change', () => {
+                this.handleInput('waveform', this.elements.waveform);
+            });
+        }
+
         // Layer volume is special — updates selected layer only
         if (this.elements.volume) {
             this.elements.volume.addEventListener('input', () => {
@@ -94,7 +102,16 @@ class UI {
     }
 
     handleInput(key, element) {
-        let value = element.type === 'checkbox' ? element.checked : parseFloat(element.value);
+        let value;
+        
+        if (element.tagName === 'SELECT') {
+            value = element.value;
+        } else if (element.type === 'checkbox') {
+            value = element.checked;
+        } else {
+            value = parseFloat(element.value);
+        }
+        
         const updates = { [key]: value };
 
         if (key.includes('Enable')) {
@@ -132,12 +149,42 @@ class UI {
         this.displays.hpfVal.textContent = settings.hpf.toFixed(0) + 'Hz';
         this.displays.gainVal.textContent = settings.gain.toFixed(1) + ' dB';
 
+        // Update all input positions
+        if (this.elements.attack) this.elements.attack.value = settings.attack;
+        if (this.elements.sustain) this.elements.sustain.value = settings.sustain;
+        if (this.elements.punch) this.elements.punch.value = settings.punch;
+        if (this.elements.decay) this.elements.decay.value = settings.decay;
+        if (this.elements.frequency) this.elements.frequency.value = settings.frequency;
+        if (this.elements.minFreq) this.elements.minFreq.value = settings.minFreq;
+        if (this.elements.slide) this.elements.slide.value = settings.slide;
+        if (this.elements.deltaSlide) this.elements.deltaSlide.value = settings.deltaSlide;
+        if (this.elements.vibratoDepth) this.elements.vibratoDepth.value = settings.vibratoDepth;
+        if (this.elements.vibratoSpeed) this.elements.vibratoSpeed.value = settings.vibratoSpeed;
+        if (this.elements.arpMult) this.elements.arpMult.value = settings.arpMult;
+        if (this.elements.arpSpeed) this.elements.arpSpeed.value = settings.arpSpeed;
+        if (this.elements.duty) this.elements.duty.value = settings.duty;
+        if (this.elements.dutySweep) this.elements.dutySweep.value = settings.dutySweep;
+        if (this.elements.lpf) this.elements.lpf.value = settings.lpf;
+        if (this.elements.hpf) this.elements.hpf.value = settings.hpf;
+        if (this.elements.gain) this.elements.gain.value = settings.gain;
+
+        // Update checkbox states
+        if (this.elements.vibratoEnable) this.elements.vibratoEnable.checked = settings.vibratoEnable;
+        if (this.elements.arpEnable) this.elements.arpEnable.checked = settings.arpEnable;
+        if (this.elements.lpfEnable) this.elements.lpfEnable.checked = settings.lpfEnable;
+        if (this.elements.hpfEnable) this.elements.hpfEnable.checked = settings.hpfEnable;
+
         // Update layer volume display
         const selectedLayer = this.app.layerManager.getSelectedLayer();
         if (selectedLayer && this.elements.volume && this.displays.volumeVal) {
             const volPercent = Math.round(selectedLayer.volume * 100);
             this.elements.volume.value = volPercent;
             this.displays.volumeVal.textContent = volPercent + '%';
+        }
+
+        // Update waveform select
+        if (this.elements.waveform) {
+            this.elements.waveform.value = settings.waveform;
         }
     }
 

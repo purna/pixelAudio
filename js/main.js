@@ -328,22 +328,26 @@ class SFXGeneratorApp {
 
 // Initialize app when DOM is ready
 let app;
+
 document.addEventListener('DOMContentLoaded', () => {
     app = new SFXGeneratorApp();
     app.init();
+    
+    // Mark as initialized after everything is set up
+    app.initialized = true;
 });
 
-// Global function for preset buttons (calls app after initialization)
+// Global function for preset buttons
 function loadPreset(presetName) {
     if (app && app.initialized) {
         app.loadPreset(presetName);
     } else {
-        // If app isn't ready yet, wait for it
+        // Wait a bit and try again
         setTimeout(() => loadPreset(presetName), 100);
     }
 }
 
-// Global function for randomize button
+// Global function for randomize button  
 function randomize() {
     if (app && app.initialized) {
         app.randomize();
