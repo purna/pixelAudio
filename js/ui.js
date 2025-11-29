@@ -95,37 +95,37 @@ class UI {
     }
 
     updateDisplay(settings) {
-        // Update slider values
-        for (let key in settings) {
-            const el = this.elements[key];
-            if (el) {
-                if (el.type === 'checkbox') {
-                    el.checked = settings[key];
-                } else {
-                    el.value = settings[key];
-                }
+    // Always update sliders from the passed settings object
+    for (let key in settings) {
+        const el = this.elements[key];
+        if (el) {
+            if (el.type === 'checkbox') {
+                el.checked = settings[key];
+            } else {
+                el.value = settings[key];
             }
         }
-
-        // Update display values
-        this.displays.attackVal.textContent = settings.attack.toFixed(2) + 's';
-        this.displays.sustainVal.textContent = settings.sustain.toFixed(2) + 's';
-        this.displays.punchVal.textContent = settings.punch.toFixed(0) + '%';
-        this.displays.decayVal.textContent = settings.decay.toFixed(2) + 's';
-        this.displays.freqVal.textContent = settings.frequency.toFixed(0) + 'Hz';
-        this.displays.minFreqVal.textContent = settings.minFreq.toFixed(0) + 'Hz';
-        this.displays.slideVal.textContent = settings.slide.toFixed(2);
-        this.displays.deltaSlideVal.textContent = settings.deltaSlide.toFixed(2);
-        this.displays.vibratoDepthVal.textContent = settings.vibratoDepth.toFixed(0) + '%';
-        this.displays.vibratoSpeedVal.textContent = settings.vibratoSpeed.toFixed(1) + 'Hz';
-        this.displays.arpMultVal.textContent = 'x' + settings.arpMult.toFixed(2);
-        this.displays.arpSpeedVal.textContent = settings.arpSpeed.toFixed(3) + 's';
-        this.displays.dutyVal.textContent = settings.duty.toFixed(0) + '%';
-        this.displays.dutySweepVal.textContent = settings.dutySweep.toFixed(0) + '%/s';
-        this.displays.lpfVal.textContent = settings.lpf.toFixed(0) + 'Hz';
-        this.displays.hpfVal.textContent = settings.hpf.toFixed(0) + 'Hz';
-        this.displays.gainVal.textContent = settings.gain.toFixed(1) + ' dB';
     }
+
+    // Update value labels
+    this.displays.attackVal.textContent = settings.attack.toFixed(3) + 's';
+    this.displays.sustainVal.textContent = settings.sustain.toFixed(3) + 's';
+    this.displays.punchVal.textContent = settings.punch.toFixed(0) + '%';
+    this.displays.decayVal.textContent = settings.decay.toFixed(3) + 's';
+    this.displays.freqVal.textContent = settings.frequency.toFixed(0) + 'Hz';
+    this.displays.minFreqVal.textContent = settings.minFreq.toFixed(0) + 'Hz';
+    this.displays.slideVal.textContent = settings.slide.toFixed(3);
+    this.displays.deltaSlideVal.textContent = settings.deltaSlide.toFixed(3);
+    this.displays.vibratoDepthVal.textContent = settings.vibratoDepth.toFixed(0) + '%';
+    this.displays.vibratoSpeedVal.textContent = settings.vibratoSpeed.toFixed(1) + 'Hz';
+    this.displays.arpMultVal.textContent = 'x' + settings.arpMult.toFixed(2);
+    this.displays.arpSpeedVal.textContent = settings.arpSpeed.toFixed(3) + 's';
+    this.displays.dutyVal.textContent = settings.duty.toFixed(0) + '%';
+    this.displays.dutySweepVal.textContent = settings.dutySweep.toFixed(0) + '%/s';
+    this.displays.lpfVal.textContent = settings.lpf.toFixed(0) + 'Hz';
+    this.displays.hpfVal.textContent = settings.hpf.toFixed(0) + 'Hz';
+    this.displays.gainVal.textContent = settings.gain.toFixed(1) + ' dB';
+}
 
     showPlayingFeedback() {
         const playBtn = document.querySelector('.play-btn');
