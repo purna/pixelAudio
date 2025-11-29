@@ -101,6 +101,80 @@ class SFXGeneratorApp {
                 this.duplicateLayer();
             }
         });
+
+        // Play button event listeners - wait for DOM to be ready
+        document.addEventListener('DOMContentLoaded', () => {
+            // Play Selected button
+            const playSelectedBtn = document.getElementById('playSelected');
+            if (playSelectedBtn) {
+                playSelectedBtn.addEventListener('click', () => {
+                    this.playCurrentSound();
+                });
+            }
+
+            // Play All Timeline button
+            const playTimelineBtn = document.getElementById('playTimeline');
+            if (playTimelineBtn) {
+                playTimelineBtn.addEventListener('click', () => {
+                    this.layerManager.playAllLayers();
+                });
+            }
+
+            // Stop Timeline button
+            const stopTimelineBtn = document.getElementById('stopTimeline');
+            if (stopTimelineBtn) {
+                stopTimelineBtn.addEventListener('click', () => {
+                    this.audioEngine.stopAll();
+                });
+            }
+
+            // Play All Layers button (action bar)
+            const playAllBtn = document.getElementById('playAll');
+            if (playAllBtn) {
+                playAllBtn.addEventListener('click', () => {
+                    this.layerManager.playAllLayers();
+                });
+            }
+
+            // Undo/Redo buttons
+            const undoBtn = document.getElementById('undoBtn');
+            if (undoBtn) {
+                undoBtn.addEventListener('click', () => this.undo());
+            }
+
+            const redoBtn = document.getElementById('redoBtn');
+            if (redoBtn) {
+                redoBtn.addEventListener('click', () => this.redo());
+            }
+
+            // Export buttons
+            const exportLayerBtn = document.getElementById('exportLayer');
+            if (exportLayerBtn) {
+                exportLayerBtn.addEventListener('click', () => {
+                    const selectedLayer = this.layerManager.getSelectedLayer();
+                    if (selectedLayer) {
+                        const buffer = this.soundGenerator.generate(selectedLayer.settings, this.audioEngine.sampleRate);
+                        this.audioEngine.downloadWAV(buffer, `${selectedLayer.name.replace(/\s+/g, '_')}.wav`);
+                    }
+                });
+            }
+
+            const exportMixBtn = document.getElementById('exportMix');
+            if (exportMixBtn) {
+                exportMixBtn.addEventListener('click', () => {
+                    this.layerManager.exportMixedAudio();
+                });
+            }
+
+            // Add Layer button (makes it consistent with other buttons)
+            const addLayerBtn = document.querySelector('button[onclick="app.layerManager.addLayer()"]');
+            if (addLayerBtn) {
+                addLayerBtn.removeAttribute('onclick'); // Remove inline handler
+                addLayerBtn.addEventListener('click', () => {
+                    this.layerManager.addLayer();
+                });
+            }
+        });
     }
 
     copyLayer() {
