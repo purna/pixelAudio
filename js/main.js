@@ -116,17 +116,18 @@ loadPreset(presetName) {
     const selectedLayer = this.layerManager.getSelectedLayer();
 
     if (selectedLayer) {
-        // Apply preset ONLY to selected layer
+        // Apply preset to selected layer
         this.layerManager.updateLayerSettings(selectedLayer.id, preset);
         
-        // Update UI sliders to reflect the new values
+        // Sync app's currentSettings and UI
+        this.updateSettings(preset);
         this.ui.updateDisplay(preset);
         
-        // Optional: Play the updated layer so you hear it instantly
+        // Play the updated layer
         const buffer = this.soundGenerator.generate(preset, this.audioEngine.sampleRate);
         this.audioEngine.playBuffer(buffer);
     } else {
-        // Fallback: if no layer selected, apply globally (rare case)
+        // Fallback: apply globally
         this.updateSettings(preset);
         this.ui.updateDisplay(preset);
         this.playCurrentSound();
