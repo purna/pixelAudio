@@ -107,13 +107,20 @@ class SFXGeneratorApp {
         this.audioEngine.downloadWAV(buffer, `sfx_${Date.now()}.wav`);
     }
 
-    loadPreset(presetName) {
-        const preset = this.presets.get(presetName);
-        if (preset) {
-            this.updateSettings(preset);
-            this.playCurrentSound();
+
+        loadPreset(presetName) {
+            const preset = this.presets.get(presetName);
+            if (preset) {
+                const selected = this.layerManager.getSelectedLayer();
+                if (selected) {
+                    this.layerManager.updateLayerSettings(selected.id, preset);
+                    this.ui.updateDisplay(preset);
+                } else {
+                    this.updateSettings(preset);
+                }
+                this.layerManager.playAllLayers(); // Refresh preview
+            }
         }
-    }
 
     randomize() {
         const randomSettings = this.presets.generateRandom();
