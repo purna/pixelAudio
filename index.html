@@ -122,8 +122,8 @@
             <div class="control-section">
                 <div class="section-title">Output <i class="fas fa-circle-question info-icon" data-tooltip="Audio Output Controls\n\n**Layer Volume** → Per-layer level adjustment (0-200%)\n**Gain** → Overall decibel boost/cut (-30 to +6 dB)"></i></div>
                 <div class="control-group">
-                    <label>Layer Volume <span class="value" id="volumeVal">100%</span></label>
-                    <input type="range" id="volume" min="0" max="200" step="1" value="100">
+                    <label>Layer Volume <span class="value" id="layerVolumeVal">100%</span></label>
+                    <input type="range" id="layerVolume" min="0" max="200" step="1" value="100">
                 </div>
                 <div class="control-group">
                     <label>Gain <span class="value" id="gainVal">-10.0 dB</span></label>
@@ -200,10 +200,6 @@ function drawWaveform(){
     }
     ctx.stroke();
 }
-document.getElementById('volume')?.addEventListener('input',e=>{
-    const l=app?.layerManager?.getSelectedLayer?.();
-    if(l){ l.settings.volume=e.target.value/100; document.getElementById('volumeVal').textContent=e.target.value+'%'; drawWaveform(); }
-});
 document.addEventListener('settingsChanged',drawWaveform);
 document.addEventListener('layerSelected',drawWaveform);
 setInterval(drawWaveform,100);

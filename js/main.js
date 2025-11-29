@@ -47,6 +47,9 @@ class SFXGeneratorApp {
             this.updateSettings(firstLayer.settings);
             this.ui.updateDisplay(firstLayer.settings);
         }
+        
+        // Mark as initialized
+        this.initialized = true;
     }
 
     setupEventListeners() {
@@ -330,5 +333,21 @@ document.addEventListener('DOMContentLoaded', () => {
     app.init();
 });
 
-// Make app globally accessible for inline event handlers (temporary)
-window.app = app;
+// Global function for preset buttons (calls app after initialization)
+function loadPreset(presetName) {
+    if (app && app.initialized) {
+        app.loadPreset(presetName);
+    } else {
+        // If app isn't ready yet, wait for it
+        setTimeout(() => loadPreset(presetName), 100);
+    }
+}
+
+// Global function for randomize button
+function randomize() {
+    if (app && app.initialized) {
+        app.randomize();
+    } else {
+        setTimeout(randomize, 100);
+    }
+}

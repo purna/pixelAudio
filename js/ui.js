@@ -39,7 +39,7 @@ class UI {
             hpfEnable: document.getElementById('hpfEnable'),
             hpf: document.getElementById('hpf'),
             gain: document.getElementById('gain'),
-            layerVolume: document.getElementById('layerVolume')  // NEW
+            volume: document.getElementById('layerVolume')  // FIXED: was layerVolume
         };
 
         this.displays = {
@@ -60,7 +60,7 @@ class UI {
             lpfVal: document.getElementById('lpfVal'),
             hpfVal: document.getElementById('hpfVal'),
             gainVal: document.getElementById('gainVal'),
-            layerVolumeVal: document.getElementById('layerVolumeVal')  // NEW
+            volumeVal: document.getElementById('layerVolumeVal')  // FIXED: was layerVolumeVal
         };
 
         // Waveform preview
@@ -79,14 +79,15 @@ class UI {
         }
 
         // Layer volume is special — updates selected layer only
-        if (this.elements.layerVolume) {
-            this.elements.layerVolume.addEventListener('input', () => {
-                const value = this.elements.layerVolume.value;
+        if (this.elements.volume) {
+            this.elements.volume.addEventListener('input', () => {
+                const value = this.elements.volume.value;
                 const layer = this.app.layerManager.getSelectedLayer();
                 if (layer) {
                     const volume = value / 100;
                     this.app.layerManager.updateLayer(layer.id, { volume });
-                    this.displays.layerVolumeVal.textContent = value + '%';
+                    this.displays.volumeVal.textContent = value + '%';
+                    this.drawWaveformPreview(this.app.currentSettings);
                 }
             });
         }
@@ -133,10 +134,10 @@ class UI {
 
         // Update layer volume display
         const selectedLayer = this.app.layerManager.getSelectedLayer();
-        if (selectedLayer && this.elements.layerVolume) {
+        if (selectedLayer && this.elements.volume && this.displays.volumeVal) {
             const volPercent = Math.round(selectedLayer.volume * 100);
-            this.elements.layerVolume.value = volPercent;
-            this.displays.layerVolumeVal.textContent = volPercent + '%';
+            this.elements.volume.value = volPercent;
+            this.displays.volumeVal.textContent = volPercent + '%';
         }
     }
 
