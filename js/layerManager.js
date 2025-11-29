@@ -213,9 +213,12 @@ class LayerManager {
         return { buffers, volumes };
     }
 
-    playAllLayers() {
+    async playAllLayers() {
         const activeLayers = this.getActiveLayers();
         if (activeLayers.length === 0) return;
+
+        // Ensure AudioContext is resumed before playing
+        await this.app.audioEngine.ensureContextResumed();
     
         this.app.audioEngine.stopAll(); // Clear any ongoing playback
     

@@ -31,6 +31,9 @@ class SFXGeneratorApp {
         this.fileManager = new FileManager(this);
         this.ui = new UI(this);
 
+        // Connect soundGenerator to audioEngine
+        this.soundGenerator.setAudioEngine(this.audioEngine);
+
         // Setup event listeners
         this.setupEventListeners();
         
@@ -245,12 +248,16 @@ class SFXGeneratorApp {
         this.ui.updateDisplay(this.currentSettings);
     }
 
-    playCurrentSound() {
+    async playCurrentSound() {
+        // Get the selected layer's settings instead of using currentSettings
+        const selectedLayer = this.layerManager.getSelectedLayer();
+        const settings = selectedLayer ? selectedLayer.settings : this.currentSettings;
+        
         const buffer = this.soundGenerator.generate(
-            this.currentSettings,
+            settings,
             this.audioEngine.sampleRate
         );
-        this.audioEngine.playBuffer(buffer);
+        await this.audioEngine.playBuffer(buffer);
     }
 
     downloadCurrentSound() {
@@ -261,7 +268,7 @@ class SFXGeneratorApp {
         this.audioEngine.downloadWAV(buffer, `sfx_${Date.now()}.wav`);
     }
 
-    loadPreset(presetName) {
+    async loadPreset(presetName) {
         const preset = this.presets.get(presetName);
         if (!preset) {
             console.error('Preset not found:', presetName);
@@ -287,18 +294,17 @@ class SFXGeneratorApp {
             this.timeline.render();
             
             // Play the updated layer
-            const buffer = this.soundGenerator.generate(preset, this.audioEngine.sampleRate);
-            this.audioEngine.playBuffer(buffer);
+            await this.playCurrentSound();
         } else {
             // No layer selected - this shouldn't happen, but handle it
             console.warn('No layer selected when loading preset');
             this.currentSettings = { ...preset };
             this.ui.updateDisplay(preset);
-            this.playCurrentSound();
+            await this.playCurrentSound();
         }
     }
 
-    randomize() {
+    async randomize() {
         const randomSettings = this.presets.generateRandom();
         
         // Save state for undo
@@ -324,7 +330,7 @@ class SFXGeneratorApp {
             this.ui.updateDisplay(randomSettings);
         }
         
-        this.playCurrentSound();
+        await this.playCurrentSound();
     }
 
     saveUndoState() {
@@ -426,6 +432,6 @@ function randomize() {
     if (app && app.initialized) {
         app.randomize();
     } else {
-        setTimeout(randomize, 100);
+        setTimeout(() => randomize(), 100);
     }
 }

@@ -13,8 +13,15 @@ class SoundGenerator {
         const duration = settings.attack + settings.sustain + settings.decay;
         const samples = Math.floor(duration * sampleRate);
         
-        // Create buffer through audio engine if available
-        const context = new (window.AudioContext || window.webkitAudioContext)();
+        // Use the AudioEngine's context if available
+        let context;
+        if (this.audioEngine && this.audioEngine.context) {
+            context = this.audioEngine.context;
+        } else {
+            // Fallback: create a context for buffer creation only
+            context = new (window.AudioContext || window.webkitAudioContext)();
+        }
+        
         const buffer = context.createBuffer(1, samples, context.sampleRate);
         const data = buffer.getChannelData(0);
 

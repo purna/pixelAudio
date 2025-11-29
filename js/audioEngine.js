@@ -7,11 +7,25 @@ class AudioEngine {
         this.currentSource = null;
     }
 
+    async ensureContextResumed() {
+        if (this.context.state === 'suspended') {
+            try {
+                await this.context.resume();
+                console.log('AudioContext resumed');
+            } catch (e) {
+                console.error('Failed to resume AudioContext:', e);
+            }
+        }
+    }
+
     setSampleRate(rate) {
         this.sampleRate = rate;
     }
 
-    playBuffer(buffer) {
+    async playBuffer(buffer) {
+        // Ensure context is resumed before playing
+        await this.ensureContextResumed();
+
         // Stop any currently playing sound
         if (this.currentSource) {
             try {
