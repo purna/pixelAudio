@@ -136,19 +136,24 @@ class SFXGeneratorApp {
 
     loadPreset(presetName) {
         const preset = this.presets.get(presetName);
-        if (!preset) return;
+        if (!preset) {
+            console.error('Preset not found:', presetName);
+            return;
+        }
+
+        // Save state for undo
+        this.saveUndoState();
 
         const selectedLayer = this.layerManager.getSelectedLayer();
 
         if (selectedLayer) {
-            // Save state for undo
-            this.saveUndoState();
-            
             // Apply preset to selected layer
             this.layerManager.updateLayerSettings(selectedLayer.id, preset);
             
-            // Sync app's currentSettings and UI
-            this.updateSettings(preset);
+            // Force sync app's currentSettings
+            this.currentSettings = { ...preset };
+            
+            // Update UI to show new values
             this.ui.updateDisplay(preset);
             
             // Redraw timeline to show updated waveform
@@ -158,9 +163,9 @@ class SFXGeneratorApp {
             const buffer = this.soundGenerator.generate(preset, this.audioEngine.sampleRate);
             this.audioEngine.playBuffer(buffer);
         } else {
-            // Fallback: apply globally
-            this.saveUndoState();
-            this.updateSettings(preset);
+            // No layer selected - this shouldn't happen, but handle it
+            console.warn('No layer selected when loading preset');
+            this.currentSettings = { ...preset };
             this.ui.updateDisplay(preset);
             this.playCurrentSound();
         }
@@ -168,20 +173,28 @@ class SFXGeneratorApp {
 
     randomize() {
         const randomSettings = this.presets.generateRandom();
-        const selectedLayer = this.layerManager.getSelectedLayer();
         
         // Save state for undo
         this.saveUndoState();
         
+        const selectedLayer = this.layerManager.getSelectedLayer();
+        
         if (selectedLayer) {
             // Apply to selected layer
             this.layerManager.updateLayerSettings(selectedLayer.id, randomSettings);
-            this.updateSettings(randomSettings);
+            
+            // Force sync app's currentSettings
+            this.currentSettings = { ...randomSettings };
+            
+            // Update UI
             this.ui.updateDisplay(randomSettings);
+            
+            // Redraw timeline
             this.timeline.render();
         } else {
-            // Fallback: apply globally
-            this.updateSettings(randomSettings);
+            // Fallback
+            this.currentSettings = { ...randomSettings };
+            this.ui.updateDisplay(randomSettings);
         }
         
         this.playCurrentSound();
