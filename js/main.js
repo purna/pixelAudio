@@ -26,12 +26,19 @@ class SFXGeneratorApp {
         // Setup event listeners
         this.setupEventListeners();
         
-        // Initialize UI
+        // Initialize UI first, then layers
         this.ui.init();
-        this.layerManager.init();
+        this.layerManager.init(); // This will select the first layer and update UI
         this.timeline.init();
 
         console.log('SFX Generator initialized');
+        
+        // Force update the display with the first layer's settings
+        const firstLayer = this.layerManager.getSelectedLayer();
+        if (firstLayer) {
+            this.updateSettings(firstLayer.settings);
+            this.ui.updateDisplay(firstLayer.settings);
+        }
     }
 
     setupEventListeners() {
