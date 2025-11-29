@@ -113,94 +113,94 @@ class Timeline {
     }
 
     drawTrack(layer, y) {
-    const duration = this.app.soundGenerator.calculateDuration(layer.settings);
-    const x = layer.startTime * this.zoom + this.offsetX;
-    const width = duration * this.zoom;
+        const duration = this.app.soundGenerator.calculateDuration(layer.settings);
+        const x = layer.startTime * this.zoom + this.offsetX;
+        const width = duration * this.zoom;
 
-    // Track background
-    this.ctx.fillStyle = '#2d3748';
-    this.ctx.fillRect(0, y, this.width, this.trackHeight);
+        // Track background
+        this.ctx.fillStyle = '#2d3748';
+        this.ctx.fillRect(0, y, this.width, this.trackHeight);
 
-    // Layer name
-    this.ctx.fillStyle = '#e0e7ff';
-    this.ctx.font = 'bold 12px sans-serif';
-    this.ctx.textAlign = 'left';
-    this.ctx.fillText(layer.name, 10, y + 20);
+        // Layer name
+        this.ctx.fillStyle = '#e0e7ff';
+        this.ctx.font = 'bold 12px sans-serif';
+        this.ctx.textAlign = 'left';
+        this.ctx.fillText(layer.name, 10, y + 20);
 
-    if (x + width > 0 && x < this.width && width > 10) {
-        // Draw colored block
-        this.ctx.fillStyle = layer.color;
-        this.ctx.globalAlpha = layer.muted ? 0.25 : 0.7;
-        this.ctx.fillRect(x, y + 5, width, this.trackHeight - 10);
-        this.ctx.globalAlpha = 1;
+        if (x + width > 0 && x < this.width && width > 10) {
+            // Draw colored block
+            this.ctx.fillStyle = layer.color;
+            this.ctx.globalAlpha = layer.muted ? 0.25 : 0.7;
+            this.ctx.fillRect(x, y + 5, width, this.trackHeight - 10);
+            this.ctx.globalAlpha = 1;
 
-        // Border + selection highlight
-        this.ctx.strokeStyle = layer.id === this.app.layerManager.selectedLayerId ? '#00ff41' : '#666';
-        this.ctx.lineWidth = layer.id === this.app.layerManager.selectedLayerId ? 3 : 1;
-        this.ctx.strokeRect(x, y + 5, width, this.trackHeight - 10);
-        this.ctx.lineWidth = 1;
+            // Border + selection highlight
+            this.ctx.strokeStyle = layer.id === this.app.layerManager.selectedLayerId ? '#00ff41' : '#666';
+            this.ctx.lineWidth = layer.id === this.app.layerManager.selectedLayerId ? 3 : 1;
+            this.ctx.strokeRect(x, y + 5, width, this.trackHeight - 10);
+            this.ctx.lineWidth = 1;
 
-        // Resize handles
-        if (layer.id === this.app.layerManager.selectedLayerId) {
-            this.ctx.fillStyle = '#00ff41';
-            this.ctx.fillRect(x - 4, y + 5, 8, this.trackHeight - 10);
-            this.ctx.fillRect(x + width - 4, y + 5, 8, this.trackHeight - 10);
-        }
+            // Resize handles
+            if (layer.id === this.app.layerManager.selectedLayerId) {
+                this.ctx.fillStyle = '#00ff41';
+                this.ctx.fillRect(x - 4, y + 5, 8, this.trackHeight - 10);
+                this.ctx.fillRect(x + width - 4, y + 5, 8, this.trackHeight - 10);
+            }
 
-        // ———— WAVEFORM VISUALIZATION ————
-        try {
-            const buffer = this.app.soundGenerator.generate(layer.settings, 44100);
-            const raw = buffer.getChannelData(0);
-            const samples = raw.length;
-            const step = Math.max(1, Math.floor(samples / width));
-            const amp = (this.trackHeight - 16) / 2;
+            // WAVEFORM VISUALIZATION
+            try {
+                const buffer = this.app.soundGenerator.generate(layer.settings, 44100);
+                const raw = buffer.getChannelData(0);
+                const samples = raw.length;
+                const step = Math.max(1, Math.floor(samples / width));
+                const amp = (this.trackHeight - 16) / 2;
 
-            this.ctx.save();
-            this.ctx.translate(x, y + 5 + (this.trackHeight - 10) / 2);
-            this.ctx.strokeStyle = layer.id === this.app.layerManager.selectedLayerId ? '#ffffff' : '#e0e7ff';
-            this.ctx.lineWidth = layer.id === this.app.layerManager.selectedLayerId ? 2 : 1.2;
-            this.ctx.globalAlpha = layer.muted ? 0.4 : 0.9;
+                this.ctx.save();
+                this.ctx.translate(x, y + 5 + (this.trackHeight - 10) / 2);
+                this.ctx.strokeStyle = layer.id === this.app.layerManager.selectedLayerId ? '#ffffff' : '#e0e7ff';
+                this.ctx.lineWidth = layer.id === this.app.layerManager.selectedLayerId ? 2 : 1.2;
+                this.ctx.globalAlpha = layer.muted ? 0.4 : 0.9;
 
-            this.ctx.beginPath();
-            let first = true;
+                this.ctx.beginPath();
+                let first = true;
 
-            for (let i = 0; i < width; i += 1) {
-                const sampleIndex = Math.floor(i * samples / width);
-                const val = raw[sampleIndex] || 0;
-                const h = val * amp;
+                for (let i = 0; i < width; i += 1) {
+                    const sampleIndex = Math.floor(i * samples / width);
+                    const val = raw[sampleIndex] || 0;
+                    const h = val * amp;
 
-                if (first) {
-                    this.ctx.moveTo(i, h);
-                    first = false;
-                } else {
-                    this.ctx.lineTo(i, h);
+                    if (first) {
+                        this.ctx.moveTo(i, h);
+                        first = false;
+                    } else {
+                        this.ctx.lineTo(i, h);
+                    }
                 }
+
+                // Mirror for symmetric waveform
+                for (let i = width; i >= 0; i -= 1) {
+                    const sampleIndex = Math.floor(i * samples / width);
+                    const val = raw[sampleIndex] || 0;
+                    const h = val * amp;
+                    this.ctx.lineTo(i, -h);
+                }
+
+                this.ctx.closePath();
+                this.ctx.stroke();
+                this.ctx.restore();
+            } catch (e) {
+                // Fallback: just draw a simple pulse
+                this.ctx.fillStyle = '#ffffff44';
+                this.ctx.fillRect(x + width * 0.3, y + 15, width * 0.4, 20);
             }
 
-            // Mirror for symmetric waveform
-            for (let i = width; i >= 0; i -= 1) {
-                const sampleIndex = Math.floor(i * samples / width);
-                const val = raw[sampleIndex] || 0;
-                const h = val * amp;
-                this.ctx.lineTo(i, -h);
+            // Mute indicator
+            if (layer.muted) {
+                this.ctx.fillStyle = '#f44336';
+                this.ctx.fillText('M', this.width - 30, y + 20);
             }
-
-            this.ctx.closePath();
-            this.ctx.stroke();
-            this.ctx.restore();
-        } catch (e) {
-            // Fallback: just draw a simple pulse
-            this.ctx.fillStyle = '#ffffff44';
-            this.ctx.fillRect(x + width * 0.3, y + 15, width * 0.4, 20);
-        }
-
-        // Mute indicator
-        if (layer.muted) {
-            this.ctx.fillStyle = '#f44336';
-            this.ctx.fillText('M', this.width - 30, y + 20);
         }
     }
-}
 
     drawPlayhead() {
         const x = this.playheadPosition * this.zoom + this.offsetX;
@@ -208,12 +208,12 @@ class Timeline {
             this.ctx.strokeStyle = '#f44336';
             this.ctx.lineWidth = 2;
             this.ctx.shadowColor = '#f44336';
-            this.ctx.shadowBlur = 10; // Add glow for visibility
+            this.ctx.shadowBlur = 10;
             this.ctx.beginPath();
             this.ctx.moveTo(x, 0);
             this.ctx.lineTo(x, this.height);
             this.ctx.stroke();
-            this.ctx.shadowBlur = 0; // Reset
+            this.ctx.shadowBlur = 0;
         }
     }
 
@@ -259,14 +259,18 @@ class Timeline {
     }
 
     onMouseMove(e) {
-
         if (!this.isDragging || !this.draggedLayer) return;
     
         const rect = this.canvas.getBoundingClientRect();
         const x = e.clientX - rect.left;
+        
+        // Snap to 0.5 second grid
+        const snapInterval = 0.5;
         let deltaX = x - this.dragStartX;
-        deltaX = Math.round(deltaX / 5) * 5; // Snap every 5px for less responsiveness
-        const deltaTime = deltaX / this.zoom;
+        let deltaTime = deltaX / this.zoom;
+        
+        // Snap deltaTime to nearest 0.5 second
+        deltaTime = Math.round(deltaTime / snapInterval) * snapInterval;
 
         const currentDuration = this.app.soundGenerator.calculateDuration(this.draggedLayer.settings);
         let newStart = this.dragStartTime;
@@ -274,16 +278,34 @@ class Timeline {
 
         if (this.dragMode === 'move') {
             newStart = Math.max(0, this.dragStartTime + deltaTime);
+            // Snap newStart
+            newStart = Math.round(newStart / snapInterval) * snapInterval;
         } else if (this.dragMode === 'left') {
             newStart = Math.max(0, this.dragStartTime + deltaTime);
-            newDuration = currentDuration - deltaTime;
+            // Snap newStart
+            newStart = Math.round(newStart / snapInterval) * snapInterval;
+            newDuration = currentDuration - (newStart - this.dragStartTime);
         } else if (this.dragMode === 'right') {
             newDuration = currentDuration + deltaTime;
         }
 
-        if (newDuration < 0.05) newDuration = 0.05;
+        // Enforce minimum duration of 0.5 seconds
+        const minDuration = 0.5;
+        if (newDuration < minDuration) {
+            newDuration = minDuration;
+        }
+        
+        // Snap newDuration to 0.5 second intervals
+        newDuration = Math.round(newDuration / snapInterval) * snapInterval;
+        if (newDuration < minDuration) newDuration = minDuration;
+        
+        // Ensure we don't exceed total length
         if (newStart + newDuration > this.totalLength) {
             newDuration = this.totalLength - newStart;
+            if (newDuration < minDuration) {
+                newStart = this.totalLength - minDuration;
+                newDuration = minDuration;
+            }
         }
 
         // Update layer settings to change duration
