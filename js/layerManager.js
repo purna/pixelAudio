@@ -1,103 +1,254 @@
-// js/layerManager.js
+// layerManager.js - Manage multiple sound layers
 
-import { createLayer, layers, getActiveLayer, setActiveLayer, playAll, exportMixWAV } from './layerManager.js';
-import { generateBuffer } from './soundGenerator.js';
-import { getAudioContext, bufferToWave } from './audioEngine.js';
-import { updateControlsFromLayer, renderLayersList } from './ui.js';
+class LayerManager {
+    constructor(app) {
+        this.app = app;
+        this.layers = [];
+        this.nextLayerId = 1;
+        this.selectedLayerId = null;
+    }
 
-export const layers = [];
-let activeLayerId = null;
+    init() {
+        // Create initial layer
+        this.addLayer('Layer 1');
+    }
 
-export function createLayer(name = `Layer ${layers.length + 1}`) {
-    const layer = {
-        id: Date.now() + Math.random(),
-        name,
-        muted: false,
-        solo: false,
-        settings: getDefaultSettings(),
-        buffer: null,
+    addLayer(name = null) {
+        const layerName = name || `Layer ${this.nextLayerId}`;
+        
+        const layer = {
+            id: this.nextLayerId++,
+            name: layerName,
+            settings: { ...this.app.getDefaultSettings() },
+            muted: false,
+            solo: false,
+            volume: 1.0,
+            startTime: 0,
+            fadeIn: 0,
+            fadeOut: 0,
+            color: this.generateRandomColor()
+        };
+        
+        this.layers.push(layer);
+        this.selectedLayerId = layer.id;
+        
+        this.notifyLayerChange();
+        return layer;
+    }
 
-        updateControls() {
-            updateControlsFromLayer(this);
-        },
-
-        play() {
-            if (this.muted) return;
-            if (!this.buffer) this.buffer = generateBuffer(this.settings);
-            const src = getAudioContext().createBufferSource();
-            src.buffer = this.buffer;
-            src.connect(getAudioContext().destination);
-            src.start();
-        },
-
-        exportWAV() {
-            if (!this.buffer) this.buffer = generateBuffer(this.settings);
-            const wav = bufferToWave(this.buffer);
-            downloadBlob(new Blob([wav], {type: 'audio/wav'}), `${this.name}.wav`);
+    removeLayer(layerId) {
+        const index = this.layers.findIndex(l => l.id === layerId);
+        if (index !== -1) {
+            this.layers.splice(index, 1);
+            
+            // Select another layer if this was selected
+            if (this.selectedLayerId === layerId) {
+                this.selectedLayerId = this.layers.length > 0 ? this.layers[0].id : null;
+            }
+            
+            this.notifyLayerChange();
         }
-    };
+    }
 
-    layers.push(layer);
-    renderLayersList();
-    return layer;
-}
+    getLayer(layerId) {
+        return this.layers.find(l => l.id === layerId);
+    }
 
-export function getActiveLayer() {
-    return layers.find(l => l.id === activeLayerId);
-}
+    getSelectedLayer() {
+        return this.getLayer(this.selectedLayerId);
+    }
 
-export function setActiveLayer(id) {
-    activeLayerId = id;
-    const layer = layers.find(l => l.id === id);
-    updateControlsFromLayer(layer);
-    renderLayersList();
-}
-
-// Play all non-muted (respecting solo)
-export function playAll() {
-    const hasSolo = layers.some(l => l.solo);
-    layers.forEach(l => {
-        if (!l.muted && (!hasSolo || l.solo)) {
-            l.play();
+    selectLayer(layerId) {
+        const layer = this.getLayer(layerId);
+        if (layer) {
+            this.selectedLayerId = layerId;
+            this.app.updateSettings(layer.settings);
+            this.notifyLayerChange();
         }
-    });
-}
+    }
 
-export function exportMixWAV() {
-    // Simple sequential mix for now (Phase 5 will improve with timeline)
-    const ctx = getAudioContext();
-    const maxLen = Math.max(...layers.filter(l => !l.muted).map(l => l.buffer?.length || 0));
-    const mix = ctx.createBuffer(1, maxLen, ctx.sampleRate);
-    const data = mix.getChannelData(0);
-
-    layers.forEach(l => {
-        if (l.muted || !l.buffer) return;
-        const buf = l.buffer.getChannelData(0);
-        for (let i = 0; i < buf.length; i++) {
-            data[i] += buf[i] / layers.filter(x => !x.muted).length;
+    updateLayer(layerId, updates) {
+        const layer = this.getLayer(layerId);
+        if (layer) {
+            Object.assign(layer, updates);
+            this.notifyLayerChange();
         }
-    });
+    }
 
-    const wav = bufferToWave(mix);
-    downloadBlob(new Blob([wav], {type: 'audio/wav'}), 'mix.wav');
-}
+    updateLayerSettings(layerId, settings) {
+        const layer = this.getLayer(layerId);
+        if (layer) {
+            layer.settings = { ...layer.settings, ...settings };
+            this.notifyLayerChange();
+        }
+    }
 
-function downloadBlob(blob, name) {
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url; a.download = name; a.click();
-    URL.revokeObjectURL(url);
-}
+    renameLayer(layerId, newName) {
+        const layer = this.getLayer(layerId);
+        if (layer) {
+            layer.name = newName;
+            this.notifyLayerChange();
+        }
+    }
 
-function getDefaultSettings() {
-    return {
-        attack: 0, sustain: 0.1, punch: 0, decay: 0.2,
-        frequency: 440, minFreq: 0, slide: 0, deltaSlide: 0,
-        vibratoEnable: false, vibratoDepth: 0, vibratoSpeed: 0,
-        arpEnable: false, arpMult: 1, arpSpeed: 0,
-        duty: 50, dutySweep: 0,
-        lpfEnable: false, lpf: 22050,
-        hpfEnable: false, hpf: 0,
-        gain: -10
-    };
+    duplicateLayer(layerId) {
+        const layer = this.getLayer(layerId);
+        if (layer) {
+            const newLayer = {
+                ...layer,
+                id: this.nextLayerId++,
+                name: `${layer.name} (Copy)`,
+                settings: { ...layer.settings }
+            };
+            this.layers.push(newLayer);
+            this.selectedLayerId = newLayer.id;
+            this.notifyLayerChange();
+            return newLayer;
+        }
+        return null;
+    }
+
+    toggleMute(layerId) {
+        const layer = this.getLayer(layerId);
+        if (layer) {
+            layer.muted = !layer.muted;
+            this.notifyLayerChange();
+        }
+    }
+
+    toggleSolo(layerId) {
+        const layer = this.getLayer(layerId);
+        if (layer) {
+            layer.solo = !layer.solo;
+            this.notifyLayerChange();
+        }
+    }
+
+    setLayerVolume(layerId, volume) {
+        const layer = this.getLayer(layerId);
+        if (layer) {
+            layer.volume = Math.max(0, Math.min(1, volume));
+            this.notifyLayerChange();
+        }
+    }
+
+    moveLayer(layerId, direction) {
+        const index = this.layers.findIndex(l => l.id === layerId);
+        if (index === -1) return;
+        
+        const newIndex = direction === 'up' ? index - 1 : index + 1;
+        if (newIndex >= 0 && newIndex < this.layers.length) {
+            [this.layers[index], this.layers[newIndex]] = [this.layers[newIndex], this.layers[index]];
+            this.notifyLayerChange();
+        }
+    }
+
+    generateRandomColor() {
+        const hue = Math.floor(Math.random() * 360);
+        return `hsl(${hue}, 70%, 60%)`;
+    }
+
+    // Get all active layers for mixing
+    getActiveLayers() {
+        const hasSolo = this.layers.some(l => l.solo);
+        
+        return this.layers.filter(layer => {
+            if (hasSolo) {
+                return layer.solo;
+            }
+            return !layer.muted;
+        });
+    }
+
+    // Generate buffers for all active layers
+    generateLayerBuffers() {
+        const activeLayers = this.getActiveLayers();
+        const buffers = [];
+        const volumes = [];
+        
+        for (const layer of activeLayers) {
+            const buffer = this.app.soundGenerator.generate(
+                layer.settings,
+                this.app.audioEngine.sampleRate
+            );
+            buffers.push(buffer);
+            volumes.push(layer.volume);
+        }
+        
+        return { buffers, volumes };
+    }
+
+    // Play all active layers mixed together
+    playAllLayers() {
+        const { buffers, volumes } = this.generateLayerBuffers();
+        
+        if (buffers.length === 0) {
+            console.warn('No active layers to play');
+            return;
+        }
+        
+        if (buffers.length === 1) {
+            this.app.audioEngine.playBuffer(buffers[0]);
+        } else {
+            const mixedBuffer = this.app.audioEngine.mixBuffers(buffers, volumes);
+            this.app.audioEngine.playBuffer(mixedBuffer);
+        }
+    }
+
+    // Export mixed audio
+    exportMixedAudio(filename = 'mixed_sfx.wav') {
+        const { buffers, volumes } = this.generateLayerBuffers();
+        
+        if (buffers.length === 0) {
+            console.warn('No active layers to export');
+            return;
+        }
+        
+        const mixedBuffer = buffers.length === 1 
+            ? buffers[0] 
+            : this.app.audioEngine.mixBuffers(buffers, volumes);
+            
+        this.app.audioEngine.downloadWAV(mixedBuffer, filename);
+    }
+
+    // State management for save/load
+    getState() {
+        return {
+            layers: this.layers.map(l => ({ ...l })),
+            nextLayerId: this.nextLayerId,
+            selectedLayerId: this.selectedLayerId
+        };
+    }
+
+    setState(state) {
+        this.layers = state.layers.map(l => ({ ...l }));
+        this.nextLayerId = state.nextLayerId;
+        this.selectedLayerId = state.selectedLayerId;
+        
+        // Update UI with selected layer
+        if (this.selectedLayerId) {
+            const layer = this.getLayer(this.selectedLayerId);
+            if (layer) {
+                this.app.updateSettings(layer.settings);
+            }
+        }
+        
+        this.notifyLayerChange();
+    }
+
+    clearAllLayers() {
+        this.layers = [];
+        this.nextLayerId = 1;
+        this.selectedLayerId = null;
+        this.notifyLayerChange();
+    }
+
+    // Notify other components of layer changes
+    notifyLayerChange() {
+        // Dispatch custom event for UI updates
+        const event = new CustomEvent('layersChanged', {
+            detail: { layers: this.layers, selectedId: this.selectedLayerId }
+        });
+        document.dispatchEvent(event);
+    }
 }
