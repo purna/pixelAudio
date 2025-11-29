@@ -80,6 +80,7 @@ class UI {
         const selectedLayer = this.app.layerManager.getSelectedLayer();
         if (selectedLayer) {
             this.app.layerManager.updateLayerSettings(selectedLayer.id, settings);
+            this.app.timeline.render(); // Update waveform display
         }
     }
 
