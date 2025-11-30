@@ -1,4 +1,4 @@
-// ui.js - Updated with per-layer volume + waveform preview + tooltips
+// js/ui.js
 
 class UI {
     constructor(app) {
@@ -12,12 +12,15 @@ class UI {
     init() {
         this.cacheElements();
         this.setupEventListeners();
+        
+        // Initial updates
         this.updateDisplay(this.app.currentSettings);
         this.drawWaveformPreview(this.app.currentSettings);
     }
 
     cacheElements() {
         this.elements = {
+            // ... (keep your existing cached inputs: attack, sustain, etc.) ...
             attack: document.getElementById('attack'),
             sustain: document.getElementById('sustain'),
             punch: document.getElementById('punch'),
@@ -40,10 +43,16 @@ class UI {
             hpf: document.getElementById('hpf'),
             waveform: document.getElementById('waveform'),
             gain: document.getElementById('gain'),
-            volume: document.getElementById('layerVolume')  // FIXED: was layerVolume
+            volume: document.getElementById('layerVolume'),
+            
+            // NEW: Cache Tabs and Timeline Input
+            totalLength: document.getElementById('totalLength'),
+            tabBtns: document.querySelectorAll('.tab-btn'),
+            tabContents: document.querySelectorAll('.tab-content')
         };
 
         this.displays = {
+            // ... (keep your existing display elements) ...
             attackVal: document.getElementById('attackVal'),
             sustainVal: document.getElementById('sustainVal'),
             punchVal: document.getElementById('punchVal'),
@@ -61,32 +70,68 @@ class UI {
             lpfVal: document.getElementById('lpfVal'),
             hpfVal: document.getElementById('hpfVal'),
             gainVal: document.getElementById('gainVal'),
-            volumeVal: document.getElementById('layerVolumeVal')  // FIXED: was layerVolumeVal
+            volumeVal: document.getElementById('layerVolumeVal')
         };
 
-        // Waveform preview
         this.waveformCanvas = document.getElementById('waveform-preview');
         this.waveformCtx = this.waveformCanvas?.getContext('2d');
     }
 
     setupEventListeners() {
+        // 1. Existing Input Listeners
         for (let key in this.elements) {
             const element = this.elements[key];
-            if (element && element.type !== 'checkbox') {
-                element.addEventListener('input', () => {
-                    this.handleInput(key, element);
-                });
+            // Skip the new UI elements we added to cache, only attach input listeners to controls
+            if (element && element.tagName !== 'DIV' && !key.includes('tab') && key !== 'totalLength') {
+                if (element.type !== 'checkbox') {
+                    element.addEventListener('input', () => this.handleInput(key, element));
+                } else {
+                    element.addEventListener('change', () => this.handleInput(key, element));
+                }
             }
         }
 
-        // Waveform is a select element, handle it specially
         if (this.elements.waveform) {
-            this.elements.waveform.addEventListener('change', () => {
-                this.handleInput('waveform', this.elements.waveform);
+            this.elements.waveform.addEventListener('change', () => this.handleInput('waveform', this.elements.waveform));
+        }
+
+        // 2. Timeline Length Control (Moved from HTML)
+        if (this.elements.totalLength) {
+            this.elements.totalLength.addEventListener('change', (e) => {
+                const newLength = parseFloat(e.target.value);
+                if (this.app && this.app.timeline) {
+                    this.app.timeline.totalLength = newLength;
+                    this.app.timeline.render();
+                }
             });
         }
 
-        // Layer volume is special — updates selected layer only
+        // 3. Tab Switching Logic (Moved from HTML)
+        if (this.elements.tabBtns) {
+            this.elements.tabBtns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    // Remove active from all
+                    this.elements.tabBtns.forEach(b => b.classList.remove('active'));
+                    this.elements.tabContents.forEach(c => c.classList.remove('active'));
+                    
+                    // Add active to clicked
+                    btn.classList.add('active');
+                    const targetId = btn.getAttribute('data-tab');
+                    document.getElementById(targetId)?.classList.add('active');
+                });
+            });
+        }
+
+        // 4. Global Event Listeners for Waveform Updates
+        // When layers change (selection or parameters), redraw the preview
+        document.addEventListener('layersChanged', () => {
+            const layer = this.app.layerManager.getSelectedLayer();
+            if (layer) {
+                this.updateDisplay(layer.settings);
+                this.drawWaveformPreview(layer.settings);
+            }
+        });
+
         if (this.elements.volume) {
             this.elements.volume.addEventListener('input', () => {
                 const value = this.elements.volume.value;
@@ -95,6 +140,7 @@ class UI {
                     const volume = value / 100;
                     this.app.layerManager.updateLayer(layer.id, { volume });
                     this.displays.volumeVal.textContent = value + '%';
+                    // Redraw to reflect changes if necessary
                     this.drawWaveformPreview(this.app.currentSettings);
                 }
             });
@@ -129,8 +175,10 @@ class UI {
         this.drawWaveformPreview(this.app.currentSettings);
     }
 
+    // ... (Keep updateDisplay and drawWaveformPreview exactly as they were) ...
+    
     updateDisplay(settings) {
-        // Update all value displays
+        // ... paste existing updateDisplay code here ...
         this.displays.attackVal.textContent = settings.attack.toFixed(3) + 's';
         this.displays.sustainVal.textContent = settings.sustain.toFixed(3) + 's';
         this.displays.punchVal.textContent = settings.punch.toFixed(0) + '%';
@@ -149,7 +197,6 @@ class UI {
         this.displays.hpfVal.textContent = settings.hpf.toFixed(0) + 'Hz';
         this.displays.gainVal.textContent = settings.gain.toFixed(1) + ' dB';
 
-        // Update all input positions
         if (this.elements.attack) this.elements.attack.value = settings.attack;
         if (this.elements.sustain) this.elements.sustain.value = settings.sustain;
         if (this.elements.punch) this.elements.punch.value = settings.punch;
@@ -168,13 +215,11 @@ class UI {
         if (this.elements.hpf) this.elements.hpf.value = settings.hpf;
         if (this.elements.gain) this.elements.gain.value = settings.gain;
 
-        // Update checkbox states
         if (this.elements.vibratoEnable) this.elements.vibratoEnable.checked = settings.vibratoEnable;
         if (this.elements.arpEnable) this.elements.arpEnable.checked = settings.arpEnable;
         if (this.elements.lpfEnable) this.elements.lpfEnable.checked = settings.lpfEnable;
         if (this.elements.hpfEnable) this.elements.hpfEnable.checked = settings.hpfEnable;
 
-        // Update layer volume display
         const selectedLayer = this.app.layerManager.getSelectedLayer();
         if (selectedLayer && this.elements.volume && this.displays.volumeVal) {
             const volPercent = Math.round(selectedLayer.volume * 100);
@@ -182,7 +227,6 @@ class UI {
             this.displays.volumeVal.textContent = volPercent + '%';
         }
 
-        // Update waveform select
         if (this.elements.waveform) {
             this.elements.waveform.value = settings.waveform;
         }
@@ -199,7 +243,6 @@ class UI {
         ctx.fillStyle = '#0f0f1b';
         ctx.fillRect(0, 0, w, h);
 
-        // Center lines
         ctx.strokeStyle = '#333';
         ctx.lineWidth = 1;
         ctx.beginPath();
@@ -212,7 +255,6 @@ class UI {
             const data = buffer.getChannelData(0);
             const step = Math.floor(data.length / w);
 
-            // Draw actual waveform (green)
             ctx.strokeStyle = '#00ff41';
             ctx.lineWidth = 1.5;
             ctx.beginPath();
@@ -224,7 +266,6 @@ class UI {
             }
             ctx.stroke();
 
-            // Draw envelope (yellow dashed)
             ctx.strokeStyle = 'rgba(255, 255, 0, 0.7)';
             ctx.setLineDash([4, 4]);
             ctx.lineWidth = 2;
@@ -243,51 +284,23 @@ class UI {
             console.warn("Waveform preview failed:", e);
         }
     }
-
+    
     showNotification(message, type = 'info') {
-        // Remove any existing notifications
+        // ... (Keep existing showNotification code) ...
         const existing = document.querySelector('.notification');
         if (existing) existing.remove();
-
-        // Create notification element
         const notification = document.createElement('div');
         notification.className = `notification notification-${type}`;
         notification.textContent = message;
-        
-        // Style the notification
         Object.assign(notification.style, {
-            position: 'fixed',
-            top: '20px',
-            right: '20px',
-            padding: '12px 20px',
-            borderRadius: '8px',
-            color: '#fff',
-            fontSize: '14px',
-            fontWeight: '500',
-            zIndex: '10000',
-            opacity: '0',
-            transform: 'translateY(-20px)',
-            transition: 'all 0.3s ease'
+            position: 'fixed', top: '20px', right: '20px', padding: '12px 20px',
+            borderRadius: '8px', color: '#fff', fontSize: '14px', fontWeight: '500',
+            zIndex: '10000', opacity: '0', transform: 'translateY(-20px)', transition: 'all 0.3s ease'
         });
-
-        // Set background color based on type
-        const colors = {
-            success: '#10b981',
-            error: '#ef4444',
-            warning: '#f59e0b',
-            info: '#3b82f6'
-        };
+        const colors = { success: '#10b981', error: '#ef4444', warning: '#f59e0b', info: '#3b82f6' };
         notification.style.backgroundColor = colors[type] || colors.info;
-
         document.body.appendChild(notification);
-
-        // Animate in
-        setTimeout(() => {
-            notification.style.opacity = '1';
-            notification.style.transform = 'translateY(0)';
-        }, 10);
-
-        // Remove after 3 seconds
+        setTimeout(() => { notification.style.opacity = '1'; notification.style.transform = 'translateY(0)'; }, 10);
         setTimeout(() => {
             notification.style.opacity = '0';
             notification.style.transform = 'translateY(-20px)';
