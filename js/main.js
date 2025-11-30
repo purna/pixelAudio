@@ -107,19 +107,30 @@ class SFXGeneratorApp {
 
         // Play button event listeners - wait for DOM to be ready
         document.addEventListener('DOMContentLoaded', () => {
-            // Play Selected button
-            const playSelectedBtn = document.getElementById('playSelected');
+            // Play Selected button (footer)
+            const playSelectedBtn = document.getElementById('playSelectedBtn');
             if (playSelectedBtn) {
-                playSelectedBtn.addEventListener('click', () => {
-                    this.playCurrentSound();
+                playSelectedBtn.addEventListener('click', async () => {
+                    console.log('Play Selected clicked');
+                    await this.playCurrentSound();
+                });
+            }
+
+            // Play Selected button (timeline header)
+            const playSelected = document.getElementById('playSelected');
+            if (playSelected) {
+                playSelected.addEventListener('click', async () => {
+                    console.log('Play Selected (timeline) clicked');
+                    await this.playCurrentSound();
                 });
             }
 
             // Play All Timeline button
             const playTimelineBtn = document.getElementById('playTimeline');
             if (playTimelineBtn) {
-                playTimelineBtn.addEventListener('click', () => {
-                    this.layerManager.playAllLayers();
+                playTimelineBtn.addEventListener('click', async () => {
+                    console.log('Play Timeline clicked');
+                    await this.layerManager.playAllLayers();
                 });
             }
 
@@ -127,15 +138,8 @@ class SFXGeneratorApp {
             const stopTimelineBtn = document.getElementById('stopTimeline');
             if (stopTimelineBtn) {
                 stopTimelineBtn.addEventListener('click', () => {
+                    console.log('Stop clicked');
                     this.audioEngine.stopAll();
-                });
-            }
-
-            // Play All Layers button (action bar)
-            const playAllBtn = document.getElementById('playAll');
-            if (playAllBtn) {
-                playAllBtn.addEventListener('click', () => {
-                    this.layerManager.playAllLayers();
                 });
             }
 
@@ -150,22 +154,40 @@ class SFXGeneratorApp {
                 redoBtn.addEventListener('click', () => this.redo());
             }
 
-            // Export buttons
-            const exportLayerBtn = document.getElementById('exportLayer');
+            // Export buttons (now in sidebar)
+            const exportLayerBtn = document.getElementById('exportLayerBtn');
             if (exportLayerBtn) {
                 exportLayerBtn.addEventListener('click', () => {
+                    console.log('Export Layer clicked');
                     const selectedLayer = this.layerManager.getSelectedLayer();
                     if (selectedLayer) {
-                        const buffer = this.soundGenerator.generate(selectedLayer.settings, this.audioEngine.sampleRate);
-                        this.audioEngine.downloadWAV(buffer, `${selectedLayer.name.replace(/\s+/g, '_')}.wav`);
+                        this.fileManager.exportLayer(selectedLayer.id);
+                    } else {
+                        this.ui.showNotification('No layer selected', 'error');
                     }
                 });
             }
 
-            const exportMixBtn = document.getElementById('exportMix');
+            const exportMixBtn = document.getElementById('exportMixBtn');
             if (exportMixBtn) {
                 exportMixBtn.addEventListener('click', () => {
-                    this.layerManager.exportMixedAudio();
+                    console.log('Export Mix clicked');
+                    this.fileManager.exportMixedOutput();
+                });
+            }
+
+            // Save/Load Project buttons
+            const saveProjectBtn = document.getElementById('saveProject');
+            if (saveProjectBtn) {
+                saveProjectBtn.addEventListener('click', () => {
+                    this.fileManager.exportProject();
+                });
+            }
+
+            const loadProjectBtn = document.getElementById('loadProject');
+            if (loadProjectBtn) {
+                loadProjectBtn.addEventListener('click', () => {
+                    this.fileManager.importProject();
                 });
             }
 
@@ -249,15 +271,31 @@ class SFXGeneratorApp {
     }
 
     async playCurrentSound() {
-        // Get the selected layer's settings instead of using currentSettings
-        const selectedLayer = this.layerManager.getSelectedLayer();
-        const settings = selectedLayer ? selectedLayer.settings : this.currentSettings;
-        
-        const buffer = this.soundGenerator.generate(
-            settings,
-            this.audioEngine.sampleRate
-        );
-        await this.audioEngine.playBuffer(buffer);
+        console.log('playCurrentSound called');
+        try {
+            // Get the selected layer's settings instead of using currentSettings
+            const selectedLayer = this.layerManager.getSelectedLayer();
+            if (!selectedLayer) {
+                console.warn('No layer selected');
+                this.ui.showNotification('No layer selected', 'error');
+                return;
+            }
+            
+            const settings = selectedLayer.settings;
+            console.log('Generating sound with settings:', settings);
+            
+            const buffer = this.soundGenerator.generate(
+                settings,
+                this.audioEngine.sampleRate
+            );
+            console.log('Buffer generated:', buffer);
+            
+            await this.audioEngine.playBuffer(buffer);
+            console.log('Sound played successfully');
+        } catch (error) {
+            console.error('Error playing sound:', error);
+            this.ui.showNotification('Error playing sound: ' + error.message, 'error');
+        }
     }
 
     downloadCurrentSound() {

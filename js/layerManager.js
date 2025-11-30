@@ -305,9 +305,9 @@ class LayerManager {
         document.dispatchEvent(event);
     }
 
-    // ————————————————————————————————————————————————————————
+    // ────────────────────────────────────────────────────────────────
     // UI: Render Layer List (simplified without volume)
-    // ————————————————————————————————————————————————————————
+    // ────────────────────────────────────────────────────────────────
     renderList() {
         const list = document.getElementById('layersList');
         if (!list) return;

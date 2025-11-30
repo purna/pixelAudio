@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,210 +9,293 @@
     <link rel="stylesheet" href="css/styles.css">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Inter:wght@400;500;600;700&display=swap');
-     
     </style>
 </head>
+
 <body>
-<aside>
-    <div class="logo"><h1>Pixel Audio</h1><p>Studio Pro</p></div>
-    <div class="panel">
-        <div class="panel-title">Layers</div>
-        <button onclick="app.layerManager.addLayer()" class="action-btn" style="width:100%;margin-bottom:10px;">Add Layer</button>
-        <div id="layersList"></div>
-    </div>
-    <div class="panel">
-        <div class="panel-title">Presets</div>
-        <div class="preset-grid">
-            <button class="preset-btn" onclick="loadPreset('pickup')"><i class="fas fa-coins"></i> Pickup</button>
-            <button class="preset-btn" onclick="loadPreset('laser')"><i class="fas fa-bolt"></i> Laser</button>
-            <button class="preset-btn" onclick="loadPreset('explosion')"><i class="fas fa-bomb"></i> Explosion</button>
-            <button class="preset-btn" onclick="loadPreset('powerup')"><i class="fas fa-rocket"></i> Powerup</button>
-            <button class="preset-btn" onclick="loadPreset('hit')"><i class="fas fa-gavel"></i> Hit</button>
-            <button class="preset-btn" onclick="loadPreset('jump')"><i class="fas fa-angle-double-up"></i> Jump</button>
-            <button class="preset-btn" onclick="loadPreset('click')"><i class="fas fa-mouse-pointer"></i> Click</button>
-            <button class="preset-btn" onclick="loadPreset('blip')"><i class="fas fa-dot-circle"></i> Blip</button>
-            <button class="preset-btn" onclick="loadPreset('hover')"><i class="fas fa-hand-pointer"></i> Hover</button>
-            <button class="preset-btn" onclick="loadPreset('synth')"><i class="fas fa-music"></i> Synth</button>
-            <button class="preset-btn" onclick="loadPreset('tone')"><i class="fas fa-bell"></i> Tone</button>
+    <aside>
+        <div class="logo">
+            <h1>Pixel Audio</h1>
+            <p>Studio Pro</p>
         </div>
-        <button onclick="randomize()" class="action-btn" style="width:100%;margin-top:12px;">Randomize</button>
-    </div>
-</aside>
-<main>
-    <div class="tab-container">
-        <button class="tab-btn active" data-tab="mixer">Mixer / Timeline</button>
-        <button class="tab-btn" data-tab="settings">Settings</button>
-    </div>
-    <div id="mixer" class="tab-content active">
-        <div class="timeline-wrapper">
-            <div class="timeline-header"><h3>Timeline</h3>
-                <div class="timeline-controls">
-                    <button id="playSelected">Play Selected</button>
-                    <button id="playTimeline">Play All</button>
-                    <button id="stopTimeline">Stop</button>
-                    <label>Length: <input type="number" id="totalLength" value="5" min="1" max="60" step="0.5">s</label>
-                    <span id="timeDisplay">0.00s</span>
-                </div>
-            </div>
-            <canvas id="timeline-canvas"></canvas>
+        <div class="panel">
+            <div class="panel-title">Layers</div>
+            <button onclick="app.layerManager.addLayer()" class="action-btn" style="width:100%;margin-bottom:10px;">Add
+                Layer</button>
+            <div id="layersList"></div>
         </div>
-    </div>
-    <div id="settings" class="tab-content">
-        <div class="settings-grid">
-            <!-- WAVEFORM + LIVE PREVIEW -->
-            <div class="control-section">
-                <div class="section-title">Waveform <i class="fas fa-circle-question info-icon" data-tooltip="The raw oscillator shape\n\n**Square** → Classic 8-bit\n**Sawtooth** → Bright\n**Triangle** → Mellow\n**Sine** → Pure\n**Noise** → Explosions"></i></div>
-                <div class="control-group">
-                    <label>Type</label>
-                    <select id="waveform">
-                        <option value="square">Square - Retro, Harsh</option>
-                        <option value="sine">Sine - Pure, Smooth</option>
-                        <option value="triangle">Triangle - Mellow, Hollow</option>
-                        <option value="sawtooth">Sawtooth - Bright, Buzzy</option>
-                        <option value="noise">Noise - Random, Static</option>
-                    </select>
-                </div>
-                <canvas id="waveform-preview" width="400" height="140"></canvas>
-                <div style="font-size:11px;color:var(--text-secondary);text-align:center;margin-top:8px;">Green = Waveform | Yellow = Envelope</div>
+        <div class="panel">
+            <div class="panel-title">Presets</div>
+            <div class="preset-grid">
+                <button class="preset-btn" onclick="loadPreset('pickup')"><i class="fas fa-coins"></i> Pickup</button>
+                <button class="preset-btn" onclick="loadPreset('laser')"><i class="fas fa-bolt"></i> Laser</button>
+                <button class="preset-btn" onclick="loadPreset('explosion')"><i class="fas fa-bomb"></i>
+                    Explosion</button>
+                <button class="preset-btn" onclick="loadPreset('powerup')"><i class="fas fa-rocket"></i>
+                    Powerup</button>
+                <button class="preset-btn" onclick="loadPreset('hit')"><i class="fas fa-gavel"></i> Hit</button>
+                <button class="preset-btn" onclick="loadPreset('jump')"><i class="fas fa-angle-double-up"></i>
+                    Jump</button>
+                <button class="preset-btn" onclick="loadPreset('click')"><i class="fas fa-mouse-pointer"></i>
+                    Click</button>
+                <button class="preset-btn" onclick="loadPreset('blip')"><i class="fas fa-dot-circle"></i> Blip</button>
+                <button class="preset-btn" onclick="loadPreset('hover')"><i class="fas fa-hand-pointer"></i>
+                    Hover</button>
+                <button class="preset-btn" onclick="loadPreset('synth')"><i class="fas fa-music"></i> Synth</button>
+                <button class="preset-btn" onclick="loadPreset('tone')"><i class="fas fa-bell"></i> Tone</button>
             </div>
-    <!-- 2. ENVELOPE -->
-<div class="control-section">
-    <div class="section-title">Envelope <i class="fas fa-circle-question info-icon" data-tooltip="ADSR Volume Shape\n\n**Attack** → rise time\n**Sustain** → hold duration\n**Punch** → extra peak boost\n**Decay** → fade out"></i></div>
-    <div class="control-group"><label>Attack <span class="value" id="attackVal">0.00s</span></label><input type="range" id="attack" min="0" max="1" step="0.001" value="0"></div>
-    <div class="control-group"><label>Sustain <span class="value" id="sustainVal">0.10s</span></label><input type="range" id="sustain" min="0" max="2" step="0.01" value="0.1"></div>
-    <div class="control-group"><label>Punch <span class="value" id="punchVal">0%</span></label><input type="range" id="punch" min="0" max="100" step="1" value="0"></div>
-    <div class="control-group"><label>Decay <span class="value" id="decayVal">0.20s</span></label><input type="range" id="decay" min="0" max="2" step="0.01" value="0.2"></div>
-</div>
-<!-- 3. FREQUENCY -->
-<div class="control-section">
-    <div class="section-title">Frequency <i class="fas fa-circle-question info-icon" data-tooltip="Pitch Controls\n\n**Start** → Initial frequency in Hz\n**Min Cutoff** → Lowest allowed frequency during slide\n**Slide** → Pitch change rate (positive up, negative down)\n**Delta Slide** → Acceleration of slide rate"></i></div>
-    <div class="control-group"><label>Start <span class="value" id="freqVal">440Hz</span></label><input type="range" id="frequency" min="20" max="3000" value="440"></div>
-    <div class="control-group"><label>Min Cutoff <span class="value" id="minFreqVal">0Hz</span></label><input type="range" id="minFreq" min="0" max="1000" value="0"></div>
-    <div class="control-group"><label>Slide <span class="value" id="slideVal">0.00</span></label><input type="range" id="slide" min="-2" max="2" step="0.01" value="0"></div>
-    <div class="control-group"><label>Delta Slide <span class="value" id="deltaSlideVal">0.00</span></label><input type="range" id="deltaSlide" min="-1" max="1" step="0.01" value="0"></div>
-</div>
-<!-- 4. VIBRATO -->
-<div class="control-section">
-    <div class="section-title">Vibrato <i class="fas fa-circle-question info-icon" data-tooltip="Pitch Modulation\n\nAdds wobble to frequency for expressive leads\n**Depth** → Amount of pitch variation (%)\n**Speed** → Wobble rate in Hz"></i></div>
-    <div class="control-group checkbox-group"><input type="checkbox" id="vibratoEnable"><label>Enable</label></div>
-    <div class="control-group"><label>Depth <span class="value" id="vibratoDepthVal">0%</span></label><input type="range" id="vibratoDepth" min="0" max="100" value="0"></div>
-    <div class="control-group"><label>Speed <span class="value" id="vibratoSpeedVal">0.0Hz</span></label><input type="range" id="vibratoSpeed" min="0" max="50" step="0.1" value="0"></div>
-</div>
-<!-- 5. ARPEGGIO -->
-<div class="control-section">
-    <div class="section-title">Arpeggio <i class="fas fa-circle-question info-icon" data-tooltip="Frequency Alternation\n\nRapid note switching for classic 8-bit effects\n**Multiplier** → Factor for second frequency\n**Speed** → Switch interval in seconds"></i></div>
-    <div class="control-group checkbox-group"><input type="checkbox" id="arpEnable"><label>Enable</label></div>
-    <div class="control-group"><label>Multiplier <span class="value" id="arpMultVal">×1.00</span></label><input type="range" id="arpMult" min="0.5" max="3" step="0.01" value="1"></div>
-    <div class="control-group"><label>Speed <span class="value" id="arpSpeedVal">0.000s</span></label><input type="range" id="arpSpeed" min="0" max="1" step="0.001" value="0"></div>
-</div>
-<!-- 6. DUTY CYCLE (Square only) -->
-<div class="control-section">
-    <div class="section-title">Duty Cycle <i class="fas fa-circle-question info-icon" data-tooltip="Square Wave Pulse Width\n\n**Cycle** → Width percentage (0-100%; 0-50% thin → full → thin)\n**Sweep** → Change rate per second (%/s)"></i></div>
-    <div class="control-group"><label>Cycle <span class="value" id="dutyVal">50%</span></label><input type="range" id="duty" min="0" max="100" value="50"></div>
-    <div class="control-group"><label>Sweep <span class="value" id="dutySweepVal">0%/s</span></label><input type="range" id="dutySweep" min="-200" max="200" value="0"></div>
-</div>
-<!-- 7. FILTERS -->
-<div class="control-section">
-    <div class="section-title">Filters <i class="fas fa-circle-question info-icon" data-tooltip="Frequency Filters\n\n**Low-Pass** → Cuts high frequencies above cutoff\n**High-Pass** → Cuts low frequencies below cutoff\n**Cutoff** → Filter frequency threshold in Hz"></i></div>
-    <div class="control-group checkbox-group"><input type="checkbox" id="lpfEnable"><label>Low-Pass</label></div>
-    <div class="control-group"><label>Cutoff <span class="value" id="lpfVal">22050Hz</span></label><input type="range" id="lpf" min="20" max="22050" step="10" value="22050"></div>
-    <div class="control-group checkbox-group"><input type="checkbox" id="hpfEnable"><label>High-Pass</label></div>
-    <div class="control-group"><label>Cutoff <span class="value" id="hpfVal">0Hz</span></label><input type="range" id="hpf" min="0" max="5000" step="10" value="0"></div>
-</div>
-            <!-- OUTPUT (with working volume) -->
-            <div class="control-section">
-                <div class="section-title">Output <i class="fas fa-circle-question info-icon" data-tooltip="Audio Output Controls\n\n**Layer Volume** → Per-layer level adjustment (0-200%)\n**Gain** → Overall decibel boost/cut (-30 to +6 dB)"></i></div>
-                <div class="control-group">
-                    <label>Layer Volume <span class="value" id="layerVolumeVal">100%</span></label>
-                    <input type="range" id="layerVolume" min="0" max="200" step="1" value="100">
+            <button onclick="randomize()" class="action-btn" style="width:100%;margin-top:12px;">Randomize</button>
+        </div>
+        <div class="panel">
+            <div class="panel-title">Project</div>
+            <button id="saveProject" class="action-btn" style="width:100%;margin-bottom:8px;"><i
+                    class="fas fa-save"></i> Save Project</button>
+            <button id="loadProject" class="action-btn" style="width:100%;margin-bottom:8px;"><i
+                    class="fas fa-folder-open"></i> Load Project</button>
+        </div>
+        <div class="panel">
+            <div class="panel-title">Export</div>
+            <button id="exportLayerBtn" class="action-btn" style="width:100%;margin-bottom:8px;"><i
+                    class="fas fa-file-audio"></i> Export Selected</button>
+            <button id="exportMixBtn" class="action-btn" style="width:100%;"><i class="fas fa-layer-group"></i> Export
+                Mix</button>
+        </div>
+    </aside>
+    <main>
+        <div class="tab-container">
+            <button class="tab-btn active" data-tab="mixer">Mixer / Timeline</button>
+            <button class="tab-btn" data-tab="settings">Settings</button>
+        </div>
+        <div id="mixer" class="tab-content active">
+            <div class="timeline-wrapper">
+                <div class="timeline-header">
+                    <h3>Timeline</h3>
+                    <div class="timeline-controls">
+                        <button id="playSelected">Play Selected</button>
+                        <button id="playTimeline">Play All</button>
+                        <button id="stopTimeline">Stop</button>
+                        <label>Length: <input type="number" id="totalLength" value="5" min="1" max="60"
+                                step="0.5">s</label>
+                        <span id="timeDisplay">0.00s</span>
+                    </div>
                 </div>
-                <div class="control-group">
-                    <label>Gain <span class="value" id="gainVal">-10.0 dB</span></label>
-                    <input type="range" id="gain" min="-30" max="6" step="0.1" value="-10">
-                </div>
+                <canvas id="timeline-canvas"></canvas>
             </div>
         </div>
-    </div>
-    <div class="action-bar">
-        <button id="undoBtn" class="action-btn"><i class="fas fa-undo"></i> Undo</button>
-        <button id="redoBtn" class="action-btn"><i class="fas fa-redo"></i> Redo</button>
-        <button id="playAll" class="action-btn primary">Play All Layers</button>
-        <button id="exportLayer" class="action-btn">Export Selected</button>
-        <button id="exportMix" class="action-btn">Export Mix</button>
-    </div>
-</main>
-<!-- PERFECT TOOLTIP SYSTEM -->
-<script>
-class Tooltip{
-    constructor(){
-        this.tooltip=document.createElement('div'); this.tooltip.className='custom-tooltip';
-        Object.assign(this.tooltip.style,{
-            position:'absolute',background:'rgba(10,10,30,.96)',color:'#e0e7ff',padding:'12px 16px',borderRadius:'10px',
-            fontSize:'13.5px',lineHeight:'1.6',pointerEvents:'none',zIndex:'99999',opacity:'0',
-            transition:'opacity .22s,transform .22s',transform:'translateY(8px)',maxWidth:'340px',
-            boxShadow:'0 10px 40px rgba(0,255,65,.35)',border:'1px solid rgba(0,255,65,.5)',backdropFilter:'blur(12px)',wordWrap:'break-word'
+        <div id="settings" class="tab-content">
+            <div class="settings-grid">
+                <!-- WAVEFORM + LIVE PREVIEW -->
+                <div class="control-section">
+                    <div class="section-title">Waveform <i class="fas fa-circle-question info-icon"
+                            data-tooltip="The raw oscillator shape\n\n**Square** → Classic 8-bit\n**Sawtooth** → Bright\n**Triangle** → Mellow\n**Sine** → Pure\n**Noise** → Explosions"></i>
+                    </div>
+                    <div class="control-group">
+                        <label>Type</label>
+                        <select id="waveform">
+                            <option value="square">Square - Retro, Harsh</option>
+                            <option value="sine">Sine - Pure, Smooth</option>
+                            <option value="triangle">Triangle - Mellow, Hollow</option>
+                            <option value="sawtooth">Sawtooth - Bright, Buzzy</option>
+                            <option value="noise">Noise - Random, Static</option>
+                        </select>
+                    </div>
+                    <canvas id="waveform-preview" width="400" height="140"></canvas>
+                    <div style="font-size:11px;color:var(--text-secondary);text-align:center;margin-top:8px;">Green =
+                        Waveform | Yellow = Envelope</div>
+                </div>
+                <!-- 2. ENVELOPE -->
+                <div class="control-section">
+                    <div class="section-title">Envelope <i class="fas fa-circle-question info-icon"
+                            data-tooltip="ADSR Volume Shape\n\n**Attack** → rise time\n**Sustain** → hold duration\n**Punch** → extra peak boost\n**Decay** → fade out"></i>
+                    </div>
+                    <div class="control-group"><label>Attack <span class="value"
+                                id="attackVal">0.00s</span></label><input type="range" id="attack" min="0" max="1"
+                            step="0.001" value="0"></div>
+                    <div class="control-group"><label>Sustain <span class="value"
+                                id="sustainVal">0.10s</span></label><input type="range" id="sustain" min="0" max="2"
+                            step="0.01" value="0.1"></div>
+                    <div class="control-group"><label>Punch <span class="value" id="punchVal">0%</span></label><input
+                            type="range" id="punch" min="0" max="100" step="1" value="0"></div>
+                    <div class="control-group"><label>Decay <span class="value" id="decayVal">0.20s</span></label><input
+                            type="range" id="decay" min="0" max="2" step="0.01" value="0.2"></div>
+                </div>
+                <!-- 3. FREQUENCY -->
+                <div class="control-section">
+                    <div class="section-title">Frequency <i class="fas fa-circle-question info-icon"
+                            data-tooltip="Pitch Controls\n\n**Start** → Initial frequency in Hz\n**Min Cutoff** → Lowest allowed frequency during slide\n**Slide** → Pitch change rate (positive up, negative down)\n**Delta Slide** → Acceleration of slide rate"></i>
+                    </div>
+                    <div class="control-group"><label>Start <span class="value" id="freqVal">440Hz</span></label><input
+                            type="range" id="frequency" min="20" max="3000" value="440"></div>
+                    <div class="control-group"><label>Min Cutoff <span class="value"
+                                id="minFreqVal">0Hz</span></label><input type="range" id="minFreq" min="0" max="1000"
+                            value="0"></div>
+                    <div class="control-group"><label>Slide <span class="value" id="slideVal">0.00</span></label><input
+                            type="range" id="slide" min="-2" max="2" step="0.01" value="0"></div>
+                    <div class="control-group"><label>Delta Slide <span class="value"
+                                id="deltaSlideVal">0.00</span></label><input type="range" id="deltaSlide" min="-1"
+                            max="1" step="0.01" value="0"></div>
+                </div>
+                <!-- 4. VIBRATO -->
+                <div class="control-section">
+                    <div class="section-title">Vibrato <i class="fas fa-circle-question info-icon"
+                            data-tooltip="Pitch Modulation\n\nAdds wobble to frequency for expressive leads\n**Depth** → Amount of pitch variation (%)\n**Speed** → Wobble rate in Hz"></i>
+                    </div>
+                    <div class="control-group checkbox-group"><input type="checkbox"
+                            id="vibratoEnable"><label>Enable</label></div>
+                    <div class="control-group"><label>Depth <span class="value"
+                                id="vibratoDepthVal">0%</span></label><input type="range" id="vibratoDepth" min="0"
+                            max="100" value="0"></div>
+                    <div class="control-group"><label>Speed <span class="value"
+                                id="vibratoSpeedVal">0.0Hz</span></label><input type="range" id="vibratoSpeed" min="0"
+                            max="50" step="0.1" value="0"></div>
+                </div>
+                <!-- 5. ARPEGGIO -->
+                <div class="control-section">
+                    <div class="section-title">Arpeggio <i class="fas fa-circle-question info-icon"
+                            data-tooltip="Frequency Alternation\n\nRapid note switching for classic 8-bit effects\n**Multiplier** → Factor for second frequency\n**Speed** → Switch interval in seconds"></i>
+                    </div>
+                    <div class="control-group checkbox-group"><input type="checkbox"
+                            id="arpEnable"><label>Enable</label></div>
+                    <div class="control-group"><label>Multiplier <span class="value"
+                                id="arpMultVal">×1.00</span></label><input type="range" id="arpMult" min="0.5" max="3"
+                            step="0.01" value="1"></div>
+                    <div class="control-group"><label>Speed <span class="value"
+                                id="arpSpeedVal">0.000s</span></label><input type="range" id="arpSpeed" min="0" max="1"
+                            step="0.001" value="0"></div>
+                </div>
+                <!-- 6. DUTY CYCLE (Square only) -->
+                <div class="control-section">
+                    <div class="section-title">Duty Cycle <i class="fas fa-circle-question info-icon"
+                            data-tooltip="Square Wave Pulse Width\n\n**Cycle** → Width percentage (0-100%; 0-50% thin → full → thin)\n**Sweep** → Change rate per second (%/s)"></i>
+                    </div>
+                    <div class="control-group"><label>Cycle <span class="value" id="dutyVal">50%</span></label><input
+                            type="range" id="duty" min="0" max="100" value="50"></div>
+                    <div class="control-group"><label>Sweep <span class="value"
+                                id="dutySweepVal">0%/s</span></label><input type="range" id="dutySweep" min="-200"
+                            max="200" value="0"></div>
+                </div>
+                <!-- 7. FILTERS -->
+                <div class="control-section">
+                    <div class="section-title">Filters <i class="fas fa-circle-question info-icon"
+                            data-tooltip="Frequency Filters\n\n**Low-Pass** → Cuts high frequencies above cutoff\n**High-Pass** → Cuts low frequencies below cutoff\n**Cutoff** → Filter frequency threshold in Hz"></i>
+                    </div>
+                    <div class="control-group checkbox-group"><input type="checkbox"
+                            id="lpfEnable"><label>Low-Pass</label></div>
+                    <div class="control-group"><label>Cutoff <span class="value"
+                                id="lpfVal">22050Hz</span></label><input type="range" id="lpf" min="20" max="22050"
+                            step="10" value="22050"></div>
+                    <div class="control-group checkbox-group"><input type="checkbox"
+                            id="hpfEnable"><label>High-Pass</label></div>
+                    <div class="control-group"><label>Cutoff <span class="value" id="hpfVal">0Hz</span></label><input
+                            type="range" id="hpf" min="0" max="5000" step="10" value="0"></div>
+                </div>
+                <!-- OUTPUT (with working volume) -->
+                <div class="control-section">
+                    <div class="section-title">Output <i class="fas fa-circle-question info-icon"
+                            data-tooltip="Audio Output Controls\n\n**Layer Volume** → Per-layer level adjustment (0-200%)\n**Gain** → Overall decibel boost/cut (-30 to +6 dB)"></i>
+                    </div>
+                    <div class="control-group">
+                        <label>Layer Volume <span class="value" id="layerVolumeVal">100%</span></label>
+                        <input type="range" id="layerVolume" min="0" max="200" step="1" value="100">
+                    </div>
+                    <div class="control-group">
+                        <label>Gain <span class="value" id="gainVal">-10.0 dB</span></label>
+                        <input type="range" id="gain" min="-30" max="6" step="0.1" value="-10">
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="action-bar">
+            <button id="undoBtn" class="action-btn"><i class="fas fa-undo"></i> Undo</button>
+            <button id="redoBtn" class="action-btn"><i class="fas fa-redo"></i> Redo</button>
+            <button id="playSelectedBtn" class="action-btn primary"><i class="fas fa-play"></i> Play Selected</button>
+        </div>
+    </main>
+    <!-- PERFECT TOOLTIP SYSTEM -->
+    <script>
+        class Tooltip {
+            constructor() {
+                this.tooltip = document.createElement('div'); this.tooltip.className = 'custom-tooltip';
+                Object.assign(this.tooltip.style, {
+                    position: 'absolute', background: 'rgba(10,10,30,.96)', color: '#e0e7ff', padding: '12px 16px', borderRadius: '10px',
+                    fontSize: '13.5px', lineHeight: '1.6', pointerEvents: 'none', zIndex: '99999', opacity: '0',
+                    transition: 'opacity .22s,transform .22s', transform: 'translateY(8px)', maxWidth: '340px',
+                    boxShadow: '0 10px 40px rgba(0,255,65,.35)', border: '1px solid rgba(0,255,65,.5)', backdropFilter: 'blur(12px)', wordWrap: 'break-word'
+                });
+                document.body.appendChild(this.tooltip);
+            }
+            show(text, el) {
+                clearTimeout(this.hideTimer);
+                this.tooltip.innerHTML = text.replace(/\\n/g, '<br>').replace(/\*\*(.*?)\*\*/g, '<strong style="color:#00ff41">$1</strong>');
+                this.tooltip.style.opacity = '1'; this.tooltip.style.transform = 'translateY(0)';
+                const r = el.getBoundingClientRect();
+                let top = r.bottom + 10 + window.scrollY, left = r.left + r.width / 2 + window.scrollX - this.tooltip.offsetWidth / 2;
+                if (top + this.tooltip.offsetHeight > window.innerHeight + window.scrollY) top = r.top + window.scrollY - this.tooltip.offsetHeight - 10;
+                if (left < 10) left = 10; if (left + this.tooltip.offsetWidth > window.innerWidth - 10) left = window.innerWidth - this.tooltip.offsetWidth - 10;
+                this.tooltip.style.top = top + 'px'; this.tooltip.style.left = left + 'px';
+            }
+            hide() { this.hideTimer = setTimeout(() => { this.tooltip.style.opacity = '0'; this.tooltip.style.transform = 'translateY(8px)'; }, 80); }
+        }
+        const tooltip = new Tooltip();
+        document.addEventListener('DOMContentLoaded', () => {
+            document.querySelectorAll('[data-tooltip]').forEach(el => {
+                el.addEventListener('mouseenter', () => tooltip.show(el.dataset.tooltip, el));
+                el.addEventListener('mouseleave', () => { setTimeout(() => { if (!document.querySelector('.custom-tooltip:hover')) tooltip.hide(); }, 10); });
+            });
+
+            // Setup timeline length control
+            const totalLengthInput = document.getElementById('totalLength');
+            if (totalLengthInput) {
+                totalLengthInput.addEventListener('change', (e) => {
+                    const newLength = parseFloat(e.target.value);
+                    if (app && app.timeline) {
+                        app.timeline.totalLength = newLength;
+                        app.timeline.render();
+                    }
+                });
+            }
         });
-        document.body.appendChild(this.tooltip);
-    }
-    show(text,el){
-        clearTimeout(this.hideTimer);
-        this.tooltip.innerHTML = text.replace(/\\n/g,'<br>').replace(/\*\*(.*?)\*\*/g,'<strong style="color:#00ff41">$1</strong>');
-        this.tooltip.style.opacity='1'; this.tooltip.style.transform='translateY(0)';
-        const r=el.getBoundingClientRect();
-        let top=r.bottom+10+window.scrollY, left=r.left+r.width/2+window.scrollX-this.tooltip.offsetWidth/2;
-        if(top+this.tooltip.offsetHeight>window.innerHeight+window.scrollY) top=r.top+window.scrollY-this.tooltip.offsetHeight-10;
-        if(left<10) left=10; if(left+this.tooltip.offsetWidth>window.innerWidth-10) left=window.innerWidth-this.tooltip.offsetWidth-10;
-        this.tooltip.style.top=top+'px'; this.tooltip.style.left=left+'px';
-    }
-    hide(){ this.hideTimer=setTimeout(()=>{this.tooltip.style.opacity='0';this.tooltip.style.transform='translateY(8px)';},80); }
-}
-const tooltip=new Tooltip();
-document.addEventListener('DOMContentLoaded',()=>{
-    document.querySelectorAll('[data-tooltip]').forEach(el=>{
-        el.addEventListener('mouseenter',()=>tooltip.show(el.dataset.tooltip,el));
-        el.addEventListener('mouseleave',()=>{setTimeout(()=>{if(!document.querySelector('.custom-tooltip:hover')) tooltip.hide();},10);});
-    });
-});
-</script>
-<!-- TAB SWITCHING FIXED -->
-<script>
-document.querySelectorAll('.tab-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-        btn.classList.add('active');
-        document.getElementById(btn.dataset.tab).classList.add('active');
-    });
-});
-</script>
-<!-- LIVE WAVEFORM + VOLUME FIX -->
-<script>
-const ctx=document.getElementById('waveform-preview').getContext('2d');
-function drawWaveform(){
-    const layer=app?.layerManager?.getSelectedLayer?.();
-    if(!layer) return;
-    const buf=app.soundGenerator.generate(layer.settings,44100,0.5);
-    const data=buf.getChannelData(0);
-    ctx.fillStyle='#0a0a1a'; ctx.fillRect(0,0,400,140);
-    ctx.strokeStyle='#00ff41'; ctx.lineWidth=2; ctx.beginPath();
-    for(let i=0;i<400;i++){
-        const y=70*(1-data[Math.floor(i*data.length/400)]||0);
-        i===0?ctx.moveTo(i,y):ctx.lineTo(i,y);
-    }
-    ctx.stroke();
-}
-document.addEventListener('settingsChanged',drawWaveform);
-document.addEventListener('layerSelected',drawWaveform);
-setInterval(drawWaveform,100);
-</script>
-<!-- Your existing scripts -->
-<script src="js/audioEngine.js"></script>
-<script src="js/soundGenerator.js"></script>
-<script src="js/presets.js"></script>
-<script src="js/layerManager.js"></script>
-<script src="js/timeline.js"></script>
-<script src="js/fileManager.js"></script>
-<script src="js/ui.js"></script>
-<script src="js/main.js"></script>
+    </script>
+    <!-- TAB SWITCHING FIXED -->
+    <script>
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                btn.classList.add('active');
+                document.getElementById(btn.dataset.tab).classList.add('active');
+            });
+        });
+    </script>
+    <!-- LIVE WAVEFORM + VOLUME FIX -->
+    <script>
+        const ctx = document.getElementById('waveform-preview').getContext('2d');
+        function drawWaveform() {
+            const layer = app?.layerManager?.getSelectedLayer?.();
+            if (!layer) return;
+            const buf = app.soundGenerator.generate(layer.settings, 44100, 0.5);
+            const data = buf.getChannelData(0);
+            ctx.fillStyle = '#0a0a1a'; ctx.fillRect(0, 0, 400, 140);
+            ctx.strokeStyle = '#00ff41'; ctx.lineWidth = 2; ctx.beginPath();
+            for (let i = 0; i < 400; i++) {
+                const y = 70 * (1 - data[Math.floor(i * data.length / 400)] || 0);
+                i === 0 ? ctx.moveTo(i, y) : ctx.lineTo(i, y);
+            }
+            ctx.stroke();
+        }
+        document.addEventListener('settingsChanged', drawWaveform);
+        document.addEventListener('layerSelected', drawWaveform);
+        setInterval(drawWaveform, 100);
+    </script>
+    <!-- Your existing scripts -->
+    <script src="js/audioEngine.js"></script>
+    <script src="js/soundGenerator.js"></script>
+    <script src="js/presets.js"></script>
+    <script src="js/layerManager.js"></script>
+    <script src="js/timeline.js"></script>
+    <script src="js/fileManager.js"></script>
+    <script src="js/ui.js"></script>
+    <script src="js/main.js"></script>
 </body>
+
 </html>

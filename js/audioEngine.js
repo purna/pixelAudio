@@ -23,8 +23,13 @@ class AudioEngine {
     }
 
     async playBuffer(buffer) {
+        console.log('AudioEngine.playBuffer called');
+        console.log('Context state before:', this.context.state);
+        
         // Ensure context is resumed before playing
         await this.ensureContextResumed();
+        
+        console.log('Context state after resume:', this.context.state);
 
         // Stop any currently playing sound
         if (this.currentSource) {
@@ -32,18 +37,22 @@ class AudioEngine {
                 this.currentSource.stop();
             } catch (e) {
                 // Source might have already stopped
+                console.log('Previous source already stopped');
             }
         }
 
         const source = this.context.createBufferSource();
         source.buffer = buffer;
         source.connect(this.context.destination);
+        
+        console.log('Starting playback...');
         source.start();
         
         this.currentSource = source;
         
         // Clear reference when done
         source.onended = () => {
+            console.log('Playback ended');
             if (this.currentSource === source) {
                 this.currentSource = null;
             }
