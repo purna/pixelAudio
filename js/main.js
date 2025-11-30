@@ -105,112 +105,112 @@ class SFXGeneratorApp {
             }
         });
 
-        // Play button event listeners - wait for DOM to be ready
-        document.addEventListener('DOMContentLoaded', () => {
-            // Play Selected button (footer)
-            const playSelectedBtn = document.getElementById('playSelectedBtn');
-            if (playSelectedBtn) {
-                playSelectedBtn.addEventListener('click', async () => {
-                    console.log('Play Selected clicked');
-                    // Start timeline playback and play sound
-                    this.timeline.playheadPosition = 0;
-                    this.timeline.startPlayback();
-                    await this.playCurrentSound();
-                });
-            }
+        // --- BUTTON LISTENERS (Wrapper Removed) ---
+        // Since init() is called on DOMContentLoaded, these elements exist now.
 
-            // Play Selected button (timeline header)
-            const playSelected = document.getElementById('playSelected');
-            if (playSelected) {
-                playSelected.addEventListener('click', async () => {
-                    console.log('Play Selected (timeline) clicked');
-                    // Start timeline playback and play sound
-                    this.timeline.playheadPosition = 0;
-                    this.timeline.startPlayback();
-                    await this.playCurrentSound();
-                });
-            }
+        // Play Selected button (footer)
+        const playSelectedBtn = document.getElementById('playSelectedBtn');
+        if (playSelectedBtn) {
+            playSelectedBtn.addEventListener('click', async () => {
+                console.log('Play Selected clicked');
+                // Start timeline playback and play sound
+                this.timeline.playheadPosition = 0;
+                this.timeline.startPlayback();
+                await this.playCurrentSound();
+            });
+        }
 
-            // Play All Timeline button
-            const playTimelineBtn = document.getElementById('playTimeline');
-            if (playTimelineBtn) {
-                playTimelineBtn.addEventListener('click', async () => {
-                    console.log('Play Timeline clicked');
-                    // Start timeline playback and play all layers
-                    this.timeline.playheadPosition = 0;
-                    this.timeline.startPlayback();
-                    await this.layerManager.playAllLayers();
-                });
-            }
+        // Play Selected button (timeline header)
+        const playSelected = document.getElementById('playSelected');
+        if (playSelected) {
+            playSelected.addEventListener('click', async () => {
+                console.log('Play Selected (timeline) clicked');
+                // Start timeline playback and play sound
+                this.timeline.playheadPosition = 0;
+                this.timeline.startPlayback();
+                await this.playCurrentSound();
+            });
+        }
 
-            // Stop Timeline button
-            const stopTimelineBtn = document.getElementById('stopTimeline');
-            if (stopTimelineBtn) {
-                stopTimelineBtn.addEventListener('click', () => {
-                    console.log('Stop clicked');
-                    // Stop both audio and timeline
-                    this.timeline.stopPlayback();
-                    this.audioEngine.stopAll();
-                });
-            }
+        // Play All Timeline button
+        const playTimelineBtn = document.getElementById('playTimeline');
+        if (playTimelineBtn) {
+            playTimelineBtn.addEventListener('click', async () => {
+                console.log('Play Timeline clicked');
+                // Start timeline playback and play all layers
+                this.timeline.playheadPosition = 0;
+                this.timeline.startPlayback();
+                await this.layerManager.playAllLayers();
+            });
+        }
 
-            // Undo/Redo buttons
-            const undoBtn = document.getElementById('undoBtn');
-            if (undoBtn) {
-                undoBtn.addEventListener('click', () => this.undo());
-            }
+        // Stop Timeline button
+        const stopTimelineBtn = document.getElementById('stopTimeline');
+        if (stopTimelineBtn) {
+            stopTimelineBtn.addEventListener('click', () => {
+                console.log('Stop clicked');
+                // Stop both audio and timeline
+                this.timeline.stopPlayback();
+                this.audioEngine.stopAll();
+            });
+        }
 
-            const redoBtn = document.getElementById('redoBtn');
-            if (redoBtn) {
-                redoBtn.addEventListener('click', () => this.redo());
-            }
+        // Undo/Redo buttons
+        const undoBtn = document.getElementById('undoBtn');
+        if (undoBtn) {
+            undoBtn.addEventListener('click', () => this.undo());
+        }
 
-            // Export buttons (now in sidebar)
-            const exportLayerBtn = document.getElementById('exportLayerBtn');
-            if (exportLayerBtn) {
-                exportLayerBtn.addEventListener('click', () => {
-                    console.log('Export Layer clicked');
-                    const selectedLayer = this.layerManager.getSelectedLayer();
-                    if (selectedLayer) {
-                        this.fileManager.exportLayer(selectedLayer.id);
-                    } else {
-                        this.ui.showNotification('No layer selected', 'error');
-                    }
-                });
-            }
+        const redoBtn = document.getElementById('redoBtn');
+        if (redoBtn) {
+            redoBtn.addEventListener('click', () => this.redo());
+        }
 
-            const exportMixBtn = document.getElementById('exportMixBtn');
-            if (exportMixBtn) {
-                exportMixBtn.addEventListener('click', () => {
-                    console.log('Export Mix clicked');
-                    this.fileManager.exportMixedOutput();
-                });
-            }
+        // Export buttons (now in sidebar)
+        const exportLayerBtn = document.getElementById('exportLayerBtn');
+        if (exportLayerBtn) {
+            exportLayerBtn.addEventListener('click', () => {
+                console.log('Export Layer clicked');
+                const selectedLayer = this.layerManager.getSelectedLayer();
+                if (selectedLayer) {
+                    this.fileManager.exportLayer(selectedLayer.id);
+                } else {
+                    this.ui.showNotification('No layer selected', 'error');
+                }
+            });
+        }
 
-            // Save/Load Project buttons
-            const saveProjectBtn = document.getElementById('saveProject');
-            if (saveProjectBtn) {
-                saveProjectBtn.addEventListener('click', () => {
-                    this.fileManager.exportProject();
-                });
-            }
+        const exportMixBtn = document.getElementById('exportMixBtn');
+        if (exportMixBtn) {
+            exportMixBtn.addEventListener('click', () => {
+                console.log('Export Mix clicked');
+                this.fileManager.exportMixedOutput();
+            });
+        }
 
-            const loadProjectBtn = document.getElementById('loadProject');
-            if (loadProjectBtn) {
-                loadProjectBtn.addEventListener('click', () => {
-                    this.fileManager.importProject();
-                });
-            }
+        // Save/Load Project buttons
+        const saveProjectBtn = document.getElementById('saveProject');
+        if (saveProjectBtn) {
+            saveProjectBtn.addEventListener('click', () => {
+                this.fileManager.exportProject();
+            });
+        }
 
-            // Add Layer button (makes it consistent with other buttons)
-            const addLayerBtn = document.querySelector('button[onclick="app.layerManager.addLayer()"]');
-            if (addLayerBtn) {
-                addLayerBtn.removeAttribute('onclick'); // Remove inline handler
-                addLayerBtn.addEventListener('click', () => {
-                    this.layerManager.addLayer();
-                });
-            }
-        });
+        const loadProjectBtn = document.getElementById('loadProject');
+        if (loadProjectBtn) {
+            loadProjectBtn.addEventListener('click', () => {
+                this.fileManager.importProject();
+            });
+        }
+
+        // Add Layer button (makes it consistent with other buttons)
+        const addLayerBtn = document.querySelector('button[onclick="app.layerManager.addLayer()"]');
+        if (addLayerBtn) {
+            addLayerBtn.removeAttribute('onclick'); // Remove inline handler
+            addLayerBtn.addEventListener('click', () => {
+                this.layerManager.addLayer();
+            });
+        }
     }
 
     copyLayer() {
