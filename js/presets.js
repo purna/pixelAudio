@@ -1,271 +1,127 @@
-// presets.js - Sound presets and random generation with waveform support
+// presets.js - Sound presets and random generation
 
 class Presets {
     constructor() {
         this.presets = {
+            // --- GAME FX ---
             pickup: {
-                attack: 0,
-                sustain: 0.075,
-                punch: 48,
-                decay: 0.053,
-                frequency: 1243,
-                minFreq: 3,
-                slide: 0,
-                deltaSlide: 0,
-                vibratoEnable: false,
-                vibratoDepth: 0,
-                vibratoSpeed: 0,
-                arpEnable: true,
-                arpMult: 1.18,
-                arpSpeed: 0.085,
-                duty: 50,
-                dutySweep: 0,
-                waveform: 'square',
-                lpfEnable: false,
-                lpf: 22050,
-                hpfEnable: false,
-                hpf: 0,
-                gain: -10.93
+                attack: 0, sustain: 0.075, punch: 48, decay: 0.053,
+                frequency: 1243, minFreq: 3, slide: 0, deltaSlide: 0,
+                vibratoEnable: false, vibratoDepth: 0, vibratoSpeed: 0,
+                arpEnable: true, arpMult: 1.18, arpSpeed: 0.085,
+                duty: 50, waveform: 'square',
+                lpfEnable: false, lpf: 22050, hpfEnable: false, hpf: 0,
+                volume: 0.5
             },
             laser: {
-                attack: 0,
-                sustain: 0.15,
-                punch: 0,
-                decay: 0.3,
-                frequency: 800,
-                minFreq: 100,
-                slide: -0.5,
-                deltaSlide: 0,
-                vibratoEnable: false,
-                vibratoDepth: 0,
-                vibratoSpeed: 0,
-                arpEnable: false,
-                arpMult: 1,
-                arpSpeed: 0,
-                duty: 25,
-                dutySweep: -20,
-                waveform: 'square',
-                lpfEnable: true,
-                lpf: 8000,
-                hpfEnable: false,
-                hpf: 0,
-                gain: -8
+                attack: 0, sustain: 0.15, punch: 0, decay: 0.3,
+                frequency: 800, minFreq: 100, slide: -0.5, deltaSlide: 0,
+                vibratoEnable: false, duty: 25, waveform: 'square',
+                lpfEnable: true, lpf: 8000, hpfEnable: false, hpf: 0,
+                volume: 0.6
             },
             explosion: {
-                attack: 0,
-                sustain: 0.5,
-                punch: 80,
-                decay: 0.8,
-                frequency: 80,
-                minFreq: 20,
-                slide: -0.3,
-                deltaSlide: 0,
-                vibratoEnable: false,
-                vibratoDepth: 0,
-                vibratoSpeed: 0,
-                arpEnable: false,
-                arpMult: 1,
-                arpSpeed: 0,
-                duty: 50,
-                dutySweep: 0,
-                waveform: 'noise',
-                lpfEnable: true,
-                lpf: 1500,
-                hpfEnable: true,
-                hpf: 100,
-                gain: -6
+                attack: 0, sustain: 0.5, punch: 80, decay: 0.8,
+                frequency: 80, minFreq: 20, slide: -0.3, deltaSlide: 0,
+                vibratoEnable: false, duty: 50, waveform: 'noise',
+                lpfEnable: true, lpf: 1500, hpfEnable: true, hpf: 100,
+                volume: 0.8
             },
             powerup: {
-                attack: 0,
-                sustain: 0.2,
-                punch: 0,
-                decay: 0.4,
-                frequency: 200,
-                minFreq: 0,
-                slide: 0.6,
-                deltaSlide: 0.1,
-                vibratoEnable: true,
-                vibratoDepth: 30,
-                vibratoSpeed: 10,
-                arpEnable: false,
-                arpMult: 1,
-                arpSpeed: 0,
-                duty: 50,
-                dutySweep: 0,
-                waveform: 'sine',
-                lpfEnable: false,
-                lpf: 22050,
-                hpfEnable: false,
-                hpf: 0,
-                gain: -12
+                attack: 0, sustain: 0.2, punch: 0, decay: 0.4,
+                frequency: 200, minFreq: 0, slide: 0.6, deltaSlide: 0.1,
+                vibratoEnable: true, vibratoDepth: 30, vibratoSpeed: 10,
+                arpEnable: false, duty: 50, waveform: 'sine',
+                lpfEnable: false, lpf: 22050, hpfEnable: false, hpf: 0,
+                volume: 0.6
             },
             hit: {
-                attack: 0,
-                sustain: 0.05,
-                punch: 100,
-                decay: 0.15,
-                frequency: 150,
-                minFreq: 0,
-                slide: -0.8,
-                deltaSlide: 0,
-                vibratoEnable: false,
-                vibratoDepth: 0,
-                vibratoSpeed: 0,
-                arpEnable: false,
-                arpMult: 1,
-                arpSpeed: 0,
-                duty: 50,
-                dutySweep: 0,
-                waveform: 'square',
-                lpfEnable: true,
-                lpf: 3000,
-                hpfEnable: true,
-                hpf: 50,
-                gain: -8
+                attack: 0, sustain: 0.05, punch: 100, decay: 0.15,
+                frequency: 150, minFreq: 0, slide: -0.8, deltaSlide: 0,
+                vibratoEnable: false, duty: 50, waveform: 'square',
+                lpfEnable: true, lpf: 3000, hpfEnable: true, hpf: 50,
+                volume: 0.7
             },
             jump: {
-                attack: 0,
-                sustain: 0.1,
-                punch: 50,
-                decay: 0.25,
-                frequency: 400,
-                minFreq: 0,
-                slide: 0.4,
-                deltaSlide: 0,
-                vibratoEnable: false,
-                vibratoDepth: 0,
-                vibratoSpeed: 0,
-                arpEnable: false,
-                arpMult: 1,
-                arpSpeed: 0,
-                duty: 50,
-                dutySweep: 0,
-                waveform: 'square',
-                lpfEnable: false,
-                lpf: 22050,
-                hpfEnable: false,
-                hpf: 0,
-                gain: -10
-            },
-            click: {
-                attack: 0,
-                sustain: 0.02,
-                punch: 0,
-                decay: 0.05,
-                frequency: 1200,
-                minFreq: 0,
-                slide: 0,
-                deltaSlide: 0,
-                vibratoEnable: false,
-                vibratoDepth: 0,
-                vibratoSpeed: 0,
-                arpEnable: false,
-                arpMult: 1,
-                arpSpeed: 0,
-                duty: 50,
-                dutySweep: 0,
-                waveform: 'square',
-                lpfEnable: false,
-                lpf: 22050,
-                hpfEnable: false,
-                hpf: 0,
-                gain: -15
+                attack: 0, sustain: 0.1, punch: 50, decay: 0.25,
+                frequency: 400, minFreq: 0, slide: 0.4, deltaSlide: 0,
+                vibratoEnable: false, duty: 50, waveform: 'square',
+                lpfEnable: false, lpf: 22050, hpfEnable: false, hpf: 0,
+                volume: 0.6
             },
             blip: {
-                attack: 0,
-                sustain: 0.04,
-                punch: 0,
-                decay: 0.08,
-                frequency: 800,
-                minFreq: 0,
-                slide: 0,
-                deltaSlide: 0,
-                vibratoEnable: false,
-                vibratoDepth: 0,
-                vibratoSpeed: 0,
-                arpEnable: false,
-                arpMult: 1,
-                arpSpeed: 0,
-                duty: 50,
-                dutySweep: 0,
-                waveform: 'sine',
-                lpfEnable: false,
-                lpf: 22050,
-                hpfEnable: false,
-                hpf: 0,
-                gain: -12
+                attack: 0, sustain: 0.04, punch: 0, decay: 0.08,
+                frequency: 800, minFreq: 0, slide: 0, deltaSlide: 0,
+                vibratoEnable: false, duty: 50, waveform: 'sine',
+                lpfEnable: false, lpf: 22050, hpfEnable: false, hpf: 0,
+                volume: 0.6
+            },
+            
+            // --- FOOTSTEPS ---
+            step_stone: {
+                attack: 0.005, sustain: 0.02, punch: 40, decay: 0.08,
+                frequency: 300, minFreq: 50, slide: -0.1, deltaSlide: 0,
+                vibratoEnable: false, waveform: 'noise',
+                lpfEnable: true, lpf: 8000, hpfEnable: true, hpf: 400,
+                volume: 0.8
+            },
+            step_wood: {
+                attack: 0.01, sustain: 0.03, punch: 10, decay: 0.08,
+                frequency: 150, minFreq: 50, slide: 0, deltaSlide: 0,
+                vibratoEnable: false, waveform: 'noise',
+                lpfEnable: true, lpf: 1200, hpfEnable: true, hpf: 100,
+                volume: 1.0 // Wood needs more gain as it's filtered heavily
+            },
+            step_sand: {
+                attack: 0.02, sustain: 0.05, punch: 0, decay: 0.15,
+                frequency: 800, minFreq: 0, slide: 0, deltaSlide: 0,
+                vibratoEnable: false, waveform: 'noise',
+                lpfEnable: true, lpf: 3000, hpfEnable: false, hpf: 0,
+                volume: 0.6
+            },
+            step_gravel: {
+                attack: 0.005, sustain: 0.05, punch: 50, decay: 0.12,
+                frequency: 600, minFreq: 0, slide: 0, deltaSlide: 0,
+                vibratoEnable: false, waveform: 'noise',
+                lpfEnable: true, lpf: 5000, hpfEnable: true, hpf: 200,
+                volume: 0.7
+            },
+            step_snow: {
+                attack: 0.01, sustain: 0.08, punch: 20, decay: 0.15,
+                frequency: 1200, minFreq: 0, slide: 0, deltaSlide: 0,
+                vibratoEnable: false, waveform: 'noise',
+                lpfEnable: true, lpf: 6000, hpfEnable: true, hpf: 800,
+                volume: 0.5
+            },
+
+            // --- UI / SYNTH ---
+            click: {
+                attack: 0, sustain: 0.02, punch: 0, decay: 0.05,
+                frequency: 1200, minFreq: 0, slide: 0, deltaSlide: 0,
+                vibratoEnable: false, duty: 50, waveform: 'square',
+                lpfEnable: false, lpf: 22050, hpfEnable: false, hpf: 0,
+                volume: 0.5
             },
             hover: {
-                attack: 0.01,
-                sustain: 0.06,
-                punch: 0,
-                decay: 0.05,
-                frequency: 1000,
-                minFreq: 0,
-                slide: 0,
-                deltaSlide: 0,
-                vibratoEnable: false,
-                vibratoDepth: 0,
-                vibratoSpeed: 0,
-                arpEnable: false,
-                arpMult: 1,
-                arpSpeed: 0,
-                duty: 50,
-                dutySweep: 0,
-                waveform: 'triangle',
-                lpfEnable: false,
-                lpf: 22050,
-                hpfEnable: false,
-                hpf: 0,
-                gain: -18
+                attack: 0.01, sustain: 0.06, punch: 0, decay: 0.05,
+                frequency: 1000, minFreq: 0, slide: 0, deltaSlide: 0,
+                vibratoEnable: false, waveform: 'triangle',
+                lpfEnable: false, lpf: 22050, hpfEnable: false, hpf: 0,
+                volume: 0.4
             },
-            synth: {
-                attack: 0.1,
-                sustain: 0.3,
-                punch: 0,
-                decay: 0.2,
-                frequency: 440,
-                minFreq: 0,
-                slide: 0,
-                deltaSlide: 0,
-                vibratoEnable: true,
-                vibratoDepth: 20,
-                vibratoSpeed: 5,
-                arpEnable: false,
-                arpMult: 1,
-                arpSpeed: 0,
-                duty: 50,
-                dutySweep: 0,
-                waveform: 'sawtooth',
-                lpfEnable: false,
-                lpf: 22050,
-                hpfEnable: false,
-                hpf: 0,
-                gain: -10
+            synth_pad: {
+                attack: 0.1, sustain: 0.3, punch: 0, decay: 0.2,
+                frequency: 440, minFreq: 0, slide: 0, deltaSlide: 0,
+                vibratoEnable: true, vibratoDepth: 20, vibratoSpeed: 5,
+                arpEnable: false, duty: 50, waveform: 'sawtooth',
+                lpfEnable: false, lpf: 22050, hpfEnable: false, hpf: 0,
+                volume: 0.6
             },
-            tone: {
-                attack: 0.05,
-                sustain: 0.5,
-                punch: 0,
-                decay: 0.1,
-                frequency: 440,
-                minFreq: 0,
-                slide: 0,
-                deltaSlide: 0,
-                vibratoEnable: false,
-                vibratoDepth: 0,
-                vibratoSpeed: 0,
-                arpEnable: false,
-                arpMult: 1,
-                arpSpeed: 0,
-                duty: 50,
-                dutySweep: 0,
-                waveform: 'sine',
-                lpfEnable: false,
-                lpf: 22050,
-                hpfEnable: false,
-                hpf: 0,
-                gain: -12
+            alarm: {
+                 attack: 0.01, sustain: 0.2, punch: 0, decay: 0.1,
+                 frequency: 880, minFreq: 0, slide: 0, deltaSlide: 0,
+                 vibratoEnable: false, arpEnable: true, arpMult: 1.5, arpSpeed: 0.15,
+                 waveform: 'square', volume: 0.6
             }
         };
     }
@@ -278,14 +134,7 @@ class Presets {
         return Object.keys(this.presets);
     }
 
-    add(name, settings) {
-        this.presets[name] = { ...settings };
-    }
-
-    remove(name) {
-        delete this.presets[name];
-    }
-
+    // Generate random with constraints
     generateRandom() {
         const waveforms = ['square', 'sine', 'triangle', 'sawtooth', 'noise'];
         return {
@@ -304,68 +153,8 @@ class Presets {
             arpMult: 0.5 + Math.random() * 1.5,
             arpSpeed: Math.random() * 0.5,
             duty: Math.random() * 100,
-            dutySweep: (Math.random() - 0.5) * 100,
             waveform: waveforms[Math.floor(Math.random() * waveforms.length)],
-            lpfEnable: Math.random() > 0.5,
-            lpf: 1000 + Math.random() * 21050,
-            hpfEnable: Math.random() > 0.7,
-            hpf: Math.random() * 1000,
-            gain: -20 + Math.random() * 15
+            volume: 0.5
         };
-    }
-
-    // Generate random with constraints (for specific types of sounds)
-    generateRandomType(type) {
-        const templates = {
-            ui: {
-                attack: [0, 0.01],
-                sustain: [0.02, 0.1],
-                punch: [0, 50],
-                decay: [0.05, 0.15],
-                frequency: [800, 1500],
-                minFreq: [0, 0],
-                slide: [-0.2, 0.2],
-                deltaSlide: [0, 0],
-                vibratoEnable: false,
-                duty: [40, 60],
-                waveform: ['square', 'sine', 'triangle'],
-                gain: [-20, -10]
-            },
-            game: {
-                attack: [0, 0.05],
-                sustain: [0.05, 0.3],
-                punch: [0, 100],
-                decay: [0.1, 0.5],
-                frequency: [100, 1000],
-                minFreq: [0, 200],
-                slide: [-0.8, 0.8],
-                deltaSlide: [-0.3, 0.3],
-                duty: [30, 70],
-                waveform: ['square', 'sine', 'triangle', 'sawtooth'],
-                gain: [-15, -5]
-            }
-        };
-
-        const template = templates[type] || templates.game;
-        const settings = this.generateRandom();
-
-        // Apply template constraints
-        for (let key in template) {
-            if (Array.isArray(template[key])) {
-                const arr = template[key];
-                if (typeof arr[0] === 'string') {
-                    // Array of string choices (e.g., waveforms)
-                    settings[key] = arr[Math.floor(Math.random() * arr.length)];
-                } else {
-                    // Numeric range
-                    const [min, max] = arr;
-                    settings[key] = min + Math.random() * (max - min);
-                }
-            } else {
-                settings[key] = template[key];
-            }
-        }
-
-        return settings;
     }
 }

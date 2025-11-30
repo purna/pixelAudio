@@ -1,218 +1,332 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Retro SFX Studio Pro</title>
 
     <link rel="icon" type="image/png" href="/pixelAudio/favicon-96x96.png" sizes="96x96" />
-    <link rel="icon" type="image/svg+xml" href="/pixelAudio/favicon.svg" />
-    <link rel="shortcut icon" href="/pixelAudio/favicon.ico" />
-    <link rel="apple-touch-icon" sizes="180x180" href="/pixelAudio/apple-touch-icon.png" />
-    <link rel="manifest" href="/pixelAudio/site.webmanifest" />
-
-     <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <link rel="stylesheet" href="css/styles.css">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Inter:wght@400;500;600;700&display=swap');
     </style>
 </head>
-
 <body>
-    <aside>
-        <div class="logo">
+    
+    <!-- TOP HEADER -->
+    <header>
+        <div class="logo-area">
             <h1>Pixel Audio</h1>
-            <p>Studio Pro</p>
+            <span class="badge">Studio Pro</span>
         </div>
-        <div class="panel">
-            <div class="panel-title">Layers</div>
-            <button onclick="app.layerManager.addLayer()" class="action-btn" style="width:100%;margin-bottom:10px;">Add
-                Layer</button>
-            <div id="layersList"></div>
+        <div class="header-controls">
+            <button onclick="randomize()" class="tool-btn"><i class="fas fa-random"></i> Randomize</button>
+            <div class="separator"></div>
+            <button id="loadProject" class="header-btn"><i class="fas fa-folder-open"></i> Load</button>
+            <button id="saveProject" class="header-btn primary"><i class="fas fa-save"></i> Save</button>
+            <button id="exportMixBtn" class="header-btn action"><i class="fas fa-file-export"></i> Export Mix</button>
         </div>
-        <div class="panel">
-            <div class="panel-title">Presets</div>
-            <div class="preset-grid">
-                <button class="preset-btn" onclick="loadPreset('pickup')"><i class="fas fa-coins"></i> Pickup</button>
-                <button class="preset-btn" onclick="loadPreset('laser')"><i class="fas fa-bolt"></i> Laser</button>
-                <button class="preset-btn" onclick="loadPreset('explosion')"><i class="fas fa-bomb"></i>
-                    Explosion</button>
-                <button class="preset-btn" onclick="loadPreset('powerup')"><i class="fas fa-rocket"></i>
-                    Powerup</button>
-                <button class="preset-btn" onclick="loadPreset('hit')"><i class="fas fa-gavel"></i> Hit</button>
-                <button class="preset-btn" onclick="loadPreset('jump')"><i class="fas fa-angle-double-up"></i>
-                    Jump</button>
-                <button class="preset-btn" onclick="loadPreset('click')"><i class="fas fa-mouse-pointer"></i>
-                    Click</button>
-                <button class="preset-btn" onclick="loadPreset('blip')"><i class="fas fa-dot-circle"></i> Blip</button>
-                <button class="preset-btn" onclick="loadPreset('hover')"><i class="fas fa-hand-pointer"></i>
-                    Hover</button>
-                <button class="preset-btn" onclick="loadPreset('synth')"><i class="fas fa-music"></i> Synth</button>
-                <button class="preset-btn" onclick="loadPreset('tone')"><i class="fas fa-bell"></i> Tone</button>
-            </div>
-            <button onclick="randomize()" class="action-btn" style="width:100%;margin-top:12px;">Randomize</button>
-        </div>
-        <div class="panel">
-            <div class="panel-title">Project</div>
-            <button id="saveProject" class="action-btn" style="width:100%;margin-bottom:8px;"><i
-                    class="fas fa-save"></i> Save Project</button>
-            <button id="loadProject" class="action-btn" style="width:100%;margin-bottom:8px;"><i
-                    class="fas fa-folder-open"></i> Load Project</button>
-        </div>
-        <div class="panel">
-            <div class="panel-title">Export</div>
-            <button id="exportLayerBtn" class="action-btn" style="width:100%;margin-bottom:8px;"><i
-                    class="fas fa-file-audio"></i> Export Selected</button>
-            <button id="exportMixBtn" class="action-btn" style="width:100%;"><i class="fas fa-layer-group"></i> Export
-                Mix</button>
-        </div>
-    </aside>
+    </header>
+
     <main>
-        <div class="tab-container">
-            <button class="tab-btn active" data-tab="mixer">Mixer / Timeline</button>
-            <button class="tab-btn" data-tab="settings">Settings</button>
+        <!-- FAR LEFT ICON RAIL -->
+        <div id="icon-sidebar">
+            <button class="icon-tab-btn" data-panel="layers" data-tooltip-right="Layers">
+                <i class="fas fa-layer-group"></i>
+            </button>
+            <button class="icon-tab-btn" data-panel="presets" data-tooltip-right="Presets">
+                <i class="fas fa-th"></i>
+            </button>
+            <button class="icon-tab-btn" data-panel="settings" data-tooltip-right="Settings">
+                <i class="fas fa-cog"></i>
+            </button>
         </div>
-        <div id="mixer" class="tab-content active">
-            <div class="timeline-wrapper">
-                <div class="timeline-header">
-                    <h3>Timeline</h3>
-                    <div class="timeline-controls">
-                        <button id="playSelected">Play Selected</button>
-                        <button id="playTimeline">Play All</button>
-                        <button id="stopTimeline">Stop</button>
-                        <label>Length: <input type="number" id="totalLength" value="5" min="1" max="60"
-                                step="0.5">s</label>
-                        <span id="timeDisplay">0.00s</span>
-                    </div>
-                </div>
-                <canvas id="timeline-canvas"></canvas>
-            </div>
-        </div>
-        <div id="settings" class="tab-content">
-            <div class="settings-grid">
+
+        <!-- MAIN MIDDLE AREA -->
+        <div id="workspace-area">
+            
+            <!-- FIXED LEFT TOOLS (SYNTH CONTROLS) -->
+            <div id="fixed-tools-panel">
+                <div class="tools-header">Synthesizer</div>
+
+                <!-- Waveform -->
                 <div class="control-section">
-                    <div class="section-title">Waveform <i class="fas fa-circle-question info-icon"
-                            data-tooltip="The raw oscillator shape\n\n**Square** → Classic 8-bit\n**Sawtooth** → Bright\n**Triangle** → Mellow\n**Sine** → Pure\n**Noise** → Explosions"></i>
+                    <div class="section-header">
+                        <div class="label-group">
+                            <span>Waveform</span>
+                            <i class="fas fa-circle-question info-icon" data-tooltip="The raw oscillator shape&#10;&#10;**Square** → Classic 8-bit&#10;**Sawtooth** → Bright&#10;**Triangle** → Mellow&#10;**Sine** → Pure&#10;**Noise** → Explosions"></i>
+                        </div>
+                        <button class="toggle-sect-btn"><i class="fas fa-minus"></i></button>
                     </div>
-                    <div class="control-group">
-                        <label>Type</label>
+                    <div class="section-body">
                         <select id="waveform">
-                            <option value="square">Square - Retro, Harsh</option>
-                            <option value="sine">Sine - Pure, Smooth</option>
-                            <option value="triangle">Triangle - Mellow, Hollow</option>
-                            <option value="sawtooth">Sawtooth - Bright, Buzzy</option>
-                            <option value="noise">Noise - Random, Static</option>
+                            <option value="square">Square</option>
+                            <option value="sine">Sine</option>
+                            <option value="triangle">Triangle</option>
+                            <option value="sawtooth">Sawtooth</option>
+                            <option value="noise">Noise</option>
                         </select>
                     </div>
-                    <canvas id="waveform-preview" width="400" height="140"></canvas>
-                    <div style="font-size:11px;color:var(--text-secondary);text-align:center;margin-top:8px;">Green =
-                        Waveform | Yellow = Envelope</div>
                 </div>
+
+                <!-- Envelope -->
                 <div class="control-section">
-                    <div class="section-title">Envelope <i class="fas fa-circle-question info-icon"
-                            data-tooltip="ADSR Volume Shape\n\n**Attack** → rise time\n**Sustain** → hold duration\n**Punch** → extra peak boost\n**Decay** → fade out"></i>
+                    <div class="section-header">
+                        <div class="label-group">
+                            <span>Envelope</span>
+                            <i class="fas fa-circle-question info-icon" data-tooltip="ADSR Volume Shape&#10;&#10;**Attack** → rise time&#10;**Sustain** → hold duration&#10;**Punch** → extra peak boost&#10;**Decay** → fade out"></i>
+                        </div>
+                        <button class="toggle-sect-btn"><i class="fas fa-minus"></i></button>
                     </div>
-                    <div class="control-group"><label>Attack <span class="value"
-                                id="attackVal">0.00s</span></label><input type="range" id="attack" min="0" max="1"
-                            step="0.001" value="0"></div>
-                    <div class="control-group"><label>Sustain <span class="value"
-                                id="sustainVal">0.10s</span></label><input type="range" id="sustain" min="0" max="2"
-                            step="0.01" value="0.1"></div>
-                    <div class="control-group"><label>Punch <span class="value" id="punchVal">0%</span></label><input
-                            type="range" id="punch" min="0" max="100" step="1" value="0"></div>
-                    <div class="control-group"><label>Decay <span class="value" id="decayVal">0.20s</span></label><input
-                            type="range" id="decay" min="0" max="2" step="0.01" value="0.2"></div>
+                    <div class="section-body">
+                        <div class="control-group">
+                            <label>Attack <span class="value" id="attackVal">0.00s</span></label>
+                            <input type="range" id="attack" min="0" max="1" step="0.001" value="0">
+                        </div>
+                        <div class="control-group">
+                            <label>Sustain <span class="value" id="sustainVal">0.10s</span></label>
+                            <input type="range" id="sustain" min="0" max="2" step="0.01" value="0.1">
+                        </div>
+                        <div class="control-group">
+                            <label>Decay <span class="value" id="decayVal">0.20s</span></label>
+                            <input type="range" id="decay" min="0" max="2" step="0.01" value="0.2">
+                        </div>
+                        <div class="control-group">
+                            <label>Punch <span class="value" id="punchVal">0%</span></label>
+                            <input type="range" id="punch" min="0" max="100" step="1" value="0">
+                        </div>
+                    </div>
                 </div>
+
+                <!-- Frequency -->
                 <div class="control-section">
-                    <div class="section-title">Frequency <i class="fas fa-circle-question info-icon"
-                            data-tooltip="Pitch Controls\n\n**Start** → Initial frequency in Hz\n**Min Cutoff** → Lowest allowed frequency during slide\n**Slide** → Pitch change rate (positive up, negative down)\n**Delta Slide** → Acceleration of slide rate"></i>
+                    <div class="section-header">
+                        <div class="label-group">
+                            <span>Frequency</span>
+                            <i class="fas fa-circle-question info-icon" data-tooltip="Pitch Controls&#10;&#10;**Start** → Initial Hz&#10;**Slide** → Pitch change&#10;**Delta** → Acceleration"></i>
+                        </div>
+                        <button class="toggle-sect-btn"><i class="fas fa-minus"></i></button>
                     </div>
-                    <div class="control-group"><label>Start <span class="value" id="freqVal">440Hz</span></label><input
-                            type="range" id="frequency" min="20" max="3000" value="440"></div>
-                    <div class="control-group"><label>Min Cutoff <span class="value"
-                                id="minFreqVal">0Hz</span></label><input type="range" id="minFreq" min="0" max="1000"
-                            value="0"></div>
-                    <div class="control-group"><label>Slide <span class="value" id="slideVal">0.00</span></label><input
-                            type="range" id="slide" min="-2" max="2" step="0.01" value="0"></div>
-                    <div class="control-group"><label>Delta Slide <span class="value"
-                                id="deltaSlideVal">0.00</span></label><input type="range" id="deltaSlide" min="-1"
-                            max="1" step="0.01" value="0"></div>
+                    <div class="section-body">
+                        <div class="control-group">
+                            <label>Start Hz <span class="value" id="freqVal">440</span></label>
+                            <input type="range" id="frequency" min="20" max="3000" value="440">
+                        </div>
+                        <div class="control-group">
+                            <label>Slide <span class="value" id="slideVal">0.0</span></label>
+                            <input type="range" id="slide" min="-2" max="2" step="0.01" value="0">
+                        </div>
+                        <div class="control-group">
+                            <label>D-Slide <span class="value" id="deltaSlideVal">0.0</span></label>
+                            <input type="range" id="deltaSlide" min="-1" max="1" step="0.01" value="0">
+                        </div>
+                    </div>
                 </div>
+
+                <!-- Vibrato -->
                 <div class="control-section">
-                    <div class="section-title">Vibrato <i class="fas fa-circle-question info-icon"
-                            data-tooltip="Pitch Modulation\n\nAdds wobble to frequency for expressive leads\n**Depth** → Amount of pitch variation (%)\n**Speed** → Wobble rate in Hz"></i>
+                    <div class="section-header">
+                        <div class="label-group">
+                            <span>Vibrato</span>
+                            <i class="fas fa-circle-question info-icon" data-tooltip="Pitch Modulation&#10;&#10;**Depth** → Pitch variation %&#10;**Speed** → Wobble rate"></i>
+                        </div>
+                        <button class="toggle-sect-btn"><i class="fas fa-minus"></i></button>
                     </div>
-                    <div class="control-group checkbox-group"><input type="checkbox"
-                            id="vibratoEnable"><label>Enable</label></div>
-                    <div class="control-group"><label>Depth <span class="value"
-                                id="vibratoDepthVal">0%</span></label><input type="range" id="vibratoDepth" min="0"
-                            max="100" value="0"></div>
-                    <div class="control-group"><label>Speed <span class="value"
-                                id="vibratoSpeedVal">0.0Hz</span></label><input type="range" id="vibratoSpeed" min="0"
-                            max="50" step="0.1" value="0"></div>
+                    <div class="section-body">
+                        <div class="control-group checkbox-group">
+                            <input type="checkbox" id="vibratoEnable">
+                            <label for="vibratoEnable">Enable</label>
+                        </div>
+                        <div class="control-group mt-1">
+                            <label>Depth <span class="value" id="vibratoDepthVal">0</span></label>
+                            <input type="range" id="vibratoDepth" min="0" max="100" value="0">
+                        </div>
+                        <div class="control-group mt-1">
+                            <label>Speed <span class="value" id="vibratoSpeedVal">0</span></label>
+                            <input type="range" id="vibratoSpeed" min="0" max="50" step="0.1" value="0">
+                        </div>
+                    </div>
                 </div>
+
+                <!-- Arpeggio -->
                 <div class="control-section">
-                    <div class="section-title">Arpeggio <i class="fas fa-circle-question info-icon"
-                            data-tooltip="Frequency Alternation\n\nRapid note switching for classic 8-bit effects\n**Multiplier** → Factor for second frequency\n**Speed** → Switch interval in seconds"></i>
+                    <div class="section-header">
+                        <div class="label-group">
+                            <span>Arpeggio</span>
+                            <i class="fas fa-circle-question info-icon" data-tooltip="Frequency Alternation&#10;&#10;Rapid note switching for 8-bit effects"></i>
+                        </div>
+                        <button class="toggle-sect-btn"><i class="fas fa-minus"></i></button>
                     </div>
-                    <div class="control-group checkbox-group"><input type="checkbox"
-                            id="arpEnable"><label>Enable</label></div>
-                    <div class="control-group"><label>Multiplier <span class="value"
-                                id="arpMultVal">×1.00</span></label><input type="range" id="arpMult" min="0.5" max="3"
-                            step="0.01" value="1"></div>
-                    <div class="control-group"><label>Speed <span class="value"
-                                id="arpSpeedVal">0.000s</span></label><input type="range" id="arpSpeed" min="0" max="1"
-                            step="0.001" value="0"></div>
+                    <div class="section-body">
+                        <div class="control-group checkbox-group">
+                            <input type="checkbox" id="arpEnable">
+                            <label for="arpEnable">Enable</label>
+                        </div>
+                        <div class="control-group mt-1">
+                            <label>Mult <span class="value" id="arpMultVal">1.0</span></label>
+                            <input type="range" id="arpMult" min="0.5" max="3" step="0.01" value="1">
+                        </div>
+                        <div class="control-group mt-1">
+                            <label>Speed <span class="value" id="arpSpeedVal">0.0</span></label>
+                            <input type="range" id="arpSpeed" min="0" max="1" step="0.001" value="0">
+                        </div>
+                    </div>
                 </div>
-                <div class="control-section">
-                    <div class="section-title">Duty Cycle <i class="fas fa-circle-question info-icon"
-                            data-tooltip="Square Wave Pulse Width\n\n**Cycle** → Width percentage (0-100%; 0-50% thin → full → thin)\n**Sweep** → Change rate per second (%/s)"></i>
+
+                <!-- Duty Cycle -->
+                <div class="control-section" id="duty-section">
+                    <div class="section-header">
+                        <div class="label-group">
+                            <span>Duty Cycle</span>
+                            <i class="fas fa-circle-question info-icon" data-tooltip="Square Wave Pulse Width&#10;&#10;**Cycle** → Width %"></i>
+                        </div>
+                        <button class="toggle-sect-btn"><i class="fas fa-minus"></i></button>
                     </div>
-                    <div class="control-group"><label>Cycle <span class="value" id="dutyVal">50%</span></label><input
-                            type="range" id="duty" min="0" max="100" value="50"></div>
-                    <div class="control-group"><label>Sweep <span class="value"
-                                id="dutySweepVal">0%/s</span></label><input type="range" id="dutySweep" min="-200"
-                            max="200" value="0"></div>
+                    <div class="section-body">
+                        <div class="control-group">
+                            <label>Cycle <span class="value" id="dutyVal">50%</span></label>
+                            <input type="range" id="duty" min="0" max="100" value="50">
+                        </div>
+                    </div>
                 </div>
-                <div class="control-section">
-                    <div class="section-title">Filters <i class="fas fa-circle-question info-icon"
-                            data-tooltip="Frequency Filters\n\n**Low-Pass** → Cuts high frequencies above cutoff\n**High-Pass** → Cuts low frequencies below cutoff\n**Cutoff** → Filter frequency threshold in Hz"></i>
+
+                <!-- Layer Output -->
+                 <div class="control-section">
+                    <div class="section-header">
+                        <div class="label-group">
+                            <span>Layer Output</span>
+                            <i class="fas fa-circle-question info-icon" data-tooltip="Volume for the selected layer"></i>
+                        </div>
+                        <button class="toggle-sect-btn"><i class="fas fa-minus"></i></button>
                     </div>
-                    <div class="control-group checkbox-group"><input type="checkbox"
-                            id="lpfEnable"><label>Low-Pass</label></div>
-                    <div class="control-group"><label>Cutoff <span class="value"
-                                id="lpfVal">22050Hz</span></label><input type="range" id="lpf" min="20" max="22050"
-                            step="10" value="22050"></div>
-                    <div class="control-group checkbox-group"><input type="checkbox"
-                            id="hpfEnable"><label>High-Pass</label></div>
-                    <div class="control-group"><label>Cutoff <span class="value" id="hpfVal">0Hz</span></label><input
-                            type="range" id="hpf" min="0" max="5000" step="10" value="0"></div>
-                </div>
-                <div class="control-section">
-                    <div class="section-title">Output <i class="fas fa-circle-question info-icon"
-                            data-tooltip="Audio Output Controls\n\n**Layer Volume** → Per-layer level adjustment (0-200%)\n**Gain** → Overall decibel boost/cut (-30 to +6 dB)"></i>
-                    </div>
-                    <div class="control-group">
-                        <label>Layer Volume <span class="value" id="layerVolumeVal">100%</span></label>
-                        <input type="range" id="layerVolume" min="0" max="200" step="1" value="100">
-                    </div>
-                    <div class="control-group">
-                        <label>Gain <span class="value" id="gainVal">-10.0 dB</span></label>
-                        <input type="range" id="gain" min="-30" max="6" step="0.1" value="-10">
+                    <div class="section-body">
+                        <div class="control-group">
+                            <label>Volume <span class="value" id="layerVolumeVal">100%</span></label>
+                            <input type="range" id="layerVolume" min="0" max="200" step="1" value="100">
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
-        <div class="action-bar">
-            <button id="undoBtn" class="action-btn"><i class="fas fa-undo"></i> Undo</button>
-            <button id="redoBtn" class="action-btn"><i class="fas fa-redo"></i> Redo</button>
-            <button id="playSelectedBtn" class="action-btn primary"><i class="fas fa-play"></i> Play Selected</button>
+
+            <!-- CENTER VERTICAL STACK -->
+            <div id="center-stack">
+                <div id="oscilloscope-container">
+                    <div class="vis-header">Oscilloscope</div>
+                    <div class="canvas-holder">
+                        <canvas id="waveform-preview"></canvas>
+                    </div>
+                </div>
+
+                <div id="timeline-container">
+                    <div class="timeline-controls">
+                        <div class="transport">
+                            <button id="playSelected" title="Play Layer"><i class="fas fa-play"></i> SEL</button>
+                            <button id="playTimeline" class="accent-btn" title="Play All"><i class="fas fa-play-circle"></i> ALL</button>
+                            <button id="stopTimeline" title="Stop"><i class="fas fa-stop"></i></button>
+                        </div>
+                        <div class="time-settings">
+                            <label><i class="fas fa-clock"></i> <input type="number" id="totalLength" value="5" min="1" max="60" step="0.5">s</label>
+                            <span id="timeDisplay">0.00s</span>
+                        </div>
+                        <div class="undo-redo">
+                            <button id="undoBtn" title="Undo"><i class="fas fa-undo"></i></button>
+                            <button id="redoBtn" title="Redo"><i class="fas fa-redo"></i></button>
+                        </div>
+                    </div>
+                    <div class="timeline-canvas-wrapper">
+                        <canvas id="timeline-canvas"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SLIDING RIGHT PANEL -->
+            <div id="side-panel">
+                
+                <!-- LAYERS -->
+                <div id="panel-layers" class="panel-content">
+                    <div class="panel-title-row">
+                        <h3>Layers</h3>
+                        <button onclick="app.layerManager.addLayer()" class="small-btn"><i class="fas fa-plus"></i></button>
+                    </div>
+                    <div id="layersList" class="scroll-list"></div>
+                </div>
+
+                <!-- PRESETS (GROUPED) -->
+                <div id="panel-presets" class="panel-content">
+                    <div class="panel-title-row">
+                        <h3>Presets</h3>
+                    </div>
+                    
+                    <div class="preset-category">Game FX</div>
+                    <div class="preset-grid">
+                        <button class="preset-btn" onclick="loadPreset('pickup')"><i class="fas fa-coins"></i> Pickup</button>
+                        <button class="preset-btn" onclick="loadPreset('laser')"><i class="fas fa-bolt"></i> Laser</button>
+                        <button class="preset-btn" onclick="loadPreset('explosion')"><i class="fas fa-bomb"></i> Boom</button>
+                        <button class="preset-btn" onclick="loadPreset('powerup')"><i class="fas fa-rocket"></i> Power</button>
+                        <button class="preset-btn" onclick="loadPreset('hit')"><i class="fas fa-gavel"></i> Hit</button>
+                        <button class="preset-btn" onclick="loadPreset('jump')"><i class="fas fa-angle-double-up"></i> Jump</button>
+                        <button class="preset-btn" onclick="loadPreset('alarm')"><i class="fas fa-bell"></i> Alarm</button>
+                    </div>
+
+                    <div class="preset-category">Footsteps</div>
+                    <div class="preset-grid">
+                        <button class="preset-btn" onclick="loadPreset('step_stone')"><i class="fas fa-square"></i> Stone</button>
+                        <button class="preset-btn" onclick="loadPreset('step_wood')"><i class="fas fa-tree"></i> Wood</button>
+                        <button class="preset-btn" onclick="loadPreset('step_sand')"><i class="fas fa-hourglass-start"></i> Sand</button>
+                        <button class="preset-btn" onclick="loadPreset('step_snow')"><i class="fas fa-snowflake"></i> Snow</button>
+                        <button class="preset-btn" onclick="loadPreset('step_gravel')"><i class="fas fa-shapes"></i> Gravel</button>
+                    </div>
+
+                    <div class="preset-category">UI & Synth</div>
+                    <div class="preset-grid">
+                        <button class="preset-btn" onclick="loadPreset('click')"><i class="fas fa-mouse-pointer"></i> Click</button>
+                        <button class="preset-btn" onclick="loadPreset('hover')"><i class="fas fa-hand-pointer"></i> Hover</button>
+                        <button class="preset-btn" onclick="loadPreset('blip')"><i class="fas fa-dot-circle"></i> Blip</button>
+                        <button class="preset-btn" onclick="loadPreset('synth_pad')"><i class="fas fa-music"></i> Pad</button>
+                    </div>
+                </div>
+
+                <!-- SETTINGS PANEL -->
+                <div id="panel-settings" class="panel-content">
+                    <div class="panel-title-row">
+                        <h3>Settings</h3>
+                    </div>
+                    
+                    <div class="control-section">
+                        <label class="section-label">General</label>
+                        <div class="control-group">
+                            <label>Default Timeline (s)</label>
+                            <input type="number" id="defaultLengthSettings" value="1.0" min="0.1" max="10" step="0.1" class="input-full">
+                        </div>
+                        <div class="control-group checkbox-group mt-1">
+                            <input type="checkbox" id="showTooltipsSettings" checked>
+                            <label for="showTooltipsSettings">Show Tooltips</label>
+                        </div>
+                    </div>
+
+                    <div class="control-section">
+                        <label class="section-label">Audio</label>
+                        <div class="control-group">
+                            <label>Master Volume <span class="value" id="masterVolumeVal">100%</span></label>
+                            <input type="range" id="masterVolume" min="0" max="100" value="100">
+                        </div>
+                    </div>
+
+                    <div class="control-section">
+                        <label class="section-label">Storage</label>
+                        <button id="saveToBrowserBtn" class="full-btn"><i class="fas fa-save"></i> Save to Browser</button>
+                        <div style="height:8px"></div>
+                        <button id="loadFromBrowserBtn" class="full-btn secondary"><i class="fas fa-download"></i> Load from Browser</button>
+                    </div>
+                </div>
+
+            </div>
+
         </div>
     </main>
-    
+
+    <!-- Scripts -->
     <script src="js/audioEngine.js"></script>
     <script src="js/soundGenerator.js"></script>
     <script src="js/presets.js"></script>
