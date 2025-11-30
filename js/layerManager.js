@@ -219,8 +219,21 @@ class LayerManager {
 
         // Ensure AudioContext is resumed before playing
         await this.app.audioEngine.ensureContextResumed();
+        
+        // Add delay for browser audio policies
+        await new Promise(resolve => setTimeout(resolve, 100));
     
         this.app.audioEngine.stopAll(); // Clear any ongoing playback
+        
+        // Calculate the total duration including start times and fades
+        let maxEndTime = 0;
+        activeLayers.forEach(layer => {
+            const duration = this.app.soundGenerator.calculateDuration(layer.settings);
+            const endTime = layer.startTime + duration + (layer.fadeOut || 0);
+            maxEndTime = Math.max(maxEndTime, endTime);
+        });
+        
+        console.log('Playing', activeLayers.length, 'layers, total duration:', maxEndTime, 'seconds');
     
         activeLayers.forEach(layer => {
             const buffer = this.app.soundGenerator.generate(layer.settings, this.app.audioEngine.sampleRate);
@@ -247,26 +260,43 @@ class LayerManager {
             // Schedule start
             source.start(this.app.audioEngine.context.currentTime + layer.startTime);
         });
+        
+        // Stop timeline playback when all sounds finish
+        setTimeout(() => {
+            if (this.app.timeline.isPlaying) {
+                this.app.timeline.stopPlayback();
+            }
+        }, (maxEndTime + 0.5) * 1000); // Add 0.5s buffer
     }
 
     exportMixedAudio(filename = 'mixed_sfx.wav') {
-        const activeLayers = this.getActiveLayers();
-        if (activeLayers.length === 0) return;
+        try {
+            const activeLayers = this.getActiveLayers();
+            if (activeLayers.length === 0) {
+                this.app.ui.showNotification('No active layers to export!', 'error');
+                return;
+            }
+
+            console.log('Exporting mixed audio with', activeLayers.length, 'layers');
     
-        const buffers = [];
-        const volumes = [];
-        const offsets = [];
-        const sampleRate = this.app.audioEngine.sampleRate;
+            const buffers = [];
+            const volumes = [];
+            const offsets = [];
+            const sampleRate = this.app.audioEngine.sampleRate;
     
-        for (const layer of activeLayers) {
-            const buffer = this.app.soundGenerator.generate(layer.settings, sampleRate);
-            buffers.push(buffer);
-            volumes.push(layer.volume);
-            offsets.push(Math.floor(layer.startTime * sampleRate)); // Samples offset
+            for (const layer of activeLayers) {
+                const buffer = this.app.soundGenerator.generate(layer.settings, sampleRate);
+                buffers.push(buffer);
+                volumes.push(layer.volume);
+                offsets.push(Math.floor(layer.startTime * sampleRate)); // Samples offset
+            }
+    
+            const mixedBuffer = this.app.audioEngine.mixBuffers(buffers, volumes, offsets);
+            this.app.audioEngine.downloadWAV(mixedBuffer, filename);
+        } catch (error) {
+            console.error('Error exporting mixed audio:', error);
+            this.app.ui.showNotification('Error exporting mixed audio: ' + error.message, 'error');
         }
-    
-        const mixedBuffer = this.app.audioEngine.mixBuffers(buffers, volumes, offsets);
-        this.app.audioEngine.downloadWAV(mixedBuffer, filename);
     }
 
     getState() {

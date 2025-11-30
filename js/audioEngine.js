@@ -22,12 +22,15 @@ class AudioEngine {
         this.sampleRate = rate;
     }
 
-    async playBuffer(buffer) {
+    async playBuffer(buffer, onEnded = null) {
         console.log('AudioEngine.playBuffer called');
         console.log('Context state before:', this.context.state);
         
-        // Ensure context is resumed before playing
+        // Ensure context is resumed before playing - wait longer for browser policies
         await this.ensureContextResumed();
+        
+        // Add additional delay for browser audio policies
+        await new Promise(resolve => setTimeout(resolve, 100));
         
         console.log('Context state after resume:', this.context.state);
 
@@ -55,6 +58,10 @@ class AudioEngine {
             console.log('Playback ended');
             if (this.currentSource === source) {
                 this.currentSource = null;
+            }
+            // Call onEnded callback if provided
+            if (onEnded) {
+                onEnded();
             }
         };
 
@@ -113,14 +120,32 @@ class AudioEngine {
     }
 
     downloadWAV(buffer, filename = 'sound.wav') {
-        const wav = this.bufferToWave(buffer, buffer.length);
-        const blob = new Blob([wav], { type: 'audio/wav' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = filename;
-        a.click();
-        URL.revokeObjectURL(url);
+        try {
+            console.log('Downloading WAV file:', filename);
+            const wav = this.bufferToWave(buffer, buffer.length);
+            const blob = new Blob([wav], { type: 'audio/wav' });
+            const url = URL.createObjectURL(blob);
+            
+            // Create temporary download link
+            const a = document.createElement('a');
+            a.style.display = 'none';
+            a.href = url;
+            a.download = filename;
+            
+            // Add to DOM, trigger download, then remove
+            document.body.appendChild(a);
+            a.click();
+            
+            // Clean up
+            setTimeout(() => {
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            }, 100);
+            
+            console.log('WAV file download initiated:', filename);
+        } catch (error) {
+            console.error('Error downloading WAV:', error);
+        }
     }
 
     bufferToWave(buffer, len) {

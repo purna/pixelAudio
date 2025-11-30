@@ -112,6 +112,9 @@ class SFXGeneratorApp {
             if (playSelectedBtn) {
                 playSelectedBtn.addEventListener('click', async () => {
                     console.log('Play Selected clicked');
+                    // Start timeline playback and play sound
+                    this.timeline.playheadPosition = 0;
+                    this.timeline.startPlayback();
                     await this.playCurrentSound();
                 });
             }
@@ -121,6 +124,9 @@ class SFXGeneratorApp {
             if (playSelected) {
                 playSelected.addEventListener('click', async () => {
                     console.log('Play Selected (timeline) clicked');
+                    // Start timeline playback and play sound
+                    this.timeline.playheadPosition = 0;
+                    this.timeline.startPlayback();
                     await this.playCurrentSound();
                 });
             }
@@ -130,6 +136,9 @@ class SFXGeneratorApp {
             if (playTimelineBtn) {
                 playTimelineBtn.addEventListener('click', async () => {
                     console.log('Play Timeline clicked');
+                    // Start timeline playback and play all layers
+                    this.timeline.playheadPosition = 0;
+                    this.timeline.startPlayback();
                     await this.layerManager.playAllLayers();
                 });
             }
@@ -139,6 +148,8 @@ class SFXGeneratorApp {
             if (stopTimelineBtn) {
                 stopTimelineBtn.addEventListener('click', () => {
                     console.log('Stop clicked');
+                    // Stop both audio and timeline
+                    this.timeline.stopPlayback();
                     this.audioEngine.stopAll();
                 });
             }
@@ -290,11 +301,25 @@ class SFXGeneratorApp {
             );
             console.log('Buffer generated:', buffer);
             
-            await this.audioEngine.playBuffer(buffer);
+            // Calculate duration for timeline synchronization
+            const duration = this.soundGenerator.calculateDuration(settings);
+            console.log('Sound duration:', duration, 'seconds');
+            
+            // Play with callback to stop timeline when done
+            await this.audioEngine.playBuffer(buffer, () => {
+                // Stop timeline playback when sound ends
+                if (this.timeline.isPlaying) {
+                    this.timeline.stopPlayback();
+                }
+            });
             console.log('Sound played successfully');
         } catch (error) {
             console.error('Error playing sound:', error);
             this.ui.showNotification('Error playing sound: ' + error.message, 'error');
+            // Stop timeline if playback fails
+            if (this.timeline.isPlaying) {
+                this.timeline.stopPlayback();
+            }
         }
     }
 

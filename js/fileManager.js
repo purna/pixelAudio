@@ -9,25 +9,43 @@ class FileManager {
 
     // Export entire project as JSON
     exportProject(filename = null) {
-        const projectData = {
-            version: '1.0',
-            timestamp: Date.now(),
-            name: filename || 'SFX Project',
-            state: this.app.getState()
-        };
+        try {
+            const projectData = {
+                version: '1.0',
+                timestamp: Date.now(),
+                name: filename || 'SFX Project',
+                layers: this.app.layerManager.getState(),
+                settings: this.app.currentSettings,
+                audioEngine: {
+                    sampleRate: this.app.audioEngine.sampleRate
+                },
+                timeline: this.app.timeline.getState()
+            };
 
-        const json = JSON.stringify(projectData, null, 2);
-        const blob = new Blob([json], { type: 'application/json' });
-        const url = URL.createObjectURL(blob);
-        
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = (filename || 'sfx_project') + '.json';
-        a.click();
-        
-        URL.revokeObjectURL(url);
-        
-        this.app.ui.showNotification('Project exported successfully!', 'success');
+            console.log('Exporting project with', projectData.layers.layers.length, 'layers');
+
+            const json = JSON.stringify(projectData, null, 2);
+            const blob = new Blob([json], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            
+            const a = document.createElement('a');
+            a.style.display = 'none';
+            a.href = url;
+            a.download = (filename || 'sfx_project') + '.json';
+            
+            document.body.appendChild(a);
+            a.click();
+            
+            setTimeout(() => {
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            }, 100);
+            
+            this.app.ui.showNotification('Project exported successfully!', 'success');
+        } catch (error) {
+            console.error('Error exporting project:', error);
+            this.app.ui.showNotification('Error exporting project: ' + error.message, 'error');
+        }
     }
 
     // Import project from JSON file
@@ -45,15 +63,33 @@ class FileManager {
                 try {
                     const projectData = JSON.parse(event.target.result);
                     
-                    // Validate project data
-                    if (!projectData.version || !projectData.state) {
+                    console.log('Loading project data:', projectData);
+                    
+                    // Validate project data - handle both old and new formats
+                    if (projectData.version && (projectData.layers || projectData.state)) {
+                        if (projectData.layers) {
+                            // New format with explicit layers
+                            if (projectData.layers.layers) {
+                                this.app.layerManager.setState(projectData.layers);
+                            }
+                            if (projectData.settings) {
+                                this.app.updateSettings(projectData.settings);
+                            }
+                            if (projectData.audioEngine && projectData.audioEngine.sampleRate) {
+                                this.app.audioEngine.setSampleRate(projectData.audioEngine.sampleRate);
+                            }
+                            if (projectData.timeline) {
+                                this.app.timeline.setState(projectData.timeline);
+                            }
+                        } else if (projectData.state) {
+                            // Old format with state object
+                            this.app.setState(projectData.state);
+                        }
+                        
+                        this.app.ui.showNotification('Project loaded successfully!', 'success');
+                    } else {
                         throw new Error('Invalid project file format');
                     }
-                    
-                    // Load project state
-                    this.app.setState(projectData.state);
-                    
-                    this.app.ui.showNotification('Project loaded successfully!', 'success');
                 } catch (error) {
                     console.error('Error loading project:', error);
                     this.app.ui.showNotification('Error loading project: ' + error.message, 'error');
@@ -71,18 +107,25 @@ class FileManager {
         const layer = this.app.layerManager.getLayer(layerId);
         if (!layer) {
             console.error('Layer not found:', layerId);
+            this.app.ui.showNotification('Layer not found!', 'error');
             return;
         }
 
-        const buffer = this.app.soundGenerator.generate(
-            layer.settings,
-            this.app.audioEngine.sampleRate
-        );
+        try {
+            console.log('Exporting layer:', layer.name);
+            const buffer = this.app.soundGenerator.generate(
+                layer.settings,
+                this.app.audioEngine.sampleRate
+            );
 
-        const name = filename || `${layer.name.replace(/[^a-z0-9]/gi, '_')}_${Date.now()}.wav`;
-        this.app.audioEngine.downloadWAV(buffer, name);
-        
-        this.app.ui.showNotification(`Layer "${layer.name}" exported!`, 'success');
+            const name = filename || `${layer.name.replace(/[^a-z0-9]/gi, '_')}_${Date.now()}.wav`;
+            this.app.audioEngine.downloadWAV(buffer, name);
+            
+            this.app.ui.showNotification(`Layer "${layer.name}" exported!`, 'success');
+        } catch (error) {
+            console.error('Error exporting layer:', error);
+            this.app.ui.showNotification('Error exporting layer: ' + error.message, 'error');
+        }
     }
 
     // Export all layers individually
@@ -105,9 +148,15 @@ class FileManager {
 
     // Export mixed output
     exportMixedOutput(filename = null) {
-        const name = filename || `mixed_output_${Date.now()}.wav`;
-        this.app.layerManager.exportMixedAudio(name);
-        this.app.ui.showNotification('Mixed output exported!', 'success');
+        try {
+            console.log('Exporting mixed output');
+            const name = filename || `mixed_output_${Date.now()}.wav`;
+            this.app.layerManager.exportMixedAudio(name);
+            this.app.ui.showNotification('Mixed output exported!', 'success');
+        } catch (error) {
+            console.error('Error exporting mixed output:', error);
+            this.app.ui.showNotification('Error exporting mixed output: ' + error.message, 'error');
+        }
     }
 
     // Auto-save functionality
