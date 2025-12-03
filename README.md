@@ -137,8 +137,6 @@ pixelAudio/
 ├── favicon.ico             # Application icons
 ├── apple-touch-icon.png
 ├── web-app-manifest-*.png  # PWA manifest images
-├── audio-test.html         # Audio testing utilities
-└── test-audio.html        # Development testing
 ```
 
 ## 🎨 Design Philosophy
