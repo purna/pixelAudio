@@ -9,14 +9,16 @@ class SFXGeneratorApp {
         this.layerManager = null;
         this.timeline = null;
         this.fileManager = null;
-        
+        this.tutorialConfig = null;
+        this.tutorialSystem = null;
+
         this.currentSettings = this.getDefaultSettings();
-        
+
         // Undo/Redo stacks
         this.undoStack = [];
         this.redoStack = [];
         this.maxUndoSteps = 50;
-        
+
         // Copy/paste layer clipboard
         this.copiedLayer = null;
     }
@@ -29,6 +31,15 @@ class SFXGeneratorApp {
         this.layerManager = new LayerManager(this);
         this.timeline = new Timeline(this);
         this.fileManager = new FileManager(this);
+
+        // Initialize tutorial system if available
+        if (typeof TutorialConfig !== 'undefined') {
+            this.tutorialConfig = new TutorialConfig();
+        }
+        if (typeof TutorialSystem !== 'undefined') {
+            this.tutorialSystem = new TutorialSystem(this);
+        }
+
         this.ui = new UI(this);
 
         // Connect soundGenerator to audioEngine
@@ -39,8 +50,27 @@ class SFXGeneratorApp {
         
         // Initialize UI first, then layers
         this.ui.init();
+
+        // Initialize tutorial system if available
+        if (this.tutorialSystem) {
+            this.tutorialSystem.init();
+        }
+
         this.layerManager.init(); // This will select the first layer and update UI
         this.timeline.init();
+
+        // Auto-start tutorial if enabled (default: enabled)
+        if (this.tutorialSystem && this.tutorialConfig) {
+            const enableTutorialsCheckbox = document.getElementById('enableTutorialsSettings');
+            const tutorialsEnabled = enableTutorialsCheckbox ? enableTutorialsCheckbox.checked : true;
+
+            if (tutorialsEnabled) {
+                // Small delay to ensure UI is fully initialized
+                setTimeout(() => {
+                    this.tutorialSystem.startTutorial('main');
+                }, 500);
+            }
+        }
 
         console.log('SFX Generator initialized');
         
