@@ -36,7 +36,7 @@ class TutorialConfig {
                         id: 'layers',
                         elementId: 'panel-layers',
                         position: 'right',
-                        arrowPosition: 'left', // Arrow is on the right side of the tutorial panel, points right (away from tutorial panel)
+                        arrowPosition: 'left', // Arrow is on the left side of the tutorial panel, points left (away from tutorial panel)
                         arrowPositionOverride: 'top-third', // Arrow positioned in the top third of the right side
                         marginOverride: '60px', // Additional margin for better spacing
                         heading: 'Layers Panel',
@@ -48,7 +48,7 @@ class TutorialConfig {
                         id: 'presets',
                         elementId: 'panel-presets',
                         position: 'right',
-                        arrowPosition: 'right', // Arrow is on the right side of the tutorial panel, points right (away from tutorial panel)
+                        arrowPosition: 'left', // Arrow is on the left side of the tutorial panel, points left (away from tutorial panel)
                         arrowPositionOverride: 'middle-third',
                         marginOverride: '60px', // Additional margin for better spacing
                         heading: 'Presets',
@@ -60,8 +60,8 @@ class TutorialConfig {
                         id: 'synthesizer',
                         elementId: 'fixed-tools-panel',
                         position: 'right',
-                        arrowPosition: 'right', // Arrow is on the right side of the tutorial panel, points right (away from tutorial panel)
-                        marginOverride: '15px', // Slightly less margin for this panel
+                        arrowPosition: 'left', // Arrow is on the left side of the tutorial panel, points left (away from tutorial panel)
+                        marginOverride: '35px', // Slightly less margin for this panel
                         heading: 'Synthesizer Controls',
                         content: 'Adjust waveform, envelope, frequency, and other parameters to create your perfect sound.',
                         showNext: true,
@@ -69,10 +69,10 @@ class TutorialConfig {
                     },
                     {
                         id: 'timeline',
-                        elementId: 'timeline-container',
-                        position: 'top',
-                        arrowPosition: 'top', // Arrow is on the top side of the tutorial panel, points up (towards target panel)
-                        marginOverride: '60px', // More margin for timeline positioning
+                        elementId: 'timeline-controls',
+                        position: 'center',
+                        arrowPosition: 'none', 
+                        marginOverride: '0px', // More margin for timeline positioning
                         heading: 'Timeline',
                         content: 'Control playback and visualize your sound layers over time. Use the transport controls to play, stop, and adjust timing.',
                         showNext: true,
@@ -82,7 +82,7 @@ class TutorialConfig {
                         id: 'export',
                         elementId: 'exportMixBtn',
                         position: 'bottom',
-                        arrowPosition: 'bottom', // Arrow is on the bottom side of the tutorial panel, points down (towards target panel)
+                        arrowPosition: 'top', // Arrow is on the top side of the tutorial panel, points up (towards target panel)
                         marginOverride: '25px', // Margin for export button positioning
                         heading: 'Export Your Sounds',
                         content: 'When you\'re happy with your creation, use the Export Mix button to save your sound as a WAV file.',

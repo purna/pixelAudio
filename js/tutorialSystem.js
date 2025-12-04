@@ -49,11 +49,11 @@ class TutorialSystem {
             </div>
             <div id="tutorial-content"></div>
             <div id="tutorial-controls">
-                <div id="tutorial-progress-dots"></div>
                 <div id="tutorial-buttons">
                     <button id="tutorial-prev" class="tutorial-btn" style="display: none;">Previous</button>
                     <button id="tutorial-next" class="tutorial-btn">Next</button>
                 </div>
+                <div id="tutorial-progress-dots"></div>
             </div>
         `;
     }

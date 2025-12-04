@@ -475,8 +475,8 @@ select { width: 100%; background: var(--bg-darkest); color: var(--text-primary);
 
 #tutorial-controls {
     display: flex;
-    justify-content: flex-end;
-    gap: 8px;
+    flex-direction: column;
+    gap: 12px;
     margin-top: 12px;
     padding-top: 12px;
     border-top: 1px solid var(--border-color);
@@ -511,19 +511,17 @@ select { width: 100%; background: var(--bg-darkest); color: var(--text-primary);
     color: var(--accent-tertiary);
 }
 
-#tutorial-controls {
+#tutorial-buttons {
     display: flex;
-    flex-direction: column;
-    gap: 12px;
-    margin-top: 12px;
-    padding-top: 12px;
-    border-top: 1px solid var(--border-color);
+    justify-content: center;
+    gap: 8px;
 }
 
 #tutorial-progress-dots {
     display: flex;
     justify-content: center;
     gap: 6px;
+    margin-top: 8px;
 }
 
 .tutorial-progress-dot {
@@ -537,12 +535,6 @@ select { width: 100%; background: var(--bg-darkest); color: var(--text-primary);
 .tutorial-progress-dot.active {
     background: var(--accent-primary);
     transform: scale(1.2);
-}
-
-#tutorial-buttons {
-    display: flex;
-    justify-content: flex-end;
-    gap: 8px;
 }
 
 #tutorial-close {
@@ -583,20 +575,21 @@ select { width: 100%; background: var(--bg-darkest); color: var(--text-primary);
 
 /* If tutorial is BELOW target (position: 'bottom'), arrow should be on TOP, pointing UP. */
 .tutorial-arrow.bottom {
+    bottom: -8px;
+    left: 50%;
+    transform: translateX(-50%);
+    border-width: 8px 8px 0px 8px;
+    border-color: var(--accent-primary) transparent transparent transparent; 
+
+}
+
+/* If tutorial is ABOVE target (position: 'top'), arrow should be on BOTTOM, pointing DOWN. */
+.tutorial-arrow.top {
     top: -8px;
     left: 50%;
     transform: translateX(-50%);
     border-width: 0px 8px 8px 8px;
     border-color: transparent transparent var(--accent-primary) transparent; 
-}
-
-/* If tutorial is ABOVE target (position: 'top'), arrow should be on BOTTOM, pointing DOWN. */
-.tutorial-arrow.top {
-    bottom: -8px;
-    left: 50%;
-    transform: translateX(-50%);
-    border-width: 8px 8px 0px 8px;
-     border-color: var(--accent-primary) transparent transparent transparent; 
 }
 
 /* For a tutorial placed to the LEFT of the target (position: 'left'), the arrow should be on the LEFT side of the panel, pointing LEFT. */
