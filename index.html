@@ -6,8 +6,63 @@
     <title>Pixel Audio SFX Studio Pro</title>
 
     <link rel="icon" type="image/png" href="/pixelAudio/favicon-96x96.png" sizes="96x96" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.5.0/css/all.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <noscript><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.5.0/css/all.min.css"></noscript>
     <link rel="stylesheet" href="css/styles.css">
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        if (typeof FontAwesome === 'undefined' || !document.querySelector('.fa')) {
+            console.warn('Font Awesome not loaded, applying fallback styles');
+            const style = document.createElement('style');
+            style.textContent = `
+                .fa, .fas, .far, .fal, .fat, .fad {
+                    font-family: Arial, sans-serif;
+                    font-weight: normal;
+                    font-style: normal;
+                }
+                /* Add all your icon fallbacks here */
+                .fa-random:before { content: "🎲"; }
+                .fa-folder-open:before { content: "📁"; }
+                .fa-save:before { content: "💾"; }
+                .fa-file-export:before { content: "📤"; }
+                .fa-layer-group:before { content: "📄"; }
+                .fa-th:before { content: "📊"; }
+                .fa-cog:before { content: "⚙"; }
+                .fa-circle-question:before { content: "❓"; }
+                .fa-minus:before { content: "−"; }
+                .fa-play:before { content: "▶"; }
+                .fa-play-circle:before { content: "▶"; }
+                .fa-stop:before { content: "◼"; }
+                .fa-clock:before { content: "⏱"; }
+                .fa-undo:before { content: "↩"; }
+                .fa-redo:before { content: "↪"; }
+                .fa-plus:before { content: "+"; }
+                .fa-coins:before { content: "💰"; }
+                .fa-bolt:before { content: "⚡"; }
+                .fa-bomb:before { content: "💣"; }
+                .fa-rocket:before { content: "🚀"; }
+                .fa-gavel:before { content: "⚖"; }
+                .fa-angle-double-up:before { content: "↑↑"; }
+                .fa-bell:before { content: "🔔"; }
+                .fa-square:before { content: "◼"; }
+                .fa-tree:before { content: "🌳"; }
+                .fa-hourglass-start:before { content: "⏳"; }
+                .fa-snowflake:before { content: "❄"; }
+                .fa-shapes:before { content: "◼◻"; }
+                .fa-mouse-pointer:before { content: "🖱"; }
+                .fa-hand-pointer:before { content: "☝"; }
+                .fa-dot-circle:before { content: "◉"; }
+                .fa-music:before { content: "🎵"; }
+                .fa-sliders-h:before { content: "📊"; }
+                .fa-volume-up:before { content: "🔊"; }
+                .fa-download:before { content: "📥"; }
+                .fa-graduation-cap:before { content: "🎓"; }
+                .fa-cloud-download-alt:before { content: "☁📥"; }
+            `;
+            document.head.appendChild(style);
+        }
+    });
+</script>
     <link rel="stylesheet" href="css/tutorials.css">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Inter:wght@400;500;600;700&display=swap');
