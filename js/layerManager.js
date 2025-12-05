@@ -69,7 +69,7 @@ class LayerManager {
         if (index === -1) return;
 
         if (this.layers.length <= 1) {
-            this.app.ui.showNotification('Cannot delete the last layer', 'error');
+            this.app.notifications.showNotification('Cannot delete the last layer', 'error');
             return;
         }
 
@@ -273,7 +273,7 @@ class LayerManager {
         try {
             const activeLayers = this.getActiveLayers();
             if (activeLayers.length === 0) {
-                this.app.ui.showNotification('No active layers to export!', 'error');
+                this.app.notifications.showNotification('No active layers to export!', 'error');
                 return;
             }
 
@@ -295,7 +295,7 @@ class LayerManager {
             this.app.audioEngine.downloadWAV(mixedBuffer, filename);
         } catch (error) {
             console.error('Error exporting mixed audio:', error);
-            this.app.ui.showNotification('Error exporting mixed audio: ' + error.message, 'error');
+            this.app.notifications.showNotification('Error exporting mixed audio: ' + error.message, 'error');
         }
     }
 
@@ -386,7 +386,7 @@ class LayerManager {
                 e.stopPropagation();
                 this.app.saveUndoState();
                 this.duplicateLayer(layer);
-                this.app.ui.showNotification('Layer duplicated', 'success');
+                this.app.notifications.showNotification('Layer duplicated', 'success');
             };
 
             // Delete button

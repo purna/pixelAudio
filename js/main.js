@@ -6,6 +6,7 @@ class SFXGeneratorApp {
         this.soundGenerator = null;
         this.presets = null;
         this.ui = null;
+        this.notifications = null;
         this.layerManager = null;
         this.timeline = null;
         this.fileManager = null;
@@ -41,6 +42,12 @@ class SFXGeneratorApp {
         }
 
         this.ui = new UI(this);
+        this.notifications = new Notifications();
+
+        // Initialize settings manager
+        if (typeof SettingsManager !== 'undefined') {
+            SettingsManager.init(this);
+        }
 
         // Connect soundGenerator to audioEngine
         this.soundGenerator.setAudioEngine(this.audioEngine);
@@ -51,7 +58,7 @@ class SFXGeneratorApp {
         // Initialize UI first, then layers
         this.ui.init();
 
-        // Initialize tutorial system if available
+        // Initialize tutorial system if available (after UI is ready)
         if (this.tutorialSystem) {
             this.tutorialSystem.init();
         }
@@ -61,15 +68,15 @@ class SFXGeneratorApp {
 
         // Auto-start tutorial if enabled (default: enabled)
         if (this.tutorialSystem && this.tutorialConfig) {
-            const enableTutorialsCheckbox = document.getElementById('enableTutorialsSettings');
-            const tutorialsEnabled = enableTutorialsCheckbox ? enableTutorialsCheckbox.checked : true;
+            // Wait for UI to be fully ready before checking tutorial settings
+            setTimeout(() => {
+                const enableTutorialsCheckbox = document.getElementById('enableTutorialsSettings');
+                const tutorialsEnabled = enableTutorialsCheckbox ? enableTutorialsCheckbox.checked : true;
 
-            if (tutorialsEnabled) {
-                // Small delay to ensure UI is fully initialized
-                setTimeout(() => {
+                if (tutorialsEnabled) {
                     this.tutorialSystem.startTutorial('main');
-                }, 500);
-            }
+                }
+            }, 1000); // Increased delay to ensure settings panel is fully initialized
         }
 
         console.log('SFX Generator initialized');
@@ -205,7 +212,7 @@ class SFXGeneratorApp {
                 if (selectedLayer) {
                     this.fileManager.exportLayer(selectedLayer.id);
                 } else {
-                    this.ui.showNotification('No layer selected', 'error');
+                    this.notifications.showNotification('No layer selected', 'error');
                 }
             });
         }
@@ -247,19 +254,19 @@ class SFXGeneratorApp {
         const layer = this.layerManager.getSelectedLayer();
         if (layer) {
             this.copiedLayer = JSON.parse(JSON.stringify(layer));
-            this.ui.showNotification('Layer copied', 'success');
+            this.notifications.showNotification('Layer copied', 'success');
         }
     }
 
     pasteLayer() {
         if (!this.copiedLayer) {
-            this.ui.showNotification('No layer to paste', 'error');
+            this.notifications.showNotification('No layer to paste', 'error');
             return;
         }
         this.saveUndoState();
         const newLayer = this.layerManager.duplicateLayer(this.copiedLayer);
         if (newLayer) {
-            this.ui.showNotification('Layer pasted', 'success');
+            this.notifications.showNotification('Layer pasted', 'success');
         }
     }
 
@@ -269,7 +276,7 @@ class SFXGeneratorApp {
             this.saveUndoState();
             const newLayer = this.layerManager.duplicateLayer(layer);
             if (newLayer) {
-                this.ui.showNotification('Layer duplicated', 'success');
+                this.notifications.showNotification('Layer duplicated', 'success');
             }
         }
     }
@@ -318,7 +325,7 @@ class SFXGeneratorApp {
             const selectedLayer = this.layerManager.getSelectedLayer();
             if (!selectedLayer) {
                 console.warn('No layer selected');
-                this.ui.showNotification('No layer selected', 'error');
+                this.notifications.showNotification('No layer selected', 'error');
                 return;
             }
             
@@ -345,7 +352,7 @@ class SFXGeneratorApp {
             console.log('Sound played successfully');
         } catch (error) {
             console.error('Error playing sound:', error);
-            this.ui.showNotification('Error playing sound: ' + error.message, 'error');
+            this.notifications.showNotification('Error playing sound: ' + error.message, 'error');
             // Stop timeline if playback fails
             if (this.timeline.isPlaying) {
                 this.timeline.stopPlayback();
@@ -441,7 +448,7 @@ class SFXGeneratorApp {
 
     undo() {
         if (this.undoStack.length === 0) {
-            this.ui.showNotification('Nothing to undo', 'info');
+            this.notifications.showNotification('Nothing to undo', 'info');
             return;
         }
         
@@ -453,12 +460,12 @@ class SFXGeneratorApp {
         const previousState = this.undoStack.pop();
         this.setState(previousState);
         
-        this.ui.showNotification('Undo', 'info');
+        this.notifications.showNotification('Undo', 'info');
     }
 
     redo() {
         if (this.redoStack.length === 0) {
-            this.ui.showNotification('Nothing to redo', 'info');
+            this.notifications.showNotification('Nothing to redo', 'info');
             return;
         }
         
@@ -470,7 +477,7 @@ class SFXGeneratorApp {
         const nextState = this.redoStack.pop();
         this.setState(nextState);
         
-        this.ui.showNotification('Redo', 'info');
+        this.notifications.showNotification('Redo', 'info');
     }
 
     getState() {

@@ -143,7 +143,7 @@ class TutorialSystem {
         // Check if tutorials are enabled
         const enableTutorialsCheckbox = document.getElementById('enableTutorialsSettings');
         if (enableTutorialsCheckbox && !enableTutorialsCheckbox.checked) {
-            this.app.ui.showNotification('Tutorials are disabled in settings', 'info');
+            this.app.notifications.showNotification('Tutorials are disabled in settings', 'info');
             return;
         }
 
@@ -290,7 +290,7 @@ class TutorialSystem {
         } else {
             // Tutorial complete
             this.hideTutorial();
-            this.app.ui.showNotification('Tutorial completed!', 'success');
+            this.app.notifications.showNotification('Tutorial completed!', 'success');
         }
     }
 

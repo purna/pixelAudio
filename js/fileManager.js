@@ -41,10 +41,10 @@ class FileManager {
                 URL.revokeObjectURL(url);
             }, 100);
             
-            this.app.ui.showNotification('Project exported successfully!', 'success');
+            this.app.notifications.showNotification('Project exported successfully!', 'success');
         } catch (error) {
             console.error('Error exporting project:', error);
-            this.app.ui.showNotification('Error exporting project: ' + error.message, 'error');
+            this.app.notifications.showNotification('Error exporting project: ' + error.message, 'error');
         }
     }
 
@@ -86,13 +86,13 @@ class FileManager {
                             this.app.setState(projectData.state);
                         }
                         
-                        this.app.ui.showNotification('Project loaded successfully!', 'success');
+                        this.app.notifications.showNotification('Project loaded successfully!', 'success');
                     } else {
                         throw new Error('Invalid project file format');
                     }
                 } catch (error) {
                     console.error('Error loading project:', error);
-                    this.app.ui.showNotification('Error loading project: ' + error.message, 'error');
+                    this.app.notifications.showNotification('Error loading project: ' + error.message, 'error');
                 }
             };
             
@@ -107,7 +107,7 @@ class FileManager {
         const layer = this.app.layerManager.getLayer(layerId);
         if (!layer) {
             console.error('Layer not found:', layerId);
-            this.app.ui.showNotification('Layer not found!', 'error');
+            this.app.notifications.showNotification('Layer not found!', 'error');
             return;
         }
 
@@ -121,10 +121,10 @@ class FileManager {
             const name = filename || `${layer.name.replace(/[^a-z0-9]/gi, '_')}_${Date.now()}.wav`;
             this.app.audioEngine.downloadWAV(buffer, name);
             
-            this.app.ui.showNotification(`Layer "${layer.name}" exported!`, 'success');
+            this.app.notifications.showNotification(`Layer "${layer.name}" exported!`, 'success');
         } catch (error) {
             console.error('Error exporting layer:', error);
-            this.app.ui.showNotification('Error exporting layer: ' + error.message, 'error');
+            this.app.notifications.showNotification('Error exporting layer: ' + error.message, 'error');
         }
     }
 
@@ -133,7 +133,7 @@ class FileManager {
         const layers = this.app.layerManager.layers;
         
         if (layers.length === 0) {
-            this.app.ui.showNotification('No layers to export', 'error');
+            this.app.notifications.showNotification('No layers to export', 'error');
             return;
         }
 
@@ -143,7 +143,7 @@ class FileManager {
             }, index * 100); // Stagger downloads to avoid browser blocking
         });
         
-        this.app.ui.showNotification(`Exporting ${layers.length} layer(s)...`, 'info');
+        this.app.notifications.showNotification(`Exporting ${layers.length} layer(s)...`, 'info');
     }
 
     // Export mixed output
@@ -152,10 +152,10 @@ class FileManager {
             console.log('Exporting mixed output');
             const name = filename || `mixed_output_${Date.now()}.wav`;
             this.app.layerManager.exportMixedAudio(name);
-            this.app.ui.showNotification('Mixed output exported!', 'success');
+            this.app.notifications.showNotification('Mixed output exported!', 'success');
         } catch (error) {
             console.error('Error exporting mixed output:', error);
-            this.app.ui.showNotification('Error exporting mixed output: ' + error.message, 'error');
+            this.app.notifications.showNotification('Error exporting mixed output: ' + error.message, 'error');
         }
     }
 
@@ -202,8 +202,8 @@ class FileManager {
                 this.app.setState(parsed.state);
                 
                 const date = new Date(parsed.timestamp);
-                this.app.ui.showNotification(
-                    `Restored from auto-save (${date.toLocaleString()})`, 
+                this.app.notifications.showNotification(
+                    `Restored from auto-save (${date.toLocaleString()})`,
                     'info'
                 );
                 return true;
@@ -217,7 +217,7 @@ class FileManager {
     clearAutoSave() {
         try {
             localStorage.removeItem(this.autoSaveKey);
-            this.app.ui.showNotification('Auto-save cleared', 'info');
+            this.app.notifications.showNotification('Auto-save cleared', 'info');
         } catch (error) {
             console.error('Error clearing auto-save:', error);
         }
@@ -244,10 +244,10 @@ class FileManager {
                     }
                     
                     this.app.updateSettings(settings);
-                    this.app.ui.showNotification('Settings imported!', 'success');
+                    this.app.notifications.showNotification('Settings imported!', 'success');
                 } catch (error) {
                     console.error('Error importing settings:', error);
-                    this.app.ui.showNotification('Error importing settings: ' + error.message, 'error');
+                    this.app.notifications.showNotification('Error importing settings: ' + error.message, 'error');
                 }
             };
             
@@ -271,13 +271,13 @@ class FileManager {
         
         URL.revokeObjectURL(url);
         
-        this.app.ui.showNotification('Settings exported!', 'success');
+        this.app.notifications.showNotification('Settings exported!', 'success');
     }
 
     // Create preset from current settings
     saveAsPreset(name) {
         if (!name || name.trim() === '') {
-            this.app.ui.showNotification('Please provide a preset name', 'error');
+            this.app.notifications.showNotification('Please provide a preset name', 'error');
             return;
         }
 
@@ -286,7 +286,7 @@ class FileManager {
         // Save custom presets to localStorage
         this.saveCustomPresets();
         
-        this.app.ui.showNotification(`Preset "${name}" saved!`, 'success');
+        this.app.notifications.showNotification(`Preset "${name}" saved!`, 'success');
     }
 
     saveCustomPresets() {

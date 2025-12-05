@@ -50,10 +50,10 @@ class UI {
             // Layer Volume
             volume: document.getElementById('layerVolume'),
             
-            // Settings Panel Controls
+            // Settings Panel Controls (now handled by SettingsManager modal)
             masterVolume: document.getElementById('masterVolume'),
             defaultLengthSettings: document.getElementById('defaultLengthSettings'),
-            showTooltipsSettings: document.getElementById('showTooltipsSettings'), // NEW
+            showTooltipsSettings: document.getElementById('showTooltipsSettings'),
             saveToBrowserBtn: document.getElementById('saveToBrowserBtn'),
             loadFromBrowserBtn: document.getElementById('loadFromBrowserBtn'),
             
@@ -129,7 +129,7 @@ class UI {
             this.elements.defaultLengthSettings.addEventListener('change', (e) => {
                 const val = parseFloat(e.target.value);
                 if (this.app.settings) this.app.settings.defaultDuration = val;
-                this.showNotification(`Default length set to ${val}s`, 'success');
+                this.app.notifications.showNotification(`Default length set to ${val}s`, 'success');
             });
         }
         
@@ -149,7 +149,7 @@ class UI {
                 if (this.app.getState) {
                     const state = this.app.getState();
                     localStorage.setItem('pixelAudioProject', JSON.stringify(state));
-                    this.showNotification('Project saved to browser!', 'success');
+                    this.app.notifications.showNotification('Project saved to browser!', 'success');
                 }
             });
         }
@@ -161,12 +161,12 @@ class UI {
                     try {
                         const state = JSON.parse(saved);
                         if (this.app.setState) this.app.setState(state);
-                        this.showNotification('Project loaded!', 'success');
+                        this.app.notifications.showNotification('Project loaded!', 'success');
                     } catch(e) {
-                        this.showNotification('Failed to load project', 'error');
+                        this.app.notifications.showNotification('Failed to load project', 'error');
                     }
                 } else {
-                    this.showNotification('No saved project found', 'info');
+                    this.app.notifications.showNotification('No saved project found', 'info');
                 }
             });
         }
@@ -182,8 +182,16 @@ class UI {
 
         if (this.elements.iconTabBtns) {
             this.elements.iconTabBtns.forEach(btn => {
-                btn.addEventListener('click', () => {
+                btn.addEventListener('click', (e) => {
                     const panelName = btn.getAttribute('data-panel');
+
+                    // Skip settings panel - it's now handled by SettingsManager modal
+                    if (panelName === 'settings') {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        return;
+                    }
+
                     const targetContent = document.getElementById(`panel-${panelName}`);
 
                     if (btn.classList.contains('active')) {
@@ -396,43 +404,4 @@ class UI {
         }
     }
     
-    showNotification(message, type = 'info') {
-        const existing = document.querySelector('.notification');
-        if (existing) existing.remove();
-        
-        const notification = document.createElement('div');
-        notification.textContent = message;
-        
-        notification.style.position = 'fixed';
-        notification.style.top = '20px';
-        notification.style.right = '20px';
-        notification.style.padding = '12px 20px';
-        notification.style.borderRadius = '4px';
-        notification.style.color = '#fff';
-        notification.style.fontSize = '12px';
-        notification.style.fontWeight = 'bold';
-        notification.style.zIndex = '10000';
-        notification.style.border = '1px solid rgba(255,255,255,0.2)';
-        notification.style.boxShadow = '0 4px 6px rgba(0,0,0,0.3)';
-        notification.style.transition = 'all 0.3s ease';
-        notification.style.transform = 'translateY(-20px)';
-        notification.style.opacity = '0';
-
-        const colors = { success: '#00ff41', error: '#ff006e', info: '#00d9ff' };
-        notification.style.backgroundColor = '#1a1a2e';
-        notification.style.borderLeft = `4px solid ${colors[type] || colors.info}`;
-
-        document.body.appendChild(notification);
-
-        requestAnimationFrame(() => {
-            notification.style.opacity = '1';
-            notification.style.transform = 'translateY(0)';
-        });
-
-        setTimeout(() => {
-            notification.style.opacity = '0';
-            notification.style.transform = 'translateY(-20px)';
-            setTimeout(() => notification.remove(), 300);
-        }, 3000);
-    }
 }
