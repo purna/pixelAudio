@@ -234,9 +234,19 @@ const SettingsManager = {
         const loadFromBrowserBtn = document.getElementById('loadFromBrowserBtn');
         if (loadFromBrowserBtn) {
             loadFromBrowserBtn.addEventListener('click', () => {
-                this.loadSettings();
+                this.loadCompleteProject();
                 if (this.app && this.app.notifications) {
-                    this.app.notifications.showNotification('Settings loaded from browser storage', 'success');
+                    this.app.notifications.showNotification('Project loaded from browser storage', 'success');
+                }
+            });
+        }
+
+        // Clear All Content button
+        const clearAllContentBtn = document.getElementById('clearAllContentBtn');
+        if (clearAllContentBtn) {
+            clearAllContentBtn.addEventListener('click', () => {
+                if (confirm('Are you sure you want to clear ALL content? This will remove all collections, groups, and layers. This cannot be undone!')) {
+                    this.clearAllContent();
                 }
             });
         }
@@ -249,6 +259,25 @@ const SettingsManager = {
                     this.app.tutorialSystem.startTutorial('main');
                 }
                 this.closeSettings();
+            });
+        }
+
+        // Reset Tutorial Progress button
+        const resetTutorialProgressBtn = document.getElementById('resetTutorialProgressBtn');
+        if (resetTutorialProgressBtn) {
+            resetTutorialProgressBtn.addEventListener('click', () => {
+                if (confirm('Are you sure you want to reset your tutorial progress? This cannot be undone.')) {
+                    if (this.app && this.app.tutorialSystem && this.app.tutorialSystem.resetProgress) {
+                        this.app.tutorialSystem.resetProgress();
+                        if (this.app.notifications) {
+                            this.app.notifications.showNotification('Tutorial progress has been reset', 'info');
+                        }
+                    } else {
+                        if (this.app && this.app.notifications) {
+                            this.app.notifications.showNotification('Tutorial system not available', 'error');
+                        }
+                    }
+                }
             });
         }
 
@@ -440,6 +469,44 @@ const SettingsManager = {
         }
     },
 
+    // Load complete project from browser storage
+    loadCompleteProject() {
+        try {
+            const projectData = localStorage.getItem('pixelAudioCompleteProject');
+            if (projectData) {
+                const parsed = JSON.parse(projectData);
+
+                // Handle both old and new formats
+                if (parsed.state) {
+                    // New format with version 2.0
+                    this.app.setState(parsed.state);
+                } else if (parsed.collections) {
+                    // Handle direct collections data
+                    this.app.collectionManager.setState(parsed.collections);
+                } else {
+                    // Very old format - try to handle gracefully
+                    this.app.setState(parsed);
+                }
+
+                if (this.app && this.app.notifications) {
+                    this.app.notifications.showNotification('Complete project loaded from browser!', 'success');
+                }
+                return true;
+            } else {
+                if (this.app && this.app.notifications) {
+                    this.app.notifications.showNotification('No complete project found in browser storage', 'info');
+                }
+                return false;
+            }
+        } catch (error) {
+            console.error('Error loading complete project:', error);
+            if (this.app && this.app.notifications) {
+                this.app.notifications.showNotification('Error loading project: ' + error.message, 'error');
+            }
+            return false;
+        }
+    },
+
     getSettings() {
         return { ...this.settings };
     }
@@ -459,3 +526,8 @@ document.addEventListener('DOMContentLoaded', () => {
         }, 1000);
     }
 });
+
+// Add database UI when settings manager is initialized
+if (typeof app !== 'undefined' && app.databaseManager) {
+    // Database UI will be added by the DatabaseManager itself
+}

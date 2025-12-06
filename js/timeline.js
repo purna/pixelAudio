@@ -42,7 +42,7 @@ class Timeline {
         this.canvas.addEventListener('mousedown', e => this.onMouseDown(e));
         this.canvas.addEventListener('mousemove', e => this.onMouseMove(e));
         this.canvas.addEventListener('mouseup', () => this.onMouseUp());
-        this.canvas.addEventListener('wheel', e => this.onWheel(e));
+        this.canvas.addEventListener('wheel', e => this.onWheel(e), { passive: true });
         window.addEventListener('resize', () => this.resize());
         document.addEventListener('layersChanged', () => this.render());
     }
@@ -276,10 +276,13 @@ class Timeline {
 
             if (Math.abs(x - layerX) < 10) {
                 this.dragMode = 'left';
+                this.canvas.style.cursor = 'w-resize';
             } else if (Math.abs(x - layerRight) < 10) {
                 this.dragMode = 'right';
+                this.canvas.style.cursor = 'e-resize';
             } else if (x >= layerX && x <= layerRight) {
                 this.dragMode = 'move';
+                this.canvas.style.cursor = 'move';
             }
 
             if (this.dragMode) {
@@ -292,16 +295,40 @@ class Timeline {
     }
 
     onMouseMove(e) {
-        if (!this.isDragging || !this.draggedLayer) return;
-    
         const rect = this.canvas.getBoundingClientRect();
         const x = e.clientX - rect.left;
-        
+        const y = e.clientY - rect.top;
+
+        // Handle cursor changes when hovering over clip edges
+        if (!this.isDragging) {
+            const layer = this.getLayerAtPosition(x, y);
+            if (layer) {
+                const layerX = layer.startTime * this.zoom + this.offsetX;
+                const layerRight = layerX + this.app.soundGenerator.calculateDuration(layer.settings) * this.zoom;
+
+                if (Math.abs(x - layerX) < 10) {
+                    this.canvas.style.cursor = 'w-resize';
+                    return;
+                } else if (Math.abs(x - layerRight) < 10) {
+                    this.canvas.style.cursor = 'e-resize';
+                    return;
+                } else if (x >= layerX && x <= layerRight) {
+                    this.canvas.style.cursor = 'move';
+                    return;
+                }
+            }
+            // Reset cursor if not hovering over any clip
+            this.canvas.style.cursor = 'default';
+        }
+
+        // Handle dragging if in progress
+        if (!this.isDragging || !this.draggedLayer) return;
+
         // Snap to 0.1 second grid for finer control
         const snapInterval = 0.1;
         let deltaX = x - this.dragStartX;
         let deltaTime = deltaX / this.zoom;
-        
+
         // Snap deltaTime to nearest 0.1 second
         deltaTime = Math.round(deltaTime / snapInterval) * snapInterval;
 
@@ -329,11 +356,11 @@ class Timeline {
         if (newDuration < minDuration) {
             newDuration = minDuration;
         }
-        
+
         // Snap newDuration to 0.1 second intervals
         newDuration = Math.round(newDuration / snapInterval) * snapInterval;
         if (newDuration < minDuration) newDuration = minDuration;
-        
+
         // Ensure we don't exceed total length
         if (newStart + newDuration > this.totalLength) {
             newDuration = this.totalLength - newStart;
@@ -365,10 +392,13 @@ class Timeline {
             // Save undo state after dragging
             this.app.saveUndoState();
         }
-        
+
         this.isDragging = false;
         this.draggedLayer = null;
         this.dragMode = null;
+
+        // Reset cursor after dragging
+        this.canvas.style.cursor = 'default';
     }
 
     onWheel(e) {

@@ -1,4 +1,9 @@
 /* --- TUTORIAL SYSTEM STYLES --- */
+/* This file contains all styling for the interactive tutorial system in Pixel Audio Studio */
+
+/* ============================================= */
+/* TUTORIAL OVERLAY - Full screen overlay */
+/* ============================================= */
 #tutorial-overlay {
     position: fixed;
     top: 0;
@@ -11,6 +16,9 @@
     pointer-events: none;
 }
 
+/* ============================================= */
+/* TUTORIAL CONTAINER - Main tutorial panel */
+/* ============================================= */
 #tutorial-container {
     position: fixed;
     z-index: 10001;
@@ -26,6 +34,9 @@
     pointer-events: auto;
 }
 
+/* ============================================= */
+/* TUTORIAL HEADER - Title and close button area */
+/* ============================================= */
 #tutorial-header {
     display: flex;
     justify-content: space-between;
@@ -53,12 +64,18 @@
     line-height: 1;
 }
 
+/* ============================================= */
+/* TUTORIAL CONTENT - Main content area */
+/* ============================================= */
 #tutorial-content {
     margin-bottom: 16px;
     line-height: 1.4;
     color: var(--text-secondary);
 }
 
+/* ============================================= */
+/* TUTORIAL CONTROLS - Button and navigation area */
+/* ============================================= */
 #tutorial-controls {
     display: flex;
     flex-direction: column;
@@ -68,6 +85,9 @@
     border-top: 1px solid var(--border-color);
 }
 
+/* ============================================= */
+/* TUTORIAL BUTTONS - Action buttons */
+/* ============================================= */
 .tutorial-btn {
     padding: 6px 12px;
     border: 1px solid var(--border-color);
@@ -97,12 +117,18 @@
     color: var(--accent-tertiary);
 }
 
+/* ============================================= */
+/* TUTORIAL BUTTONS CONTAINER */
+/* ============================================= */
 #tutorial-buttons {
     display: flex;
     justify-content: center;
     gap: 8px;
 }
 
+/* ============================================= */
+/* TUTORIAL PROGRESS DOTS - Step indicators */
+/* ============================================= */
 #tutorial-progress-dots {
     display: flex;
     justify-content: center;
@@ -123,6 +149,9 @@
     transform: scale(1.2);
 }
 
+/* ============================================= */
+/* TUTORIAL CLOSE BUTTON - Enhanced styling */
+/* ============================================= */
 #tutorial-close {
     background: none;
     border: none;
@@ -146,7 +175,9 @@
     color: var(--text-primary);
 }
 
-/* Tutorial Directional Arrows */
+/* ============================================= */
+/* TUTORIAL DIRECTIONAL ARROWS - Visual indicators */
+/* ============================================= */
 .tutorial-arrow {
     position: absolute;
     width: 0;
@@ -155,8 +186,9 @@
     z-index: 10002;
 }
 
-
-/* Tutorial Directional Arrows */
+/* ============================================= */
+/* ARROW POSITIONS - Directional arrow styles */
+/* ============================================= */
 
 /* If tutorial is BELOW target (position: 'bottom'), arrow should be on TOP, pointing UP. */
 .tutorial-arrow.bottom {
@@ -165,7 +197,6 @@
     transform: translateX(-50%);
     border-width: 8px 8px 0px 8px;
     border-color: var(--accent-primary) transparent transparent transparent;
-
 }
 
 /* If tutorial is ABOVE target (position: 'top'), arrow should be on BOTTOM, pointing DOWN. */
@@ -197,7 +228,9 @@
     border-color: transparent transparent transparent var(--accent-primary);
 }
 
-/* Arrow Position Overrides - precise placement along sides */
+/* ============================================= */
+/* ARROW POSITION OVERRIDES - Precise placement along sides */
+/* ============================================= */
 .tutorial-arrow.top-third {
     /* Corrected for vertical positioning */
     top: 33.33% !important;

@@ -11,7 +11,7 @@ class FileManager {
     exportProject(filename = null) {
         try {
             const projectData = {
-                version: '1.0',
+                version: '2.0', // Updated version for collections support
                 timestamp: Date.now(),
                 name: filename || 'SFX Project',
                 layers: this.app.layerManager.getState(),
@@ -19,28 +19,30 @@ class FileManager {
                 audioEngine: {
                     sampleRate: this.app.audioEngine.sampleRate
                 },
-                timeline: this.app.timeline.getState()
+                timeline: this.app.timeline.getState(),
+                collections: this.app.collectionManager.getState() // ✅ Added collections data
             };
 
-            console.log('Exporting project with', projectData.layers.layers.length, 'layers');
+            console.log('Exporting project with', projectData.layers.layers.length, 'layers',
+                       'and', projectData.collections.collections.length, 'collections');
 
             const json = JSON.stringify(projectData, null, 2);
             const blob = new Blob([json], { type: 'application/json' });
             const url = URL.createObjectURL(blob);
-            
+
             const a = document.createElement('a');
             a.style.display = 'none';
             a.href = url;
             a.download = (filename || 'sfx_project') + '.json';
-            
+
             document.body.appendChild(a);
             a.click();
-            
+
             setTimeout(() => {
                 document.body.removeChild(a);
                 URL.revokeObjectURL(url);
             }, 100);
-            
+
             this.app.notifications.showNotification('Project exported successfully!', 'success');
         } catch (error) {
             console.error('Error exporting project:', error);
@@ -53,18 +55,18 @@ class FileManager {
         const input = document.createElement('input');
         input.type = 'file';
         input.accept = '.json';
-        
+
         input.onchange = (e) => {
             const file = e.target.files[0];
             if (!file) return;
-            
+
             const reader = new FileReader();
             reader.onload = (event) => {
                 try {
                     const projectData = JSON.parse(event.target.result);
-                    
+
                     console.log('Loading project data:', projectData);
-                    
+
                     // Validate project data - handle both old and new formats
                     if (projectData.version && (projectData.layers || projectData.state)) {
                         if (projectData.layers) {
@@ -81,11 +83,15 @@ class FileManager {
                             if (projectData.timeline) {
                                 this.app.timeline.setState(projectData.timeline);
                             }
+                            // ✅ Handle collections data for new format
+                            if (projectData.collections) {
+                                this.app.collectionManager.setState(projectData.collections);
+                            }
                         } else if (projectData.state) {
                             // Old format with state object
                             this.app.setState(projectData.state);
                         }
-                        
+
                         this.app.notifications.showNotification('Project loaded successfully!', 'success');
                     } else {
                         throw new Error('Invalid project file format');
@@ -95,10 +101,10 @@ class FileManager {
                     this.app.notifications.showNotification('Error loading project: ' + error.message, 'error');
                 }
             };
-            
+
             reader.readAsText(file);
         };
-        
+
         input.click();
     }
 
@@ -184,11 +190,12 @@ class FileManager {
         try {
             const state = this.app.getState();
             const data = {
+                version: '2.0', // Updated to include collections support
                 timestamp: Date.now(),
                 state: state
             };
             localStorage.setItem(this.autoSaveKey, JSON.stringify(data));
-            console.log('Auto-saved to local storage');
+            console.log('Auto-saved to local storage with', state.collections.collections.length, 'collections');
         } catch (error) {
             console.error('Error auto-saving:', error);
         }
@@ -199,8 +206,19 @@ class FileManager {
             const data = localStorage.getItem(this.autoSaveKey);
             if (data) {
                 const parsed = JSON.parse(data);
-                this.app.setState(parsed.state);
-                
+
+                // Handle both old and new formats
+                if (parsed.state) {
+                    // New format with version 2.0
+                    this.app.setState(parsed.state);
+                } else if (parsed.collections) {
+                    // Handle direct collections data (fallback)
+                    this.app.collectionManager.setState(parsed.collections);
+                } else {
+                    // Very old format - try to handle gracefully
+                    this.app.setState(parsed);
+                }
+
                 const date = new Date(parsed.timestamp);
                 this.app.notifications.showNotification(
                     `Restored from auto-save (${date.toLocaleString()})`,
@@ -210,6 +228,7 @@ class FileManager {
             }
         } catch (error) {
             console.error('Error loading auto-save:', error);
+            this.app.notifications.showNotification('Error loading auto-save: ' + error.message, 'error');
         }
         return false;
     }

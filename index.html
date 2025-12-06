@@ -7,10 +7,8 @@
     <title>Pixel Audio SFX Studio Pro</title>
     <!-- Fonts & Icons -->
     <link rel="icon" type="image/png" href="/pixelAudio/favicon-96x96.png" sizes="96x96" />
-    <!-- Local Font Awesome Implementation -->
-    <link rel="stylesheet" href="fonts/fontawesome-free-6.5.0/css/all.min.css">
-    <link rel="stylesheet" href="css/styles.css">
-    <link rel="stylesheet" href="css/tutorials.css">
+    <!-- Google Fonts - Press Start 2P -->
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
     <!-- Custom Font -->
     <style>
         @font-face {
@@ -20,7 +18,41 @@
             font-style: normal;
             font-display: swap;
         }
+        @font-face {
+            font-family: 'Inter';
+            src: url('fonts/inter-bold.woff2') format('woff2');
+            font-weight: bold;
+            font-style: normal;
+            font-display: swap;
+        }
+        @font-face {
+            font-family: 'Press Start 2P';
+            src: url('https://fonts.gstatic.com/s/pressstart2p/v15/e3t4euO8T-267oIAQAu6jDQy5uGQE.ttf') format('truetype');
+            font-weight: normal;
+            font-style: normal;
+            font-display: swap;
+        }
     </style>
+   <style>
+       .visually-hidden {
+           position: absolute;
+           width: 1px;
+           height: 1px;
+           padding: 0;
+           margin: -1px;
+           overflow: hidden;
+           clip: rect(0, 0, 0, 0);
+           white-space: nowrap;
+           border: 0;
+       }
+   </style>
+    <!-- Local Font Awesome Implementation -->
+    <link rel="stylesheet" href="fonts/fontawesome-free-6.5.0/css/all.min.css">
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/settings.css">
+    <link rel="stylesheet" href="css/modal.css">
+    <link rel="stylesheet" href="css/tutorials.css">
+
 </head>
 
 <body>
@@ -31,11 +63,14 @@
             <h1>Pixel Audio</h1>
             <span class="badge">Studio Pro V1.0</span>
         </div>
+        <!-- Font test element - can be removed after verification -->
+        <div style="position: absolute; top: 10px; right: 10px; font-family: 'Press Start 2P', 'Inter', sans-serif; font-size: 12px; color: var(--accent-tertiary); display: none;" id="font-test">FONT TEST</div>
         <div class="header-controls">
             <button onclick="randomize()" class="tool-btn"><i class="fas fa-random"></i> Randomize</button>
             <div class="separator"></div>
             <button id="loadProject" class="header-btn"><i class="fas fa-folder-open"></i> Load</button>
             <button id="saveProject" class="header-btn primary"><i class="fas fa-save"></i> Save</button>
+            <button id="saveToBrowserBtn" class="header-btn"><i class="fas fa-cloud"></i> Save to Browser</button>
             <button id="exportMixBtn" class="header-btn action"><i class="fas fa-file-export"></i> Export Mix</button>
         </div>
     </header>
@@ -74,6 +109,7 @@
                         <button class="toggle-sect-btn"><i class="fas fa-minus"></i></button>
                     </div>
                     <div class="section-body">
+                        <label for="waveform" class="visually-hidden">Waveform Type</label>
                         <select id="waveform">
                             <option value="square">Square</option>
                             <option value="sine">Sine</option>
@@ -96,19 +132,19 @@
                     </div>
                     <div class="section-body">
                         <div class="control-group">
-                            <label>Attack <span class="value" id="attackVal">0.00s</span></label>
+                            <label for="attack">Attack <span class="value" id="attackVal">0.00s</span></label>
                             <input type="range" id="attack" min="0" max="1" step="0.001" value="0">
                         </div>
                         <div class="control-group">
-                            <label>Sustain <span class="value" id="sustainVal">0.10s</span></label>
+                            <label for="sustain">Sustain <span class="value" id="sustainVal">0.10s</span></label>
                             <input type="range" id="sustain" min="0" max="2" step="0.01" value="0.1">
                         </div>
                         <div class="control-group">
-                            <label>Decay <span class="value" id="decayVal">0.20s</span></label>
+                            <label for="decay">Decay <span class="value" id="decayVal">0.20s</span></label>
                             <input type="range" id="decay" min="0" max="2" step="0.01" value="0.2">
                         </div>
                         <div class="control-group">
-                            <label>Punch <span class="value" id="punchVal">0%</span></label>
+                            <label for="punch">Punch <span class="value" id="punchVal">0%</span></label>
                             <input type="range" id="punch" min="0" max="100" step="1" value="0">
                         </div>
                     </div>
@@ -126,15 +162,15 @@
                     </div>
                     <div class="section-body">
                         <div class="control-group">
-                            <label>Start Hz <span class="value" id="freqVal">440</span></label>
+                            <label for="frequency">Start Hz <span class="value" id="freqVal">440</span></label>
                             <input type="range" id="frequency" min="20" max="3000" value="440">
                         </div>
                         <div class="control-group">
-                            <label>Slide <span class="value" id="slideVal">0.0</span></label>
+                            <label for="slide">Slide <span class="value" id="slideVal">0.0</span></label>
                             <input type="range" id="slide" min="-2" max="2" step="0.01" value="0">
                         </div>
                         <div class="control-group">
-                            <label>D-Slide <span class="value" id="deltaSlideVal">0.0</span></label>
+                            <label for="deltaSlide">D-Slide <span class="value" id="deltaSlideVal">0.0</span></label>
                             <input type="range" id="deltaSlide" min="-1" max="1" step="0.01" value="0">
                         </div>
                     </div>
@@ -156,11 +192,11 @@
                             <label for="vibratoEnable">Enable</label>
                         </div>
                         <div class="control-group mt-1">
-                            <label>Depth <span class="value" id="vibratoDepthVal">0</span></label>
+                            <label for="vibratoDepth">Depth <span class="value" id="vibratoDepthVal">0</span></label>
                             <input type="range" id="vibratoDepth" min="0" max="100" value="0">
                         </div>
                         <div class="control-group mt-1">
-                            <label>Speed <span class="value" id="vibratoSpeedVal">0</span></label>
+                            <label for="vibratoSpeed">Speed <span class="value" id="vibratoSpeedVal">0</span></label>
                             <input type="range" id="vibratoSpeed" min="0" max="50" step="0.1" value="0">
                         </div>
                     </div>
@@ -182,11 +218,11 @@
                             <label for="arpEnable">Enable</label>
                         </div>
                         <div class="control-group mt-1">
-                            <label>Mult <span class="value" id="arpMultVal">1.0</span></label>
+                            <label for="arpMult">Mult <span class="value" id="arpMultVal">1.0</span></label>
                             <input type="range" id="arpMult" min="0.5" max="3" step="0.01" value="1">
                         </div>
                         <div class="control-group mt-1">
-                            <label>Speed <span class="value" id="arpSpeedVal">0.0</span></label>
+                            <label for="arpSpeed">Speed <span class="value" id="arpSpeedVal">0.0</span></label>
                             <input type="range" id="arpSpeed" min="0" max="1" step="0.001" value="0">
                         </div>
                     </div>
@@ -204,7 +240,7 @@
                     </div>
                     <div class="section-body">
                         <div class="control-group">
-                            <label>Cycle <span class="value" id="dutyVal">50%</span></label>
+                            <label for="duty">Cycle <span class="value" id="dutyVal">50%</span></label>
                             <input type="range" id="duty" min="0" max="100" value="50">
                         </div>
                     </div>
@@ -222,7 +258,7 @@
                     </div>
                     <div class="section-body">
                         <div class="control-group">
-                            <label>Volume <span class="value" id="layerVolumeVal">100%</span></label>
+                            <label for="layerVolume">Volume <span class="value" id="layerVolumeVal">100%</span></label>
                             <input type="range" id="layerVolume" min="0" max="200" step="1" value="100">
                         </div>
                     </div>
@@ -269,10 +305,29 @@
 
                 <!-- LAYERS -->
                 <div id="panel-layers" class="panel-content">
+                    <div class="current-collection-display">
+                        <span class="collection-label">Current Collection:</span>
+                        <select id="collection-dropdown" class="collection-dropdown">
+                            <!-- Collections will be populated by JavaScript -->
+                        </select>
+                    </div>
                     <div class="panel-title-row">
-                        <h3>Layers</h3>
-                        <button onclick="app.layerManager.addLayer()" class="small-btn"><i
-                                class="fas fa-plus"></i></button>
+                        <div class="panel-title-with-button">
+                            <button onclick="app.layerManager.addLayer()" class="small-btn"><i
+                                    class="fas fa-plus"></i></button>
+                            <h3>Layers</h3>
+                        </div>
+                        <div class="folder-controls">
+                            <button class="folder-btn" id="add-group-btn" title="Add Group">
+                                <i class="fas fa-folder-plus"></i>
+                            </button>
+                            <button class="folder-btn" id="expand-all-btn" title="Expand All">
+                                <i class="fas fa-expand-arrows-alt"></i>
+                            </button>
+                            <button class="folder-btn" id="collapse-all-btn" title="Collapse All">
+                                <i class="fas fa-compress-arrows-alt"></i>
+                            </button>
+                        </div>
                     </div>
                     <div id="layersList" class="scroll-list"></div>
                 </div>
@@ -339,7 +394,7 @@
                 <div class="modal-title">
                     <i class="fas fa-cog"></i> Settings
                 </div>
-                <div style="font-size:0.8rem; color:#94a3b8; margin-bottom:15px;">
+                <div class="settings-subtitle">
                     Configure your Pixel Audio Studio preferences
                 </div>
 
@@ -363,138 +418,176 @@
 
                 <div class="settings-tab-content active" data-tab-content="general">
                     <div class="settings-content">
-                        <div class="property-group">
-                            <label class="setting-label">
-                                <input type="checkbox" id="settings-show-tooltips" checked>
-                                <span class="checkmark"></span> Show Tooltips
-                            </label>
+
+                        <div class="settings-section">
+                            <div class="section-heading">General Settings</div>
+
+                            <div class="property-group">
+                                <label class="setting-label">
+                                    <input type="checkbox" id="settings-show-tooltips" checked>
+                                    <span class="checkmark"></span> Tooltips
+                                </label>
+                                <div class="setting-description">Show helpful tooltips throughout the interface</div>
+
+                                <label class="setting-label">
+                                    <input type="checkbox" id="settings-auto-save" checked>
+                                    <span class="checkmark"></span> Auto Save
+                                </label>
+                                <div class="setting-description">Automatically save your work periodically</div>
+
+                                <label class="setting-label">
+                                    <input type="checkbox" id="settings-darkmode" checked>
+                                    <span class="checkmark"></span> Dark Mode
+                                </label>
+                                <div class="setting-description">Use dark theme for the interface</div>
+                            </div>
+
                         </div>
-                        <div class="property-group">
-                            <label class="setting-label">
-                                <input type="checkbox" id="settings-auto-save" checked>
-                                <span class="checkmark"></span> Auto Save
-                            </label>
+
+                        <div class="settings-section">
+                            <div class="section-heading">Scene Settings</div>
+                            <div class="property-group">
+                                <label class="property-label" for="settings-default-length">
+                                    Length:
+                                    <input type="number" id="settings-default-length" name="settings-default-length" min="0.1" max="10" step="0.1"
+                                        value="1.0"
+                                        style="background: var(--bg-light); border: 1px solid var(--border-color); border-radius: 4px; padding: 6px 10px; font-size: 0.8rem; color: var(--text-primary); width: 100%; margin-top: 6px;">
+                                </label>
+                                 <div class="setting-description">Default Timeline Length (s)</div>
+
+
+                                <label class="property-label" for="settings-theme">
+                                    Theme:
+                                    <select id="settings-theme" name="settings-theme"
+                                        style="background: var(--bg-light); border: 1px solid var(--border-color); border-radius: 4px; padding: 6px 10px; font-size: 0.8rem; color: var(--text-primary); width: 100%; margin-top: 6px;">
+                                        <option value="dark" selected>Dark</option>
+                                        <option value="light">Light</option>
+                                    </select>
+                                </label>
+                            </div>
                         </div>
-                        <div class="property-group">
-                            <label class="setting-label">
-                                <input type="checkbox" id="settings-darkmode" checked>
-                                <span class="checkmark"></span> Dark Mode
-                            </label>
-                        </div>
-                        <div class="property-group">
-                            <label class="property-label">
-                                Default Timeline Length (s):
-                                <input type="number" id="settings-default-length" min="0.1" max="10" step="0.1"
-                                    value="1.0"
-                                    style="background: var(--bg-light); border: 1px solid var(--border-color); border-radius: 4px; padding: 6px 10px; font-size: 0.8rem; color: var(--text-primary); width: 100%; margin-top: 6px;">
-                            </label>
-                        </div>
-                        <div class="property-group">
-                            <label class="property-label">
-                                Theme:
-                                <select id="settings-theme"
-                                    style="background: var(--bg-light); border: 1px solid var(--border-color); border-radius: 4px; padding: 6px 10px; font-size: 0.8rem; color: var(--text-primary); width: 100%; margin-top: 6px;">
-                                    <option value="dark" selected>Dark</option>
-                                    <option value="light">Light</option>
-                                </select>
-                            </label>
-                        </div>
+
+
                     </div>
                 </div>
 
+
                 <div class="settings-tab-content" data-tab-content="audio">
                     <div class="settings-content">
-                        <div class="property-group">
-                            <label class="property-label">
-                                Master Volume:
-                                <input type="range" id="settings-master-volume" min="0" max="100" value="100"
-                                    style="width: 100%; margin-top: 6px;">
-                                <span class="range-value" id="master-volume-value"
-                                    style="font-family: 'Press Start 2P', cursive; font-size: 10px; color: var(--accent-tertiary);">100%</span>
-                            </label>
+
+                        <div class="settings-section">
+                            <div class="section-heading">Audio Settings</div>
+
+                            <div class="property-group">
+                                <label class="property-label" for="settings-master-volume">
+                                    Volume:
+                                    <input type="range" id="settings-master-volume" name="settings-master-volume" min="0" max="100" value="100"
+                                        style="width: 100%; margin-top: 6px;">
+                                    <span class="range-value" id="master-volume-value">100%</span>
+                                </label>
+                                 <div class="setting-description">Master Volume Control (0-100)</div>
+
+
+                                <label class="setting-label">
+                                    <input type="checkbox" id="settings-auto-play" checked>
+                                    <span class="checkmark"></span> Auto Play on Preset Load
+                                </label>
+                            </div>
                         </div>
-                        <div class="property-group">
-                            <label class="setting-label">
-                                <input type="checkbox" id="settings-auto-play" checked>
-                                <span class="checkmark"></span> Auto Play on Preset Load
-                            </label>
-                        </div>
+
+
+
                     </div>
                 </div>
 
                 <div class="settings-tab-content" data-tab-content="export">
                     <div class="settings-content">
-                        <div class="property-group">
-                            <label class="property-label">
-                                Export Quality:
-                                <input type="range" id="settings-export-quality" min="0.1" max="1.0" step="0.1"
-                                    value="1.0" style="width: 100%; margin-top: 6px;">
-                                <span class="range-value" id="export-quality-value"
-                                    style="font-family: 'Press Start 2P', cursive; font-size: 10px; color: var(--accent-tertiary);">100%</span>
-                            </label>
+
+                        <div class="settings-section">
+                            <div class="section-heading">Export Settings</div>
+
+                            <div class="property-group">
+                                <label class="property-label" for="settings-export-quality">
+                                    Quality:
+                                    <input type="range" id="settings-export-quality" name="settings-export-quality" min="0.1" max="1.0" step="0.1"
+                                        value="1.0" style="width: 100%; margin-top: 6px;">
+                                    <span class="range-value" id="export-quality-value">100%</span>
+                                </label>
+                                 <div class="setting-description">Export quality (0.1-1.0)</div>
+
+                                <label class="property-label" for="settings-export-format">
+                                     Format:
+                                    <select id="settings-export-format" name="settings-export-format" class="settings-select">
+                                        <option value="wav" selected>WAV (Lossless)</option>
+                                        <option value="mp3">MP3 (Compressed)</option>
+                                        <option value="ogg">OGG (Compressed)</option>
+                                        <option value="midi">MIDI (Music Data)</option>
+                                    </select>
+                                </label>
+                                  <div class="setting-description">Export Format (WAV, MP3, OGG, MIDI)</div>
+
+                            </div>
+
                         </div>
+
+
+
+
                         <div class="property-group">
-                            <label class="property-label">
-                                Export Format:
-                                <select id="settings-export-format"
-                                    style="background: var(--bg-light); border: 1px solid var(--border-color); border-radius: 4px; padding: 6px 10px; font-size: 0.8rem; color: var(--text-primary); width: 100%; margin-top: 6px;">
-                                    <option value="wav" selected>WAV (Lossless)</option>
-                                    <option value="mp3">MP3 (Compressed)</option>
-                                    <option value="ogg">OGG (Compressed)</option>
-                                    <option value="midi">MIDI (Music Data)</option>
-                                </select>
-                            </label>
-                        </div>
-                        <div class="property-group"
-                            style="margin-top: 16px; padding-top: 12px; border-top: 1px solid var(--border-color);">
-                            <button id="exportDefaultsBtn" class="btn" style="margin-bottom: 8px; width: 100%;">
+                            <button id="exportDefaultsBtn" class="btn">
                                 <i class="fas fa-cloud-download-alt"></i> Export Defaults
                             </button>
-                            <button id="saveToBrowserBtn" class="btn" style="margin-bottom: 8px; width: 100%;">
+                            <button id="saveToBrowserBtn" class="btn">
                                 <i class="fas fa-save"></i> Save to Browser
                             </button>
-                            <button id="loadFromBrowserBtn" class="btn secondary" style="width: 100%;">
+                            <button id="loadFromBrowserBtn" class="btn secondary" >
                                 <i class="fas fa-download"></i> Load from Browser
+                            </button>
+                        </div>
+                        <div class="property-group">
+                            <button id="clearAllContentBtn" class="btn" style="background-color: #ff4444; color: white;">
+                                <i class="fas fa-trash-alt"></i> Clear All Content
                             </button>
                         </div>
                     </div>
                 </div>
 
+                <!-- Tutorial Settings Tab -->
                 <div class="settings-tab-content" data-tab-content="tutorial">
                     <div class="settings-content">
-                        <div class="property-group">
-                            <label class="property-label">
-                                Tutorial Settings
-                            </label>
-                        </div>
+                        <!-- Tutorial Settings Group -->
+                        <div class="settings-section">
+                            <div class="section-heading">Tutorial Settings</div>
+                            <div class="property-group">
+                                <label class="setting-label">
+                                    <input type="checkbox" id="settings-enable-tutorials" checked>
+                                    <span class="checkmark"></span> Tutorials
+                                </label>
+                                <div class="setting-description">
+                                    Show interactive tutorials on startup
+                                </div>
 
-                        <div class="property-group">
-                            <label class="setting-label">
-                                <input type="checkbox" id="settings-enable-tutorials" checked>
-                                <span class="checkmark"></span> Enable Tutorials
-                            </label>
-                            <div
-                                style="font-size: 11px; color: var(--text-secondary); margin-top: 4px; margin-left: 30px;">
-                                Show interactive tutorials on startup
+                                <label class="setting-label">
+                                    <input type="checkbox" id="settings-show-hints" checked>
+                                    <span class="checkmark"></span> Hints
+                                </label>
+                                <div class="setting-description">
+                                    Display helpful hints and tooltips
+                                </div>
                             </div>
                         </div>
 
-                        <div class="property-group">
-                            <label class="setting-label">
-                                <input type="checkbox" id="settings-show-hints" checked>
-                                <span class="checkmark"></span> Show Tutorial Hints
-                            </label>
-                            <div
-                                style="font-size: 11px; color: var(--text-secondary); margin-top: 4px; margin-left: 30px;">
-                                Display helpful hints and tooltips
+                        <!-- Tutorial Actions Group -->
+                        <div class="settings-section">
+                            <div class="section-heading">Tutorial Actions</div>
+                            <div class="property-group">
+                                <button id="startTutorialBtn" class="btn" >
+                                    <i class="fas fa-graduation-cap"></i> Start Tutorial
+                                </button>
+                                <button id="resetTutorialProgressBtn" class="btn secondary">
+                                    <i class="fas fa-redo"></i> Reset Tutorial Progress
+                                </button>
                             </div>
-                        </div>
-
-                        <div class="property-group"
-                            style="margin-top: 16px; padding-top: 12px; border-top: 1px solid var(--border-color);">
-                            <button id="startTutorialBtn" class="btn" style="width: 100%;">
-                                <i class="fas fa-graduation-cap"></i> Start Tutorial
-                            </button>
                         </div>
                     </div>
                 </div>
@@ -504,7 +597,7 @@
             <footer>
                 <div class="modal-actions">
                     <button class="btn" id="btn-settings-reset">Reset</button>
-                    <button class="btn" id="btn-settings-close">Close</button>
+                    <button class="btn" id="btn-settings-close">Cancel</button>
                     <button class="btn primary" id="btn-settings-save">Save Settings</button>
                 </div>
             </footer>
@@ -518,6 +611,9 @@
     <script src="js/layerManager.js"></script>
     <script src="js/timeline.js"></script>
     <script src="js/fileManager.js"></script>
+    <script src="js/collectionManager.js"></script>
+    <script src="js/collectionUI.js"></script>
+    <script src="js/databaseManager.js"></script>
     <script src="js/tooltip.js"></script>
     <script src="js/tutorialConfig.js"></script>
     <script src="js/tutorialSystem.js"></script>
@@ -525,6 +621,28 @@
     <script src="js/settings-manager.js"></script>
     <script src="js/ui.js"></script>
     <script src="js/main.js"></script>
+    <script src="test-collections.js"></script>
+    <!-- Font verification script -->
+    <script>
+        // Simple font verification
+        document.addEventListener('DOMContentLoaded', function() {
+            // Check if Press Start 2P font is loaded
+            const fontTest = document.getElementById('font-test');
+            if (fontTest) {
+                // Test if the font is available by checking computed style
+                const computedStyle = window.getComputedStyle(fontTest);
+                const fontFamily = computedStyle.getPropertyValue('font-family');
+
+                // Show the test element briefly for verification
+                fontTest.style.display = 'block';
+                setTimeout(() => {
+                    fontTest.style.display = 'none';
+                }, 2000);
+
+                console.log('Font verification - Press Start 2P loaded:', fontFamily.includes('Press Start 2P'));
+            }
+        });
+    </script>
 </body>
 
 </html>

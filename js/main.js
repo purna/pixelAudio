@@ -10,6 +10,7 @@ class SFXGeneratorApp {
         this.layerManager = null;
         this.timeline = null;
         this.fileManager = null;
+        this.collectionManager = null;
         this.tutorialConfig = null;
         this.tutorialSystem = null;
 
@@ -32,6 +33,9 @@ class SFXGeneratorApp {
         this.layerManager = new LayerManager(this);
         this.timeline = new Timeline(this);
         this.fileManager = new FileManager(this);
+        this.collectionManager = new CollectionManager(this);
+        this.collectionUI = new CollectionUI(this);
+        this.databaseManager = new DatabaseManager(this);
 
         // Initialize tutorial system if available
         if (typeof TutorialConfig !== 'undefined') {
@@ -65,6 +69,13 @@ class SFXGeneratorApp {
 
         this.layerManager.init(); // This will select the first layer and update UI
         this.timeline.init();
+        this.collectionManager.init(); // Initialize collection manager
+        this.collectionUI.init(); // Initialize collection UI
+
+        // Initialize database manager and UI
+        if (this.databaseManager) {
+            // Database UI will be added automatically when settings are opened
+        }
 
         // Auto-start tutorial if enabled (default: enabled)
         if (this.tutorialSystem && this.tutorialConfig) {
@@ -80,14 +91,26 @@ class SFXGeneratorApp {
         }
 
         console.log('SFX Generator initialized');
-        
+
         // Force update the display with the first layer's settings
         const firstLayer = this.layerManager.getSelectedLayer();
         if (firstLayer) {
             this.updateSettings(firstLayer.settings);
             this.ui.updateDisplay(firstLayer.settings);
         }
-        
+
+        // ✅ Add automatic loading of saved data
+        // Try to load auto-save data first
+        if (this.fileManager) {
+            const autoSaveLoaded = this.fileManager.loadFromLocalStorage();
+            if (!autoSaveLoaded) {
+                // If no auto-save, try to load complete project
+                if (this.settingsManager && this.settingsManager.loadCompleteProject) {
+                    this.settingsManager.loadCompleteProject();
+                }
+            }
+        }
+
         // Mark as initialized
         this.initialized = true;
     }
@@ -230,6 +253,14 @@ class SFXGeneratorApp {
         if (saveProjectBtn) {
             saveProjectBtn.addEventListener('click', () => {
                 this.fileManager.exportProject();
+            });
+        }
+
+        // Save to Browser button
+        const saveToBrowserBtn = document.getElementById('saveToBrowserBtn');
+        if (saveToBrowserBtn) {
+            saveToBrowserBtn.addEventListener('click', () => {
+                this.saveAllToBrowser();
             });
         }
 
@@ -482,11 +513,12 @@ class SFXGeneratorApp {
 
     getState() {
         return {
-            version: '1.0',
+            version: '1.1', // Updated version for collections support
             currentSettings: this.currentSettings,
             sampleRate: this.audioEngine.sampleRate,
             layers: this.layerManager.getState(),
-            timeline: this.timeline.getState()
+            timeline: this.timeline.getState(),
+            collections: this.collectionManager.getState()
         };
     }
 
@@ -502,6 +534,59 @@ class SFXGeneratorApp {
         }
         if (state.timeline) {
             this.timeline.setState(state.timeline);
+        }
+        if (state.collections) {
+            this.collectionManager.setState(state.collections);
+        }
+    }
+
+    // Save all content to browser (collections, groups, layers, clip values)
+    saveAllToBrowser() {
+        try {
+            // Get complete state including all content
+            const completeState = this.getState();
+
+            // Add folders to the state
+            completeState.folders = this.layerManager.folders;
+
+            // Add timeline clip values
+            completeState.timelineClips = [];
+            if (this.layerManager.layers) {
+                this.layerManager.layers.forEach(layer => {
+                    completeState.timelineClips.push({
+                        layerId: layer.id,
+                        startTime: layer.startTime,
+                        duration: this.soundGenerator.calculateDuration(layer.settings),
+                        settings: layer.settings
+                    });
+                });
+            }
+
+            // Convert to JSON string with version info
+            const projectData = {
+                version: '2.0', // Updated version for collections support
+                timestamp: Date.now(),
+                name: 'Complete Project Backup',
+                state: completeState
+            };
+
+            const jsonData = JSON.stringify(projectData, null, 2);
+
+            // Save to localStorage
+            localStorage.setItem('pixelAudioCompleteProject', jsonData);
+
+            // Show success notification
+            this.notifications.showNotification('All content saved to browser!', 'success');
+
+            console.log('Saved complete project to browser with',
+                       completeState.collections.collections.length, 'collections and',
+                       completeState.layers.layers.length, 'layers');
+
+            return true;
+        } catch (error) {
+            console.error('Error saving to browser:', error);
+            this.notifications.showNotification('Error saving: ' + error.message, 'error');
+            return false;
         }
     }
 }

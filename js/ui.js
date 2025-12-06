@@ -227,6 +227,30 @@ class UI {
             });
         }
 
+        // Add click handler to close side panel when clicking center stack
+        const centerStack = document.getElementById('center-stack');
+        if (centerStack) {
+            centerStack.addEventListener('click', (e) => {
+                // Only close if side panel is open and click is not on timeline controls
+                if (this.elements.sidePanel.classList.contains('open') &&
+                    !e.target.closest('.timeline-controls')) {
+
+                    // Add closing class for animation
+                    this.elements.sidePanel.classList.add('closing');
+                    this.elements.sidePanel.classList.remove('open');
+
+                    // Remove closing class after animation completes
+                    setTimeout(() => {
+                        this.elements.sidePanel.classList.remove('closing');
+                    }, 300);
+
+                    // Deactivate all tab buttons
+                    this.elements.iconTabBtns.forEach(b => b.classList.remove('active'));
+                    this.elements.panelContents.forEach(p => p.classList.remove('active'));
+                }
+            });
+        }
+
         document.addEventListener('layersChanged', () => {
             const layer = this.app.layerManager.getSelectedLayer();
             if (layer) {
@@ -243,15 +267,26 @@ class UI {
         else value = parseFloat(element.value);
 
         const updates = { [key]: value };
-        if (key === 'volume') updates[key] = value / 100; 
+        if (key === 'volume') updates[key] = value / 100;
 
         const layer = this.app.layerManager.getSelectedLayer();
-        if (layer) {
+        if (layer && key === 'volume') {
+            // ✅ Update only the selected layer's volume (true per-layer control)
+            this.app.layerManager.updateLayer(layer.id, { volume: updates.volume });
+
+            // ✅ Update UI to reflect the change
+            if (this.displays.layerVolumeVal) {
+                this.displays.layerVolumeVal.textContent = Math.round(updates.volume * 100) + '%';
+            }
+            if (this.elements.volume) {
+                this.elements.volume.value = value; // Keep slider in sync
+            }
+        } else if (layer) {
             this.app.layerManager.updateLayerSettings(layer.id, updates);
         } else {
             this.app.updateSettings(updates);
         }
-        
+
         this.updateDisplay(this.app.currentSettings);
         this.drawWaveformPreview(this.app.currentSettings);
     }
@@ -279,9 +314,14 @@ class UI {
         updateText(this.displays.arpMultVal, settings.arpMult.toFixed(2));
         updateText(this.displays.arpSpeedVal, settings.arpSpeed.toFixed(3));
         
-        // Volume
-        if(this.displays.layerVolumeVal && settings.volume !== undefined) {
-             updateText(this.displays.layerVolumeVal, Math.round(settings.volume * 100) + '%');
+        // Volume - show selected layer's volume, not global settings
+        const selectedLayer = this.app.layerManager.getSelectedLayer();
+        if (this.displays.layerVolumeVal) {
+            if (selectedLayer && selectedLayer.volume !== undefined) {
+                updateText(this.displays.layerVolumeVal, Math.round(selectedLayer.volume * 100) + '%');
+            } else if (settings.volume !== undefined) {
+                updateText(this.displays.layerVolumeVal, Math.round(settings.volume * 100) + '%');
+            }
         }
 
         // Logic to Disable Duty Cycle for Sine/Noise
@@ -315,8 +355,13 @@ class UI {
         if(this.elements.vibratoEnable) this.elements.vibratoEnable.checked = settings.vibratoEnable;
         if(this.elements.arpEnable) this.elements.arpEnable.checked = settings.arpEnable;
         
-        if(this.elements.volume && settings.volume !== undefined) {
-            this.elements.volume.value = Math.round(settings.volume * 100);
+        // Volume slider - sync with selected layer's volume
+        if(this.elements.volume) {
+            if (selectedLayer && selectedLayer.volume !== undefined) {
+                this.elements.volume.value = Math.round(selectedLayer.volume * 100);
+            } else if (settings.volume !== undefined) {
+                this.elements.volume.value = Math.round(settings.volume * 100);
+            }
         }
     }
 
