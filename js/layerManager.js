@@ -29,10 +29,10 @@ class LayerManager {
         // Folder controls are now in the HTML, just add event listeners
         // Add event listeners for folder controls
         document.getElementById('add-group-btn')?.addEventListener('click', () => {
-            const groupName = prompt('Enter group name:', 'New Group');
-            if (groupName) {
-                this.app.collectionManager.addGroupToCurrentCollection(groupName);
-            }
+            // Automatically create a new group with a default name
+            const groupNumber = this.app.collectionManager.getCurrentCollection()?.groups?.length + 1 || 1;
+            const groupName = `Group ${groupNumber}`;
+            this.app.collectionManager.addGroupToCurrentCollection(groupName);
         });
         document.getElementById('expand-all-btn')?.addEventListener('click', () => this.expandCollapseAll(true));
         document.getElementById('collapse-all-btn')?.addEventListener('click', () => this.expandCollapseAll(false));

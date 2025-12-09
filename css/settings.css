@@ -4,7 +4,7 @@
    ============================================= */
 
 /* =============================================
-   SETTINGS MODAL STRUCTURE & LAYOUT
+   1. SETTINGS MODAL STRUCTURE & LAYOUT
    ============================================= */
 
 .settings-content,
@@ -20,40 +20,46 @@
     border: 1px solid var(--border-color);
     max-height: 70vh;
     overflow-y: auto;
+    text-align: left;
 }
 
 /* Settings Modal Scrollbar Styling */
 .modal .scene-settings-content::-webkit-scrollbar,
-.modal .settings-content::-webkit-scrollbar {
+.modal .settings-content::-webkit-scrollbar,
+.modal .export-settings-content::-webkit-scrollbar {
     width: 8px;
 }
 
 .modal .scene-settings-content::-webkit-scrollbar-track,
-.modal .settings-content::-webkit-scrollbar-track {
+.modal .settings-content::-webkit-scrollbar-track,
+.modal .export-settings-content::-webkit-scrollbar-track {
     background: var(--bg-dark);
     border-radius: 4px;
 }
 
 .modal .scene-settings-content::-webkit-scrollbar-thumb,
-.modal .settings-content::-webkit-scrollbar-thumb {
+.modal .settings-content::-webkit-scrollbar-thumb,
+.modal .export-settings-content::-webkit-scrollbar-thumb {
     background: var(--accent-primary);
     border-radius: 4px;
 }
 
 .modal .scene-settings-content::-webkit-scrollbar-thumb:hover,
-.modal .settings-content::-webkit-scrollbar-thumb:hover {
+.modal .settings-content::-webkit-scrollbar-thumb:hover,
+.modal .export-settings-content::-webkit-scrollbar-thumb:hover {
     background: var(--accent-secondary);
 }
 
 /* Firefox Scrollbar Styling */
 .modal .scene-settings-content,
-.modal .settings-content {
+.modal .settings-content,
+.modal .export-settings-content {
     scrollbar-width: thin;
     scrollbar-color: var(--accent-primary) var(--bg-dark);
 }
 
 /* =============================================
-   SETTINGS TABS SYSTEM
+   2. SETTINGS TABS SYSTEM
    ============================================= */
 
 .settings-tabs {
@@ -101,7 +107,7 @@
 }
 
 /* =============================================
-   SETTINGS SECTIONS & GROUPING
+   3. SETTINGS SECTIONS & GROUPING
    ============================================= */
 
 .settings-section {
@@ -144,7 +150,7 @@
 }
 
 /* =============================================
-   PROPERTY GROUPS & LAYOUT
+   4. PROPERTY GROUPS & LAYOUT
    ============================================= */
 
 .property-group {
@@ -208,7 +214,7 @@
 .scene-settings-content label,
 .export-settings-content label {
     width: 100%;
-    display: block; /* Changed from flex to block to avoid flex-direction conflicts */
+    display: block;
     text-align: left;
     margin-bottom: 4px;
 }
@@ -236,14 +242,6 @@
     font-size: 0.8rem;
 }
 
-
-/* Ensure all text elements are left-aligned */
-.settings-content,
-.scene-settings-content,
-.export-settings-content {
-    text-align: left;
-}
-
 /* Fix checkbox labels alignment */
 .setting-label {
     text-align: left;
@@ -252,6 +250,11 @@
     align-items: center;
     gap: 8px;
     width: 100%;
+    cursor: pointer;
+    font-size: 0.8rem;
+    color: var(--text-primary);
+    user-select: none;
+    margin-bottom: 2px;
 }
 
 /* Ensure checkbox text is properly aligned */
@@ -260,20 +263,10 @@
 }
 
 /* =============================================
-   FORM CONTROLS & INPUTS
+   5. FORM CONTROLS & INPUTS
    ============================================= */
 
 /* Checkbox Styling */
-.setting-label {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    cursor: pointer;
-    font-size: 0.8rem;
-    color: var(--text-primary);
-    user-select: none;
-}
-
 .setting-label input[type="checkbox"] {
     display: none;
 }
@@ -284,7 +277,7 @@
     cursor: pointer;
     font-weight: bold;
     color: var(--text-secondary);
-    font-size: 11px;
+    font-size: 0.8rem;
     user-select: none;
 }
 
@@ -318,6 +311,11 @@
     display: flex;
     align-items: center;
     justify-content: center;
+}
+
+/* Hover effects for labels */
+.setting-label:hover span.checkmark {
+    color: var(--text-primary);
 }
 
 /* Custom Checkbox Styling (for control settings) */
@@ -355,9 +353,11 @@
 }
 
 /* Range Inputs */
-.settings-content input[type="range"] {
+.settings-content input[type="range"],
+.settings-range {
     width: 100%;
     cursor: pointer;
+    margin-top: 6px;
 }
 
 .setting-control input[type="range"] {
@@ -377,43 +377,64 @@
 }
 
 /* Number Inputs */
-.setting-control input[type="number"] {
+.setting-control input[type="number"],
+.settings-input {
     background: var(--bg-light);
     border: 1px solid var(--border-color);
     color: var(--text-primary);
-    padding: 8px 12px;
-    border-radius: 6px;
+    padding: 6px 10px;
+    border-radius: 4px;
     font-family: monospace;
-    width: 80px;
+    width: 100%;
     text-align: center;
+    font-size: 0.8rem;
+    margin-top: 6px;
 }
 
-.setting-control input[type="number"]:focus {
+.setting-control input[type="number"] {
+    width: 80px;
+    padding: 8px 12px;
+    border-radius: 6px;
+}
+
+.setting-control input[type="number"]:focus,
+.settings-input:focus {
     outline: none;
     border-color: var(--accent-primary);
     box-shadow: 0 0 8px var(--border-glow);
 }
 
 /* Select Dropdowns */
-.setting-control select {
+.setting-control select,
+.settings-select {
     background: var(--bg-light);
     border: 1px solid var(--border-color);
     color: var(--text-primary);
-    padding: 8px 12px;
-    border-radius: 6px;
+    padding: 6px 10px;
+    border-radius: 4px;
     font-family: inherit;
     min-width: 100px;
     cursor: pointer;
+    font-size: 0.8rem;
+    width: 100%;
+    margin-top: 6px;
 }
 
-.setting-control select:focus {
+.setting-control select {
+    width: auto;
+    padding: 8px 12px;
+    border-radius: 6px;
+}
+
+.setting-control select:focus,
+.settings-select:focus {
     outline: none;
     border-color: var(--accent-primary);
     box-shadow: 0 0 8px var(--border-glow);
 }
 
 /* =============================================
-   SETTING ITEMS & CONTROLS
+   6. SETTING ITEMS & CONTROLS
    ============================================= */
 
 .setting-item {
@@ -439,7 +460,7 @@
 }
 
 /* =============================================
-   SETTINGS DESCRIPTIONS & HELP TEXT
+   7. SETTINGS DESCRIPTIONS & HELP TEXT
    ============================================= */
 
 .setting-description {
@@ -453,25 +474,8 @@
     opacity: 0.8;
 }
 
-/* One-word label styling for settings */
-.setting-label span.checkmark {
-    font-weight: bold;
-    font-size: 0.8rem;
-    color: var(--text-secondary);
-}
-
-/* Hover effects for one-word labels */
-.setting-label:hover span.checkmark {
-    color: var(--text-primary);
-}
-
-/* Ensure proper spacing for one-word labels with descriptions */
-.setting-label {
-    margin-bottom: 2px;
-}
-
 /* =============================================
-   TUTORIAL TAB SPECIFIC STYLES
+   8. TUTORIAL TAB SPECIFIC STYLES
    ============================================= */
 
 .settings-tab-content[data-tab-content="tutorial"] .property-label {
@@ -511,8 +515,15 @@
     font-size: 0.8rem;
 }
 
+/* Align tutorial buttons properly */
+.settings-tab-content[data-tab-content="tutorial"] .property-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
 /* =============================================
-   SCENE SETTINGS SPECIFIC STYLES
+   9. SCENE SETTINGS SPECIFIC STYLES
    ============================================= */
 
 .scene-settings-content input[type="color"] {
@@ -543,12 +554,16 @@
 }
 
 /* =============================================
-   EXPORT SETTINGS SPECIFIC STYLES
+   10. EXPORT SETTINGS SPECIFIC STYLES
    ============================================= */
 
-.export-settings-content .property-group:first-child {
+.export-settings-content .property-group:first-child,
+.export-property-group {
+    margin-top: 16px;
     margin-bottom: 12px;
     padding: 8px 0;
+    padding-top: 12px;
+    border-top: 1px solid var(--border-color);
     border-bottom: 1px solid var(--border-color);
 }
 
@@ -587,7 +602,7 @@
 }
 
 /* =============================================
-   SETTINGS ACTIONS & BUTTONS
+   11. SETTINGS ACTIONS & BUTTONS
    ============================================= */
 
 .settings-actions {
@@ -602,7 +617,8 @@
     width: 100%;
 }
 
-.settings-actions .btn {
+.settings-actions .btn,
+.modal-action-btn {
     min-width: 120px;
 }
 
@@ -622,17 +638,19 @@
     gap: 10px;
 }
 
-/* Align tutorial buttons properly */
-.settings-tab-content[data-tab-content="tutorial"] .property-group {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
+/* Settings button styling */
+.settings-btn {
+    margin-bottom: 8px;
+    width: 100%;
 }
 
-/* Standardize button styling in settings */
+/* Settings button secondary styling */
+.settings-btn-secondary {
+    width: 100%;
+}
 
 /* =============================================
-   SETTINGS MODAL ANIMATION
+   12. SETTINGS MODAL ANIMATION
    ============================================= */
 
 .settings-panel {
@@ -658,93 +676,9 @@
     font-weight: 600;
 }
 
-/* Settings range input styling */
-.settings-range {
-    width: 100%;
-    margin-top: 6px;
-}
-
-/* Settings button styling */
-.settings-btn {
-    margin-bottom: 8px;
-    width: 100%;
-}
-
-/* Settings button secondary styling */
-.settings-btn-secondary {
-    width: 100%;
-}
-
-/* Export property group styling */
-.export-property-group {
-    margin-top: 16px;
-    padding-top: 12px;
-    border-top: 1px solid var(--border-color);
-}
-
-/* Modal actions button styling */
-.modal-action-btn {
-    min-width: 120px;
-}
-
 /* Settings modal subtitle styling */
 .settings-subtitle {
     font-size: 0.8rem;
     color: #94a3b8;
     margin-bottom: 15px;
-}
-
-/* Settings input styling */
-.settings-input {
-    background: var(--bg-light);
-    border: 1px solid var(--border-color);
-    border-radius: 4px;
-    padding: 6px 10px;
-    font-size: 0.8rem;
-    color: var(--text-primary);
-    width: 100%;
-    margin-top: 6px;
-}
-
-/* Settings select dropdown styling */
-.settings-select {
-    background: var(--bg-light);
-    border: 1px solid var(--border-color);
-    border-radius: 4px;
-    padding: 6px 10px;
-    font-size: 0.8rem;
-    color: var(--text-primary);
-    width: 100%;
-    margin-top: 6px;
-}
-
-/* Settings range input styling */
-.settings-range {
-    width: 100%;
-    margin-top: 6px;
-}
-
-
-
-/* Settings button styling */
-.settings-btn {
-    margin-bottom: 8px;
-    width: 100%;
-}
-
-/* Settings button secondary styling */
-.settings-btn-secondary {
-    width: 100%;
-}
-
-/* Export property group styling */
-.export-property-group {
-    margin-top: 16px;
-    padding-top: 12px;
-    border-top: 1px solid var(--border-color);
-}
-
-/* Modal actions button styling */
-.modal-action-btn {
-    min-width: 120px;
 }
