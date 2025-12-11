@@ -924,18 +924,60 @@ class LayerManager {
         container.appendChild(layerDiv);
     }
 
-    // Drag and drop handlers
+/**
+     * Handle drag over event
+     */
     handleDragOver(e) {
         e.preventDefault();
         e.dataTransfer.dropEffect = 'move';
 
-        // Add visual feedback
-        if (e.target.classList.contains('folder-header') ||
-            e.target.classList.contains('layer-folder-item') ||
-            e.target.classList.contains('layer-item') ||
-            e.target.classList.contains('layers-list')) {
-            e.target.classList.add('drag-over');
+        // Handle folder drop targets
+        const folderHeader = e.target.closest('.folder-header');
+        if (folderHeader) {
+            // Remove previous drop targets from layers only
+            const previousLayerDropTargets = document.querySelectorAll('.layer-item.drag-over');
+            previousLayerDropTargets.forEach(el => el.classList.remove('drag-over'));
+
+            // Remove drag-over from other folders
+            const previousFolderDropTargets = document.querySelectorAll('.folder-header.drag-over');
+            previousFolderDropTargets.forEach(el => {
+                if (el !== folderHeader) {
+                    el.classList.remove('drag-over');
+                }
+            });
+
+            // Add drag-over class to folder header
+            folderHeader.classList.add('drag-over');
+            
+            // Store the target folder ID
+            const folderItem = folderHeader.closest('.layer-folder-item');
+            if (folderItem) {
+                this.dragState.targetFolderId = folderItem.dataset.folderId;
+            }
+            return;
         }
+
+        // Handle layer drop targets
+        const targetElement = e.target.closest('.layer-item');
+        if (!targetElement || targetElement === this.dragState.draggedElement) {
+            // Remove folder drag-over if we're not over a folder anymore
+            const previousFolderDropTargets = document.querySelectorAll('.folder-header.drag-over');
+            previousFolderDropTargets.forEach(el => el.classList.remove('drag-over'));
+            return;
+        }
+
+        // Remove previous drop targets
+        const previousLayerDropTarget = UI.layersList.querySelector('.layer-item.drag-over');
+        if (previousLayerDropTarget) {
+            previousLayerDropTarget.classList.remove('drag-over');
+        }
+        const previousFolderDropTargets = document.querySelectorAll('.folder-header.drag-over');
+        previousFolderDropTargets.forEach(el => el.classList.remove('drag-over'));
+
+        // Add drag-over class to new target
+        targetElement.classList.add('drag-over');
+        this.dragState.dropIndex = parseInt(targetElement.dataset.index);
+        this.dragState.targetFolderId = null; // Not dropping on a folder
     }
 
     handleDragLeave(e) {
