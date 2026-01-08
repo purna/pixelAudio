@@ -258,6 +258,13 @@ class UI {
                 this.drawWaveformPreview(layer.settings);
             }
         });
+        document.addEventListener('tracksChanged', () => {
+            const layer = this.app.layerManager.getSelectedTrack();
+            if (layer) {
+                this.updateDisplay(layer.settings);
+                this.drawWaveformPreview(layer.settings);
+            }
+        });
     }
 
     handleInput(key, element) {

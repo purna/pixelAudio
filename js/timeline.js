@@ -44,7 +44,7 @@ class Timeline {
         this.canvas.addEventListener('mouseup', () => this.onMouseUp());
         this.canvas.addEventListener('wheel', e => this.onWheel(e), { passive: true });
         window.addEventListener('resize', () => this.resize());
-        document.addEventListener('layersChanged', () => this.render());
+        document.addEventListener('tracksChanged', () => this.render());
     }
 
     resize() {

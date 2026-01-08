@@ -21,8 +21,12 @@ class SFXGeneratorApp {
         this.redoStack = [];
         this.maxUndoSteps = 50;
 
-        // Copy/paste layer clipboard
-        this.copiedLayer = null;
+        // Copy/paste track clipboard
+        this.copiedTrack = null;
+        
+        // Playback state tracking
+        this.isPlayingSelected = false;
+        this.isPlayingAll = false;
     }
 
     async init() {
@@ -92,11 +96,11 @@ class SFXGeneratorApp {
 
         console.log('SFX Generator initialized');
 
-        // Force update the display with the first layer's settings
-        const firstLayer = this.layerManager.getSelectedLayer();
-        if (firstLayer) {
-            this.updateSettings(firstLayer.settings);
-            this.ui.updateDisplay(firstLayer.settings);
+        // Force update the display with the first track's settings
+        const firstTrack = this.layerManager.getSelectedTrack();
+        if (firstTrack) {
+            this.updateSettings(firstTrack.settings);
+            this.ui.updateDisplay(firstTrack.settings);
         }
 
         // ✅ Add automatic loading of saved data
@@ -113,15 +117,26 @@ class SFXGeneratorApp {
 
         // Mark as initialized
         this.initialized = true;
+        
+        // Initialize play button icons
+        this.updatePlayButtonIcons();
     }
 
     setupEventListeners() {
         // Global keyboard shortcuts
         document.addEventListener('keydown', (e) => {
-            // Space bar to play
+            // Space bar to play/pause selected
             if (e.code === 'Space' && !this.isTyping()) {
                 e.preventDefault();
-                this.playCurrentSound();
+                if (this.isPlayingSelected) {
+                    // Pause
+                    this.isPlayingSelected = false;
+                    this.audioEngine.stopAll();
+                    this.timeline.stopPlayback();
+                    this.updatePlayButtonIcons();
+                } else {
+                    this.playCurrentSound();
+                }
             }
             // Ctrl/Cmd + S to save
             if ((e.ctrlKey || e.metaKey) && e.key === 's') {
@@ -148,20 +163,20 @@ class SFXGeneratorApp {
                 e.preventDefault();
                 this.redo();
             }
-            // Ctrl/Cmd + C to copy layer
+            // Ctrl/Cmd + C to copy track
             if ((e.ctrlKey || e.metaKey) && e.key === 'c' && !this.isTyping()) {
                 e.preventDefault();
-                this.copyLayer();
+                this.copyTrack();
             }
-            // Ctrl/Cmd + V to paste layer
+            // Ctrl/Cmd + V to paste track
             if ((e.ctrlKey || e.metaKey) && e.key === 'v' && !this.isTyping()) {
                 e.preventDefault();
-                this.pasteLayer();
+                this.pasteTrack();
             }
-            // Ctrl/Cmd + D to duplicate layer
+            // Ctrl/Cmd + D to duplicate track
             if ((e.ctrlKey || e.metaKey) && e.key === 'd' && !this.isTyping()) {
                 e.preventDefault();
-                this.duplicateLayer();
+                this.duplicateTrack();
             }
         });
 
@@ -172,11 +187,28 @@ class SFXGeneratorApp {
         const playSelectedBtn = document.getElementById('playSelectedBtn');
         if (playSelectedBtn) {
             playSelectedBtn.addEventListener('click', async () => {
-                console.log('Play Selected clicked');
-                // Start timeline playback and play sound
-                this.timeline.playheadPosition = 0;
-                this.timeline.startPlayback();
-                await this.playCurrentSound();
+                if (this.isPlayingSelected) {
+                    // Pause - stop audio and timeline
+                    this.isPlayingSelected = false;
+                    this.audioEngine.stopAll();
+                    this.timeline.stopPlayback();
+                    this.updatePlayButtonIcons();
+                } else {
+                    console.log('Play Selected clicked');
+                    // Stop any other playback first
+                    this.isPlayingAll = false;
+                    this.audioEngine.stopAll();
+                    if (this.timeline.isPlaying) {
+                        this.timeline.stopPlayback();
+                    }
+                    // Start timeline playback and play sound
+                    this.timeline.playheadPosition = 0;
+                    this.timeline.startPlayback();
+                    this.isPlayingSelected = true;
+                    this.updatePlayButtonIcons();
+                    await this.playCurrentSound();
+                    // Note: state is reset in playCurrentSound's callback
+                }
             });
         }
 
@@ -184,11 +216,28 @@ class SFXGeneratorApp {
         const playSelected = document.getElementById('playSelected');
         if (playSelected) {
             playSelected.addEventListener('click', async () => {
-                console.log('Play Selected (timeline) clicked');
-                // Start timeline playback and play sound
-                this.timeline.playheadPosition = 0;
-                this.timeline.startPlayback();
-                await this.playCurrentSound();
+                if (this.isPlayingSelected) {
+                    // Pause
+                    this.isPlayingSelected = false;
+                    this.audioEngine.stopAll();
+                    this.timeline.stopPlayback();
+                    this.updatePlayButtonIcons();
+                } else {
+                    console.log('Play Selected (timeline) clicked');
+                    // Stop any other playback first
+                    this.isPlayingAll = false;
+                    this.audioEngine.stopAll();
+                    if (this.timeline.isPlaying) {
+                        this.timeline.stopPlayback();
+                    }
+                    // Start timeline playback and play sound
+                    this.timeline.playheadPosition = 0;
+                    this.timeline.startPlayback();
+                    this.isPlayingSelected = true;
+                    this.updatePlayButtonIcons();
+                    await this.playCurrentSound();
+                    // Note: state is reset in playCurrentSound's callback
+                }
             });
         }
 
@@ -196,11 +245,28 @@ class SFXGeneratorApp {
         const playTimelineBtn = document.getElementById('playTimeline');
         if (playTimelineBtn) {
             playTimelineBtn.addEventListener('click', async () => {
-                console.log('Play Timeline clicked');
-                // Start timeline playback and play all layers
-                this.timeline.playheadPosition = 0;
-                this.timeline.startPlayback();
-                await this.layerManager.playAllLayers();
+                if (this.isPlayingAll) {
+                    // Pause
+                    this.isPlayingAll = false;
+                    this.audioEngine.stopAll();
+                    this.timeline.stopPlayback();
+                    this.updatePlayButtonIcons();
+                } else {
+                    console.log('Play Timeline clicked');
+                    // Stop any other playback first
+                    this.isPlayingSelected = false;
+                    this.audioEngine.stopAll();
+                    if (this.timeline.isPlaying) {
+                        this.timeline.stopPlayback();
+                    }
+                    // Start timeline playback and play all tracks
+                    this.timeline.playheadPosition = 0;
+                    this.timeline.startPlayback();
+                    this.isPlayingAll = true;
+                    this.updatePlayButtonIcons();
+                    await this.layerManager.playAllTracks();
+                    // Note: state is reset in playAllTracks' setTimeout callback
+                }
             });
         }
 
@@ -212,6 +278,10 @@ class SFXGeneratorApp {
                 // Stop both audio and timeline
                 this.timeline.stopPlayback();
                 this.audioEngine.stopAll();
+                // Reset play states
+                this.isPlayingSelected = false;
+                this.isPlayingAll = false;
+                this.updatePlayButtonIcons();
             });
         }
 
@@ -271,43 +341,43 @@ class SFXGeneratorApp {
             });
         }
 
-        // Add Layer button (makes it consistent with other buttons)
-        const addLayerBtn = document.querySelector('button[onclick="app.layerManager.addLayer()"]');
-        if (addLayerBtn) {
-            addLayerBtn.removeAttribute('onclick'); // Remove inline handler
-            addLayerBtn.addEventListener('click', () => {
-                this.layerManager.addLayer();
+        // Add Track button (makes it consistent with other buttons)
+        const addTrackBtn = document.querySelector('button[onclick="app.layerManager.addLayer()"]');
+        if (addTrackBtn) {
+            addTrackBtn.removeAttribute('onclick'); // Remove inline handler
+            addTrackBtn.addEventListener('click', () => {
+                this.layerManager.addTrack();
             });
         }
     }
 
-    copyLayer() {
-        const layer = this.layerManager.getSelectedLayer();
-        if (layer) {
-            this.copiedLayer = JSON.parse(JSON.stringify(layer));
-            this.notifications.showNotification('Layer copied', 'success');
+    copyTrack() {
+        const track = this.layerManager.getSelectedTrack();
+        if (track) {
+            this.copiedTrack = JSON.parse(JSON.stringify(track));
+            this.notifications.showNotification('Track copied', 'success');
         }
     }
 
-    pasteLayer() {
-        if (!this.copiedLayer) {
-            this.notifications.showNotification('No layer to paste', 'error');
+    pasteTrack() {
+        if (!this.copiedTrack) {
+            this.notifications.showNotification('No track to paste', 'error');
             return;
         }
         this.saveUndoState();
-        const newLayer = this.layerManager.duplicateLayer(this.copiedLayer);
-        if (newLayer) {
-            this.notifications.showNotification('Layer pasted', 'success');
+        const newTrack = this.layerManager.duplicateTrack(this.copiedTrack);
+        if (newTrack) {
+            this.notifications.showNotification('Track pasted', 'success');
         }
     }
 
-    duplicateLayer() {
-        const layer = this.layerManager.getSelectedLayer();
-        if (layer) {
+    duplicateTrack() {
+        const track = this.layerManager.getSelectedTrack();
+        if (track) {
             this.saveUndoState();
-            const newLayer = this.layerManager.duplicateLayer(layer);
-            if (newLayer) {
-                this.notifications.showNotification('Layer duplicated', 'success');
+            const newTrack = this.layerManager.duplicateTrack(track);
+            if (newTrack) {
+                this.notifications.showNotification('Track duplicated', 'success');
             }
         }
     }
@@ -349,18 +419,52 @@ class SFXGeneratorApp {
         this.ui.updateDisplay(this.currentSettings);
     }
 
+    updatePlayButtonIcons() {
+        // Update play selected button icons
+        const playSelectedBtn = document.getElementById('playSelectedBtn');
+        const playSelected = document.getElementById('playSelected');
+        const playTimelineBtn = document.getElementById('playTimeline');
+        
+        const playIconClass = 'fas fa-play';
+        const pauseIconClass = 'fas fa-pause';
+        const playCircleIconClass = 'fas fa-play-circle';
+        const pauseCircleIconClass = 'fas fa-pause-circle';
+        
+        // Update play selected buttons
+        [playSelectedBtn, playSelected].forEach(btn => {
+            if (btn) {
+                const icon = btn.querySelector('i');
+                if (icon) {
+                    icon.className = this.isPlayingSelected ? pauseIconClass : playIconClass;
+                }
+                // Update title
+                btn.title = this.isPlayingSelected ? 'Pause' : 'Play Selected';
+            }
+        });
+        
+        // Update play all button (uses play-circle icon)
+        if (playTimelineBtn) {
+            const icon = playTimelineBtn.querySelector('i');
+            if (icon) {
+                icon.className = this.isPlayingAll ? pauseCircleIconClass : playCircleIconClass;
+            }
+            // Update title
+            playTimelineBtn.title = this.isPlayingAll ? 'Pause All' : 'Play All';
+        }
+    }
+
     async playCurrentSound() {
         console.log('playCurrentSound called');
         try {
-            // Get the selected layer's settings instead of using currentSettings
-            const selectedLayer = this.layerManager.getSelectedLayer();
-            if (!selectedLayer) {
-                console.warn('No layer selected');
-                this.notifications.showNotification('No layer selected', 'error');
+            // Get the selected track's settings instead of using currentSettings
+            const selectedTrack = this.layerManager.getSelectedTrack();
+            if (!selectedTrack) {
+                console.warn('No track selected');
+                this.notifications.showNotification('No track selected', 'error');
                 return;
             }
             
-            const settings = selectedLayer.settings;
+            const settings = selectedTrack.settings;
             console.log('Generating sound with settings:', settings);
             
             const buffer = this.soundGenerator.generate(
@@ -379,6 +483,9 @@ class SFXGeneratorApp {
                 if (this.timeline.isPlaying) {
                     this.timeline.stopPlayback();
                 }
+                // Reset play state
+                this.isPlayingSelected = false;
+                this.updatePlayButtonIcons();
             });
             console.log('Sound played successfully');
         } catch (error) {
@@ -388,6 +495,9 @@ class SFXGeneratorApp {
             if (this.timeline.isPlaying) {
                 this.timeline.stopPlayback();
             }
+            // Reset play state on error
+            this.isPlayingSelected = false;
+            this.updatePlayButtonIcons();
         }
     }
 
@@ -409,11 +519,11 @@ class SFXGeneratorApp {
         // Save state for undo
         this.saveUndoState();
 
-        const selectedLayer = this.layerManager.getSelectedLayer();
+        const selectedTrack = this.layerManager.getSelectedTrack();
 
-        if (selectedLayer) {
-            // Apply preset to selected layer
-            this.layerManager.updateLayerSettings(selectedLayer.id, preset);
+        if (selectedTrack) {
+            // Apply preset to selected track
+            this.layerManager.updateTrackSettings(selectedTrack.id, preset);
             
             // Force sync app's currentSettings
             this.currentSettings = { ...preset };
@@ -424,11 +534,11 @@ class SFXGeneratorApp {
             // Redraw timeline to show updated waveform
             this.timeline.render();
             
-            // Play the updated layer
+            // Play the updated track
             await this.playCurrentSound();
         } else {
-            // No layer selected - this shouldn't happen, but handle it
-            console.warn('No layer selected when loading preset');
+            // No track selected - this shouldn't happen, but handle it
+            console.warn('No track selected when loading preset');
             this.currentSettings = { ...preset };
             this.ui.updateDisplay(preset);
             await this.playCurrentSound();
@@ -441,11 +551,11 @@ class SFXGeneratorApp {
         // Save state for undo
         this.saveUndoState();
         
-        const selectedLayer = this.layerManager.getSelectedLayer();
+        const selectedTrack = this.layerManager.getSelectedTrack();
         
-        if (selectedLayer) {
-            // Apply to selected layer
-            this.layerManager.updateLayerSettings(selectedLayer.id, randomSettings);
+        if (selectedTrack) {
+            // Apply to selected track
+            this.layerManager.updateTrackSettings(selectedTrack.id, randomSettings);
             
             // Force sync app's currentSettings
             this.currentSettings = { ...randomSettings };
@@ -516,7 +626,7 @@ class SFXGeneratorApp {
             version: '1.1', // Updated version for collections support
             currentSettings: this.currentSettings,
             sampleRate: this.audioEngine.sampleRate,
-            layers: this.layerManager.getState(),
+            tracks: this.layerManager.getState(),
             timeline: this.timeline.getState(),
             collections: this.collectionManager.getState()
         };
@@ -529,8 +639,8 @@ class SFXGeneratorApp {
         if (state.sampleRate) {
             this.audioEngine.setSampleRate(state.sampleRate);
         }
-        if (state.layers) {
-            this.layerManager.setState(state.layers);
+        if (state.tracks) {
+            this.layerManager.setState(state.tracks);
         }
         if (state.timeline) {
             this.timeline.setState(state.timeline);
@@ -540,7 +650,7 @@ class SFXGeneratorApp {
         }
     }
 
-    // Save all content to browser (collections, groups, layers, clip values)
+    // Save all content to browser (collections, groups, tracks, clip values)
     saveAllToBrowser() {
         try {
             // Get complete state including all content
@@ -551,13 +661,13 @@ class SFXGeneratorApp {
 
             // Add timeline clip values
             completeState.timelineClips = [];
-            if (this.layerManager.layers) {
-                this.layerManager.layers.forEach(layer => {
+            if (this.layerManager.tracks) {
+                this.layerManager.tracks.forEach(track => {
                     completeState.timelineClips.push({
-                        layerId: layer.id,
-                        startTime: layer.startTime,
-                        duration: this.soundGenerator.calculateDuration(layer.settings),
-                        settings: layer.settings
+                        trackId: track.id,
+                        startTime: track.startTime,
+                        duration: this.soundGenerator.calculateDuration(track.settings),
+                        settings: track.settings
                     });
                 });
             }
@@ -580,7 +690,7 @@ class SFXGeneratorApp {
 
             console.log('Saved complete project to browser with',
                        completeState.collections.collections.length, 'collections and',
-                       completeState.layers.layers.length, 'layers');
+                       completeState.tracks.tracks.length, 'tracks');
 
             return true;
         } catch (error) {

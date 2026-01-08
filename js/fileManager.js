@@ -23,7 +23,7 @@ class FileManager {
                 collections: this.app.collectionManager.getState() // ✅ Added collections data
             };
 
-            console.log('Exporting project with', projectData.layers.layers.length, 'layers',
+            console.log('Exporting project with', projectData.layers.tracks.length, 'layers',
                        'and', projectData.collections.collections.length, 'collections');
 
             const json = JSON.stringify(projectData, null, 2);
@@ -195,7 +195,7 @@ class FileManager {
                 state: state
             };
             localStorage.setItem(this.autoSaveKey, JSON.stringify(data));
-            console.log('Auto-saved to local storage with', state.collections.collections.length, 'collections');
+            console.log('Auto-saved to local storage with', state.collections?.collections?.length || 0, 'collections');
         } catch (error) {
             console.error('Error auto-saving:', error);
         }

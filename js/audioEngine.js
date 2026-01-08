@@ -5,6 +5,7 @@ class AudioEngine {
         this.context = new (window.AudioContext || window.webkitAudioContext)();
         this.sampleRate = 44100;
         this.currentSource = null;
+        this.playingSources = []; // Track all playing sources for multi-track playback
     }
 
     async ensureContextResumed() {
@@ -74,14 +75,37 @@ class AudioEngine {
         source.connect(this.context.destination);
         source.start(this.context.currentTime + startTime);
         
+        // Track this source for stopAll()
+        this.playingSources.push(source);
+        
         if (onEnded) {
-            source.onended = onEnded;
+            source.onended = () => {
+                // Remove from playingSources when done
+                const idx = this.playingSources.indexOf(source);
+                if (idx > -1) this.playingSources.splice(idx, 1);
+                onEnded();
+            };
         }
         
         return source;
     }
 
+    setPlayingSources(sources) {
+        this.playingSources = sources || [];
+    }
+
     stopAll() {
+        // Stop all currently playing sources (from playAllTracks)
+        this.playingSources.forEach(source => {
+            try {
+                source.stop();
+            } catch (e) {
+                // Source might have already stopped
+            }
+        });
+        this.playingSources = [];
+
+        // Also stop the single currentSource (from playCurrentSound)
         if (this.currentSource) {
             try {
                 this.currentSource.stop();

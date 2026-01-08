@@ -1,24 +1,24 @@
-// layerManager.js - Manage multiple sound layers + UI rendering with group/folder functionality
+// layerManager.js - Manage multiple sound tracks + UI rendering with group/folder functionality
 
 class LayerManager {
     constructor(app) {
         this.app = app;
-        this.layers = [];
+        this.tracks = [];
         this.folders = []; // Array to store folder objects
         this.nextLayerId = 1;
         this.selectedLayerId = null;
         this.dragSource = null; // Track dragged item
-        this.dragType = null; // 'layer' or 'folder'
+        this.dragType = null; // 'track' or 'folder'
         this.dragTarget = null; // Track drop target for reordering
     }
 
     init() {
-        this.addLayer('Layer 1');
-        this.selectLayer(1); // Select the first layer
+        const firstTrack = this.addTrack('Track 1');
+        this.selectTrack(firstTrack.id); // Select the first track
         this.renderList(); // Initial render
         this.initFolderUI(); // Initialize folder UI
 
-        // Listen for collection changes to update the layers panel
+        // Listen for collection changes to update the tracks panel
         document.addEventListener('collectionChanged', () => {
             this.renderList();
         });
@@ -38,11 +38,11 @@ class LayerManager {
         document.getElementById('collapse-all-btn')?.addEventListener('click', () => this.expandCollapseAll(false));
     }
 
-    addLayer(name = null) {
-        const layerName = name || `Layer ${this.nextLayerId}`;
-        const layer = {
-            id: `layer-${Date.now()}-${this.nextLayerId++}`,
-            name: layerName,
+    addTrack(name = null) {
+        const trackName = name || `Track ${this.nextLayerId}`;
+        const track = {
+            id: `track-${Date.now()}-${this.nextLayerId++}`,
+            name: trackName,
             settings: { ...this.app.getDefaultSettings() },
             muted: false,
             solo: false,
@@ -53,24 +53,24 @@ class LayerManager {
             color: this.generateRandomColor()
         };
 
-        this.layers.push(layer);
-        this.selectedLayerId = layer.id;
+        this.tracks.push(track);
+        this.selectedLayerId = track.id;
 
-        // Automatically add new layers to the current collection
+        // Automatically add new tracks to the current collection
         const currentCollection = this.app.collectionManager?.getCurrentCollection();
         if (currentCollection) {
-            this.app.collectionManager.addLayerToCollection(currentCollection.id, layer);
+            this.app.collectionManager.addTrackToCollection(currentCollection.id, track);
         }
 
-        this.notifyLayerChange();
-        return layer;
+        this.notifyTrackChange();
+        return track;
     }
 
-    // Add layer with specific ID (used when loading from collections)
-    addLayerWithId(name, layerId) {
-        const layer = {
-            id: layerId,
-            name: name || `Layer ${this.nextLayerId}`,
+    // Add track with specific ID (used when loading from collections)
+    addTrackWithId(name, trackId) {
+        const track = {
+            id: trackId,
+            name: name || `Track ${this.nextLayerId}`,
             settings: { ...this.app.getDefaultSettings() },
             muted: false,
             solo: false,
@@ -81,131 +81,169 @@ class LayerManager {
             color: this.generateRandomColor()
         };
 
-        this.layers.push(layer);
-        this.selectedLayerId = layer.id;
+        this.tracks.push(track);
+        this.selectedLayerId = track.id;
 
         // Don't automatically add to collection - it will be added by the caller
         // Note: We don't increment nextLayerId here since we're using a specific ID
-        this.notifyLayerChange();
-        return layer;
+        this.notifyTrackChange();
+        return track;
     }
 
-    // NEW: Duplicate layer functionality
-    duplicateLayer(sourceLayer) {
-        const layer = {
-            id: `layer-${Date.now()}-${this.nextLayerId++}`,
-            name: sourceLayer.name + ' Copy',
-            settings: { ...sourceLayer.settings },
-            muted: sourceLayer.muted,
+    // NEW: Duplicate track functionality
+    duplicateTrack(sourceTrack) {
+        const track = {
+            id: `track-${Date.now()}-${this.nextLayerId++}`,
+            name: sourceTrack.name + ' Copy',
+            settings: { ...sourceTrack.settings },
+            muted: sourceTrack.muted,
             solo: false, // Don't duplicate solo state
-            volume: sourceLayer.volume,
-            startTime: sourceLayer.startTime + 0.5, // Offset slightly
-            fadeIn: sourceLayer.fadeIn,
-            fadeOut: sourceLayer.fadeOut,
+            volume: sourceTrack.volume,
+            startTime: sourceTrack.startTime + 0.5, // Offset slightly
+            fadeIn: sourceTrack.fadeIn,
+            fadeOut: sourceTrack.fadeOut,
             color: this.generateRandomColor()
         };
 
-        this.layers.push(layer);
-        this.selectedLayerId = layer.id;
+        this.tracks.push(track);
+        this.selectedLayerId = track.id;
 
-        // Automatically add duplicated layer to current collection
+        // Automatically add duplicated track to current collection
         const currentCollection = this.app.collectionManager?.getCurrentCollection();
         if (currentCollection) {
-            this.app.collectionManager.addLayerToCollection(currentCollection.id, layer);
+            this.app.collectionManager.addTrackToCollection(currentCollection.id, track);
         }
 
-        // Update app settings and UI to reflect the new layer
-        this.app.currentSettings = { ...layer.settings };
+        // Update app settings and UI to reflect the new track
+        this.app.currentSettings = { ...track.settings };
         if (this.app.ui) {
-            this.app.ui.updateDisplay(layer.settings);
+            this.app.ui.updateDisplay(track.settings);
         }
 
-        this.notifyLayerChange();
-        return layer;
+        this.notifyTrackChange();
+        return track;
     }
 
-    removeLayer(layerId) {
-        const index = this.layers.findIndex(l => l.id === layerId);
+    removeTrack(trackId) {
+        const index = this.tracks.findIndex(t => t.id === trackId);
         if (index === -1) return;
 
-        if (this.layers.length <= 1) {
-            this.app.notifications.showNotification('Cannot delete the last layer', 'error');
+        if (this.tracks.length <= 1) {
+            this.app.notifications.showNotification('Cannot delete the last track', 'error');
             return;
         }
 
-        if (!confirm(`Delete layer "${this.layers[index].name}"?`)) return;
+        if (!confirm(`Delete track "${this.tracks[index].name}"?`)) return;
 
-        this.layers.splice(index, 1);
+        this.tracks.splice(index, 1);
 
-        // FAILSAFE: Always ensure at least one layer exists
-        if (this.layers.length === 0) {
-            this.addLayer('Layer 1');
+        // FAILSAFE: Always ensure at least one track exists
+        if (this.tracks.length === 0) {
+            this.addTrack('Track 1');
             return;
         }
 
-        // Select another layer if we deleted the selected one
-        if (this.selectedLayerId === layerId) {
-            const newSelectedLayer = this.layers[Math.min(index, this.layers.length - 1)];
-            this.selectLayer(newSelectedLayer.id);
+        // Select another track if we deleted the selected one
+        if (this.selectedLayerId === trackId) {
+            const newSelectedTrack = this.tracks[Math.min(index, this.tracks.length - 1)];
+            this.selectTrack(newSelectedTrack.id);
         }
 
         // Remove from current collection as well
         const currentCollection = this.app.collectionManager?.getCurrentCollection();
         if (currentCollection) {
-            this.app.collectionManager.removeLayerFromCollection(currentCollection.id, layerId);
+            this.app.collectionManager.removeTrackFromCollection(currentCollection.id, trackId);
         }
 
-        this.notifyLayerChange();
+        this.notifyTrackChange();
     }
 
+    // Layer alias methods (for compatibility with collectionManager)
     getLayer(layerId) {
-        return this.layers.find(l => l.id === layerId);
+        return this.getTrack(layerId);
     }
 
     getSelectedLayer() {
-        return this.getLayer(this.selectedLayerId);
+        return this.getSelectedTrack();
     }
 
     selectLayer(layerId) {
-        const layer = this.getLayer(layerId);
-        if (layer) {
-            this.selectedLayerId = layerId;
-            
-            // ALWAYS update app settings and UI when selecting a layer
-            this.app.currentSettings = { ...layer.settings };
-            if (this.app.ui) {
-                this.app.ui.updateDisplay(layer.settings);
-            }
-            
-            this.notifyLayerChange();
-        }
+        this.selectTrack(layerId);
     }
 
     updateLayer(layerId, updates) {
-        const layer = this.getLayer(layerId);
-        if (layer) {
-            Object.assign(layer, updates);
-            // Sync changes back to collection storage
-            if (this.app.collectionManager) {
-                const currentCollection = this.app.collectionManager.getCurrentCollection();
-                if (currentCollection) {
-                    this.app.collectionManager.syncLayerToCollection(currentCollection.id, layerId);
-                }
-            }
+        this.updateTrack(layerId, updates);
+    }
 
-            this.notifyLayerChange();
+    updateLayerSettings(layerId, settings) {
+        this.updateTrackSettings(layerId, settings);
+    }
+
+    addLayer(name) {
+        return this.addTrack(name);
+    }
+
+    addLayerWithId(name, layerId) {
+        return this.addTrackWithId(name, layerId);
+    }
+
+    clearAllLayers() {
+        this.clearAllTracks();
+    }
+
+    // Getter for layers array (alias for tracks)
+    get layers() {
+        return this.tracks;
+    }
+
+    getTrack(trackId) {
+        return this.tracks.find(t => t.id === trackId);
+    }
+
+    getSelectedTrack() {
+        return this.getTrack(this.selectedLayerId);
+    }
+
+    selectTrack(trackId) {
+        const track = this.getTrack(trackId);
+        if (track) {
+            this.selectedLayerId = trackId;
+            
+            // ALWAYS update app settings and UI when selecting a track
+            this.app.currentSettings = { ...track.settings };
+            if (this.app.ui) {
+                this.app.ui.updateDisplay(track.settings);
+            }
+            
+            this.notifyTrackChange();
         }
     }
-    updateLayerSettings(layerId, settings) {
-        const layer = this.getLayer(layerId);
-        if (layer) {
-            layer.settings = { ...layer.settings, ...settings };
 
-            // If this is the selected layer, update the app and UI immediately
-            if (layerId === this.selectedLayerId) {
-                this.app.currentSettings = { ...layer.settings };
+    updateTrack(trackId, updates) {
+        const track = this.getTrack(trackId);
+        if (track) {
+            Object.assign(track, updates);
+            // Sync changes back to collection storage
+            if (this.app.collectionManager) {
+                const currentCollection = this.app.collectionManager.getCurrentCollection();
+                if (currentCollection) {
+                    this.app.collectionManager.syncTrackToCollection(currentCollection.id, trackId);
+                }
+            }
+
+            this.notifyTrackChange();
+        }
+    }
+    updateTrackSettings(trackId, settings) {
+        const track = this.getTrack(trackId);
+        if (track) {
+            track.settings = { ...track.settings, ...settings };
+
+            // If this is the selected track, update the app and UI immediately
+            if (trackId === this.selectedLayerId) {
+                this.app.currentSettings = { ...track.settings };
                 if (this.app.ui) {
-                    this.app.ui.updateDisplay(layer.settings);
+                    this.app.ui.updateDisplay(track.settings);
                 }
             }
 
@@ -213,11 +251,11 @@ class LayerManager {
             if (this.app.collectionManager) {
                 const currentCollection = this.app.collectionManager.getCurrentCollection();
                 if (currentCollection) {
-                    this.app.collectionManager.syncLayerToCollection(currentCollection.id, layerId);
+                    this.app.collectionManager.syncTrackToCollection(currentCollection.id, trackId);
                 }
             }
 
-            this.notifyLayerChange();
+            this.notifyTrackChange();
         }
     }
 
@@ -226,7 +264,7 @@ class LayerManager {
         const folder = {
             id: `folder-${Date.now()}`,
             name: name,
-            layers: [],
+            tracks: [],
             expanded: true
         };
         this.folders.push(folder);
@@ -250,48 +288,48 @@ class LayerManager {
         }
     }
 
-    addLayerToFolder(folderId, layer) {
+    addTrackToFolder(folderId, track) {
         const folder = this.folders.find(f => f.id === folderId);
         if (folder) {
-            folder.layers.push(layer);
-            // Remove from main layers array if it exists there
-            const idx = this.layers.indexOf(layer);
+            folder.tracks.push(track);
+            // Remove from main tracks array if it exists there
+            const idx = this.tracks.indexOf(track);
             if (idx > -1) {
-                this.layers.splice(idx, 1);
+                this.tracks.splice(idx, 1);
             }
         }
         this.renderList();
     }
 
-    removeLayerFromFolder(folderId, layer) {
+    removeTrackFromFolder(folderId, track) {
         const folder = this.folders.find(f => f.id === folderId);
         if (folder) {
-            const idx = folder.layers.indexOf(layer);
+            const idx = folder.tracks.indexOf(track);
             if (idx > -1) {
-                folder.layers.splice(idx, 1);
-                // Add back to main layers array
-                this.layers.push(layer);
+                folder.tracks.splice(idx, 1);
+                // Add back to main tracks array
+                this.tracks.push(track);
             }
         }
         this.renderList();
     }
 
-    getAllLayers() {
-        let allLayers = [...this.layers];
+    getAllTracks() {
+        let allTracks = [...this.tracks];
         this.folders.forEach(folder => {
-            allLayers = [...allLayers, ...folder.layers];
+            allTracks = [...allTracks, ...folder.tracks];
         });
-        return allLayers;
+        return allTracks;
     }
 
     deleteFolder(folderId) {
         const folderIndex = this.folders.findIndex(f => f.id === folderId);
         if (folderIndex === -1) return;
 
-        // Move all layers from folder back to main list
+        // Move all tracks from folder back to main list
         const folder = this.folders[folderIndex];
-        folder.layers.forEach(layer => {
-            this.layers.push(layer);
+        folder.tracks.forEach(track => {
+            this.tracks.push(track);
         });
 
         // Remove folder
@@ -299,91 +337,75 @@ class LayerManager {
         this.renderList();
     }
 
-    renameLayer(layerId, newName) {
+    renameTrack(trackId, newName) {
         if (!newName || newName.trim() === '') return;
-        const layer = this.getLayer(layerId);
-        if (layer) {
-            layer.name = newName.trim();
+        const track = this.getTrack(trackId);
+        if (track) {
+            track.name = newName.trim();
             // Sync changes back to collection storage
             if (this.app.collectionManager) {
                 const currentCollection = this.app.collectionManager.getCurrentCollection();
                 if (currentCollection) {
-                    this.app.collectionManager.syncLayerToCollection(currentCollection.id, layerId);
+                    this.app.collectionManager.syncTrackToCollection(currentCollection.id, trackId);
                 }
             }
-            this.notifyLayerChange();
+            this.notifyTrackChange();
         }
     }
 
-    toggleMute(layerId) {
-        const layer = this.getLayer(layerId);
-        if (layer) {
-            layer.muted = !layer.muted;
+    toggleMute(trackId) {
+        const track = this.getTrack(trackId);
+        if (track) {
+            track.muted = !track.muted;
             // Sync changes back to collection storage
             if (this.app.collectionManager) {
                 const currentCollection = this.app.collectionManager.getCurrentCollection();
                 if (currentCollection) {
-                    this.app.collectionManager.syncLayerToCollection(currentCollection.id, layerId);
+                    this.app.collectionManager.syncTrackToCollection(currentCollection.id, trackId);
                 }
             }
-            this.notifyLayerChange();
+            this.notifyTrackChange();
         }
     }
 
-    toggleSolo(layerId) {
-        const layer = this.getLayer(layerId);
-        if (layer) {
-            layer.solo = !layer.solo;
+    toggleSolo(trackId) {
+        const track = this.getTrack(trackId);
+        if (track) {
+            track.solo = !track.solo;
             // Sync changes back to collection storage
             if (this.app.collectionManager) {
                 const currentCollection = this.app.collectionManager.getCurrentCollection();
                 if (currentCollection) {
-                    this.app.collectionManager.syncLayerToCollection(currentCollection.id, layerId);
+                    this.app.collectionManager.syncTrackToCollection(currentCollection.id, trackId);
                 }
             }
-            this.notifyLayerChange();
+            this.notifyTrackChange();
         }
     }
 
-    setLayerVolume(layerId, volume) {
-        const layer = this.getLayer(layerId);
-        if (layer) {
-            layer.volume = Math.max(0, Math.min(1, volume));
+    setTrackVolume(trackId, volume) {
+        const track = this.getTrack(trackId);
+        if (track) {
+            track.volume = Math.max(0, Math.min(1, volume));
             // Sync changes back to collection storage
             if (this.app.collectionManager) {
                 const currentCollection = this.app.collectionManager.getCurrentCollection();
                 if (currentCollection) {
-                    this.app.collectionManager.syncLayerToCollection(currentCollection.id, layerId);
+                    this.app.collectionManager.syncTrackToCollection(currentCollection.id, trackId);
                 }
             }
 
-            this.notifyLayerChange();
+            this.notifyTrackChange();
         }
     }
 
-    // NEW: Update only layer volume (for true per-layer volume control)
-    updateLayer(layerId, updates) {
-        const layer = this.getLayer(layerId);
-        if (layer) {
-            Object.assign(layer, updates);
-            // Sync changes back to collection storage
-            if (this.app.collectionManager) {
-                const currentCollection = this.app.collectionManager.getCurrentCollection();
-                if (currentCollection) {
-                    this.app.collectionManager.syncLayerToCollection(currentCollection.id, layerId);
-                }
-            }
-
-            this.notifyLayerChange();
-        }
-    }
-    moveLayer(layerId, direction) {
-        const index = this.layers.findIndex(l => l.id === layerId);
+    moveTrack(trackId, direction) {
+        const index = this.tracks.findIndex(t => t.id === trackId);
         if (index === -1) return;
         const newIndex = direction === 'up' ? index - 1 : index + 1;
-        if (newIndex >= 0 && newIndex < this.layers.length) {
-            [this.layers[index], this.layers[newIndex]] = [this.layers[newIndex], this.layers[index]];
-            this.notifyLayerChange();
+        if (newIndex >= 0 && newIndex < this.tracks.length) {
+            [this.tracks[index], this.tracks[newIndex]] = [this.tracks[newIndex], this.tracks[index]];
+            this.notifyTrackChange();
         }
     }
 
@@ -392,34 +414,34 @@ class LayerManager {
         return `hsl(${hue}, 70%, 60%)`;
     }
 
-    getActiveLayers() {
-        const hasSolo = this.layers.some(l => l.solo);
-        return this.layers.filter(layer => {
-            if (hasSolo) return layer.solo;
-            return !layer.muted;
+    getActiveTracks() {
+        const hasSolo = this.tracks.some(t => t.solo);
+        return this.tracks.filter(track => {
+            if (hasSolo) return track.solo;
+            return !track.muted;
         });
     }
 
-    generateLayerBuffers() {
-        const activeLayers = this.getActiveLayers();
+    generateTrackBuffers() {
+        const activeTracks = this.getActiveTracks();
         const buffers = [];
         const volumes = [];
 
-        for (const layer of activeLayers) {
+        for (const track of activeTracks) {
             const buffer = this.app.soundGenerator.generate(
-                layer.settings,
+                track.settings,
                 this.app.audioEngine.sampleRate
             );
             buffers.push(buffer);
-            volumes.push(layer.volume);
+            volumes.push(track.volume);
         }
 
         return { buffers, volumes };
     }
 
-    async playAllLayers() {
-        const activeLayers = this.getActiveLayers();
-        if (activeLayers.length === 0) return;
+    async playAllTracks() {
+        const activeTracks = this.getActiveTracks();
+        if (activeTracks.length === 0) return;
 
         // Ensure AudioContext is resumed before playing
         await this.app.audioEngine.ensureContextResumed();
@@ -431,68 +453,87 @@ class LayerManager {
         
         // Calculate the total duration including start times and fades
         let maxEndTime = 0;
-        activeLayers.forEach(layer => {
-            const duration = this.app.soundGenerator.calculateDuration(layer.settings);
-            const endTime = layer.startTime + duration + (layer.fadeOut || 0);
+        activeTracks.forEach(track => {
+            const duration = this.app.soundGenerator.calculateDuration(track.settings);
+            const endTime = track.startTime + duration + (track.fadeOut || 0);
             maxEndTime = Math.max(maxEndTime, endTime);
         });
         
-        console.log('Playing', activeLayers.length, 'layers, total duration:', maxEndTime, 'seconds');
+        console.log('Playing', activeTracks.length, 'tracks, total duration:', maxEndTime, 'seconds');
     
-        activeLayers.forEach(layer => {
-            const buffer = this.app.soundGenerator.generate(layer.settings, this.app.audioEngine.sampleRate);
+        // Store all sources for stopping later
+        const sources = [];
+    
+        activeTracks.forEach(track => {
+            const buffer = this.app.soundGenerator.generate(track.settings, this.app.audioEngine.sampleRate);
             const source = this.app.audioEngine.context.createBufferSource();
             source.buffer = buffer;
     
             // Create gain node for volume and fades
             const gainNode = this.app.audioEngine.context.createGain();
-            gainNode.gain.value = layer.volume;
+            gainNode.gain.value = track.volume;
             source.connect(gainNode);
             gainNode.connect(this.app.audioEngine.context.destination);
     
             // Apply fades (linear ramp)
-            if (layer.fadeIn > 0) {
-                gainNode.gain.setValueAtTime(0, this.app.audioEngine.context.currentTime + layer.startTime);
-                gainNode.gain.linearRampToValueAtTime(layer.volume, this.app.audioEngine.context.currentTime + layer.startTime + layer.fadeIn);
+            if (track.fadeIn > 0) {
+                gainNode.gain.setValueAtTime(0, this.app.audioEngine.context.currentTime + track.startTime);
+                gainNode.gain.linearRampToValueAtTime(track.volume, this.app.audioEngine.context.currentTime + track.startTime + track.fadeIn);
             }
-            if (layer.fadeOut > 0) {
-                const duration = this.app.soundGenerator.calculateDuration(layer.settings);
-                gainNode.gain.setValueAtTime(layer.volume, this.app.audioEngine.context.currentTime + layer.startTime + duration - layer.fadeOut);
-                gainNode.gain.linearRampToValueAtTime(0, this.app.audioEngine.context.currentTime + layer.startTime + duration);
+            if (track.fadeOut > 0) {
+                const duration = this.app.soundGenerator.calculateDuration(track.settings);
+                gainNode.gain.setValueAtTime(track.volume, this.app.audioEngine.context.currentTime + track.startTime + duration - track.fadeOut);
+                gainNode.gain.linearRampToValueAtTime(0, this.app.audioEngine.context.currentTime + track.startTime + duration);
             }
     
             // Schedule start
-            source.start(this.app.audioEngine.context.currentTime + layer.startTime);
+            source.start(this.app.audioEngine.context.currentTime + track.startTime);
+            
+            // Track this source for stopping
+            sources.push(source);
         });
+        
+        // Store all playing sources in audioEngine for later stopping
+        this.app.audioEngine.setPlayingSources(sources);
         
         // Stop timeline playback when all sounds finish
         setTimeout(() => {
             if (this.app.timeline.isPlaying) {
                 this.app.timeline.stopPlayback();
             }
+            // Clear the playing sources
+            this.app.audioEngine.setPlayingSources([]);
+            // Reset play state only if still in playing state
+            // (handles case where user manually paused)
+            if (this.app.isPlayingAll) {
+                this.app.isPlayingAll = false;
+                if (this.app.updatePlayButtonIcons) {
+                    this.app.updatePlayButtonIcons();
+                }
+            }
         }, (maxEndTime + 0.5) * 1000); // Add 0.5s buffer
     }
 
     exportMixedAudio(filename = 'mixed_sfx.wav') {
         try {
-            const activeLayers = this.getActiveLayers();
-            if (activeLayers.length === 0) {
-                this.app.notifications.showNotification('No active layers to export!', 'error');
+            const activeTracks = this.getActiveTracks();
+            if (activeTracks.length === 0) {
+                this.app.notifications.showNotification('No active tracks to export!', 'error');
                 return;
             }
 
-            console.log('Exporting mixed audio with', activeLayers.length, 'layers');
+            console.log('Exporting mixed audio with', activeTracks.length, 'tracks');
     
             const buffers = [];
             const volumes = [];
             const offsets = [];
             const sampleRate = this.app.audioEngine.sampleRate;
     
-            for (const layer of activeLayers) {
-                const buffer = this.app.soundGenerator.generate(layer.settings, sampleRate);
+            for (const track of activeTracks) {
+                const buffer = this.app.soundGenerator.generate(track.settings, sampleRate);
                 buffers.push(buffer);
-                volumes.push(layer.volume);
-                offsets.push(Math.floor(layer.startTime * sampleRate)); // Samples offset
+                volumes.push(track.volume);
+                offsets.push(Math.floor(track.startTime * sampleRate)); // Samples offset
             }
     
             const mixedBuffer = this.app.audioEngine.mixBuffers(buffers, volumes, offsets);
@@ -505,46 +546,46 @@ class LayerManager {
 
     getState() {
         return {
-            layers: this.layers.map(l => ({ ...l })),
+            tracks: this.tracks.map(t => ({ ...t })),
             nextLayerId: this.nextLayerId,
             selectedLayerId: this.selectedLayerId
         };
     }
 
     setState(state) {
-        this.layers = state.layers.map(l => ({ ...l }));
+        this.tracks = state.tracks.map(t => ({ ...t }));
         this.nextLayerId = state.nextLayerId;
         this.selectedLayerId = state.selectedLayerId;
 
         if (this.selectedLayerId) {
-            const layer = this.getLayer(this.selectedLayerId);
-            if (layer) this.app.updateSettings(layer.settings);
+            const track = this.getTrack(this.selectedLayerId);
+            if (track) this.app.updateSettings(track.settings);
         }
 
-        this.notifyLayerChange();
+        this.notifyTrackChange();
     }
 
-    clearAllLayers() {
-        // Clear all layers but preserve nextLayerId counter
-        // This is used when switching collections to load collection-specific layers
-        this.layers = [];
+    clearAllTracks() {
+        // Clear all tracks but preserve nextLayerId counter
+        // This is used when switching collections to load collection-specific tracks
+        this.tracks = [];
         this.selectedLayerId = null;
-        this.notifyLayerChange();
+        this.notifyTrackChange();
     }
 
-    notifyLayerChange() {
+    notifyTrackChange() {
         this.renderList(); // Now handled internally
-        const event = new CustomEvent('layersChanged', {
-            detail: { layers: this.layers, selectedId: this.selectedLayerId }
+        const event = new CustomEvent('tracksChanged', {
+            detail: { tracks: this.tracks, selectedId: this.selectedLayerId }
         });
         document.dispatchEvent(event);
     }
 
     // ────────────────────────────────────────────────────────────────
-    // UI: Render Layer List with Groups/Folders (like Pixel3D scene objects)
+    // UI: Render Track List with Groups/Folders (like Pixel3D scene objects)
     // ────────────────────────────────────────────────────────────────
     renderList() {
-        const list = document.getElementById('layersList');
+        const list = document.getElementById('tracksList');
         if (!list) return;
 
         list.innerHTML = '';
@@ -612,12 +653,12 @@ class LayerManager {
 
                 // Render folder contents
                 const contentsEl = folderEl.querySelector('.folder-contents');
-                // Use layerIds for new architecture, fallback to layers for legacy
-                const layerIds = group.layerIds || group.layers || [];
-                layerIds.forEach(layerId => {
-                    const layer = this.getLayer(layerId);
-                    if (layer) {
-                        this.renderLayerInFolder(layer, contentsEl, group.id);
+                // Use trackIds for new architecture, fallback to tracks for legacy
+                const trackIds = group.trackIds || group.tracks || [];
+                trackIds.forEach(trackId => {
+                    const track = this.getTrack(trackId);
+                    if (track) {
+                        this.renderTrackInFolder(track, contentsEl, group.id);
                     }
                 });
 
@@ -682,65 +723,65 @@ class LayerManager {
 
                 // Render folder contents
                 const contentsEl = folderEl.querySelector('.folder-contents');
-                folder.layers.forEach(layer => {
-                    this.renderLayerInFolder(layer, contentsEl, folder.id);
+                folder.tracks.forEach(track => {
+                    this.renderTrackInFolder(track, contentsEl, folder.id);
                 });
 
                 list.appendChild(folderEl);
             });
         }
 
-        // Render layers not in folders/groups
-        // When using collection groups, show layers that aren't in any group
+        // Render tracks not in folders/groups
+        // When using collection groups, show tracks that aren't in any group
         if (!showCollectionGroups) {
-            // Legacy folder system - show all layers not in folders
-            this.layers.forEach(layer => {
-                this.renderLayerInFolder(layer, list, null);
+            // Legacy folder system - show all tracks not in folders
+            this.tracks.forEach(track => {
+                this.renderTrackInFolder(track, list, null);
             });
         } else {
-            // Collection groups system - show layers that aren't in any group
+            // Collection groups system - show tracks that aren't in any group
             const currentCollection = this.app.collectionManager?.getCurrentCollection();
             if (currentCollection) {
-                // Find layers that are in the collection but not in any group
-                this.layers.forEach(layer => {
-                    // Check if this layer is in any group
+                // Find tracks that are in the collection but not in any group
+                this.tracks.forEach(track => {
+                    // Check if this track is in any group
                     const isInGroup = currentCollection.groups.some(group =>
-                        (group.layerIds || group.layers || []).includes(layer.id)
+                        (group.trackIds || group.tracks || []).includes(track.id)
                     );
 
                     // Only render if not in any group
                     if (!isInGroup) {
-                        this.renderLayerInFolder(layer, list, null);
+                        this.renderTrackInFolder(track, list, null);
                     }
                 });
             }
         }
     }
 
-    // Render a layer in a specific container (folder or main list)
-    renderLayerInFolder(layer, container, folderId) {
-        const layerDiv = document.createElement('div');
-        layerDiv.className = `layer-item ${layer.id === this.selectedLayerId ? 'active' : ''}`;
-        layerDiv.draggable = true;
-        layerDiv.dataset.folderId = folderId || 'main';
-        layerDiv.dataset.layerId = layer.id;
+    // Render a track in a specific container (folder or main list)
+    renderTrackInFolder(track, container, folderId) {
+        const trackDiv = document.createElement('div');
+        trackDiv.className = `layer-item ${track.id === this.selectedLayerId ? 'active' : ''}`;
+        trackDiv.draggable = true;
+        trackDiv.dataset.folderId = folderId || 'main';
+        trackDiv.dataset.trackId = track.id;
 
         // Mute / Visibility toggle
         const muteBtn = document.createElement('i');
-        muteBtn.className = `fas fa-eye${layer.muted ? '-slash' : ''} layer-vis-btn ${layer.muted ? 'hidden-layer' : ''}`;
-        muteBtn.title = layer.muted ? 'Unmute layer' : 'Mute layer';
+        muteBtn.className = `fas fa-eye${track.muted ? '-slash' : ''} layer-vis-btn ${track.muted ? 'hidden-layer' : ''}`;
+        muteBtn.title = track.muted ? 'Unmute track' : 'Mute track';
         muteBtn.onclick = (e) => {
             e.stopPropagation();
-            this.toggleMute(layer.id);
+            this.toggleMute(track.id);
         };
 
-        // Layer name (editable)
+        // Track name (editable)
         const nameInput = document.createElement('input');
         nameInput.type = 'text';
         nameInput.className = 'layer-name-input';
-        nameInput.value = layer.name;
+        nameInput.value = track.name;
         nameInput.onclick = e => e.stopPropagation();
-        nameInput.onblur = () => this.renameLayer(layer.id, nameInput.value.trim() || 'Layer');
+        nameInput.onblur = () => this.renameTrack(track.id, nameInput.value.trim() || 'Track');
         nameInput.onkeydown = e => {
             if (e.key === 'Enter') nameInput.blur();
         };
@@ -755,12 +796,12 @@ class LayerManager {
         dupBtn.className = 'fas fa-copy';
         dupBtn.style.color = 'var(--accent-tertiary)';
         dupBtn.style.fontSize = '12px';
-        dupBtn.title = 'Duplicate layer';
+        dupBtn.title = 'Duplicate track';
         dupBtn.onclick = (e) => {
             e.stopPropagation();
             this.app.saveUndoState();
-            this.duplicateLayer(layer);
-            this.app.notifications.showNotification('Layer duplicated', 'success');
+            this.duplicateTrack(track);
+            this.app.notifications.showNotification('Track duplicated', 'success');
         };
 
         // Add to folder / Remove from folder button
@@ -775,14 +816,14 @@ class LayerManager {
                 folderBtn.title = 'Remove from Group';
                 folderBtn.onclick = (e) => {
                     e.stopPropagation();
-                    this.app.collectionManager.removeLayerFromGroup(currentCollection.id, folderId, layer.id);
+                    this.app.collectionManager.removeTrackFromGroup(currentCollection.id, folderId, track.id);
                 };
             } else {
                 folderBtn.className = 'fas fa-folder-minus layer-btn remove-from-folder';
                 folderBtn.title = 'Remove from Folder';
                 folderBtn.onclick = (e) => {
                     e.stopPropagation();
-                    this.removeLayerFromFolder(folderId, layer);
+                    this.removeTrackFromFolder(folderId, track);
                 };
             }
         } else {
@@ -790,7 +831,7 @@ class LayerManager {
             folderBtn.title = 'Add to Folder';
             folderBtn.onclick = (e) => {
                 e.stopPropagation();
-                this.showFolderSelection(layer);
+                this.showFolderSelection(track);
             };
         }
 
@@ -799,23 +840,23 @@ class LayerManager {
         delBtn.className = 'fas fa-trash';
         delBtn.style.color = '#f44336';
         delBtn.style.fontSize = '12px';
-        delBtn.title = 'Delete layer';
+        delBtn.title = 'Delete track';
         delBtn.onclick = (e) => {
             e.stopPropagation();
             this.app.saveUndoState();
-            this.removeLayer(layer.id);
+            this.removeTrack(track.id);
         };
 
         actionsContainer.appendChild(dupBtn);
         actionsContainer.appendChild(folderBtn);
         actionsContainer.appendChild(delBtn);
 
-        layerDiv.appendChild(muteBtn);
-        layerDiv.appendChild(nameInput);
-        layerDiv.appendChild(actionsContainer);
+        trackDiv.appendChild(muteBtn);
+        trackDiv.appendChild(nameInput);
+        trackDiv.appendChild(actionsContainer);
 
         // Drag start
-        layerDiv.addEventListener('dragstart', (e) => {
+        trackDiv.addEventListener('dragstart', (e) => {
             // Find the original index safely
             let originalIndex = -1;
             if (folderId) {
@@ -824,45 +865,45 @@ class LayerManager {
                 const isCollectionGroup = currentCollection?.groups?.some(g => g.id === folderId);
     
                 if (isCollectionGroup) {
-                    // Find in collection group (use layerIds for new architecture)
+                    // Find in collection group (use trackIds for new architecture)
                     const group = currentCollection.groups.find(g => g.id === folderId);
                     if (group) {
-                        originalIndex = (group.layerIds || group.layers || []).indexOf(layer.id);
+                        originalIndex = (group.trackIds || group.tracks || []).indexOf(track.id);
                     }
                 } else {
                     // Find in legacy folder
                     const folder = this.folders.find(f => f.id === folderId);
                     if (folder) {
-                        originalIndex = folder.layers.indexOf(layer);
+                        originalIndex = folder.tracks.indexOf(track);
                     }
                 }
             } else {
-                // Find in main layers
-                originalIndex = this.layers.indexOf(layer);
+                // Find in main tracks
+                originalIndex = this.tracks.indexOf(track);
             }
 
             this.dragSource = {
-                element: layerDiv,
-                layer: layer,
+                element: trackDiv,
+                track: track,
                 folderId: folderId,
                 originalIndex: originalIndex
             };
-            this.dragType = 'layer';
-            e.dataTransfer.setData('text/plain', 'drag-layer');
+            this.dragType = 'track';
+            e.dataTransfer.setData('text/plain', 'drag-track');
             e.dataTransfer.effectAllowed = 'move';
-            layerDiv.classList.add('dragging');
+            trackDiv.classList.add('dragging');
         });
 
         // Drag end
-        layerDiv.addEventListener('dragend', (e) => {
-            layerDiv.classList.remove('dragging');
+        trackDiv.addEventListener('dragend', (e) => {
+            trackDiv.classList.remove('dragging');
             this.dragSource = null;
             this.dragType = null;
             this.dragTarget = null;
         });
 
         // Drag over for reordering
-        layerDiv.addEventListener('dragover', (e) => {
+        trackDiv.addEventListener('dragover', (e) => {
             e.preventDefault();
             this.handleDragOver(e);
 
@@ -874,57 +915,57 @@ class LayerManager {
                 const isCollectionGroup = currentCollection?.groups?.some(g => g.id === folderId);
     
                 if (isCollectionGroup) {
-                    // Find in collection group (use layerIds for new architecture)
+                    // Find in collection group (use trackIds for new architecture)
                     const group = currentCollection.groups.find(g => g.id === folderId);
                     if (group) {
-                        targetIndex = (group.layerIds || group.layers || []).indexOf(layer.id);
+                        targetIndex = (group.trackIds || group.tracks || []).indexOf(track.id);
                     }
                 } else {
                     // Find in legacy folder
                     const folder = this.folders.find(f => f.id === folderId);
                     if (folder) {
-                        targetIndex = folder.layers.indexOf(layer);
+                        targetIndex = folder.tracks.indexOf(track);
                     }
                 }
             } else {
-                // Find in main layers
-                targetIndex = this.layers.indexOf(layer);
+                // Find in main tracks
+                targetIndex = this.tracks.indexOf(track);
             }
 
             this.dragTarget = {
-                element: layerDiv,
+                element: trackDiv,
                 folderId: folderId,
                 index: targetIndex
             };
         });
 
         // Drag leave
-        layerDiv.addEventListener('dragleave', (e) => {
+        trackDiv.addEventListener('dragleave', (e) => {
             this.handleDragLeave(e);
-            if (this.dragTarget?.element === layerDiv) {
+            if (this.dragTarget?.element === trackDiv) {
                 this.dragTarget = null;
             }
         });
 
-        // Drop on layer for reordering
-        layerDiv.addEventListener('drop', (e) => {
+        // Drop on track for reordering
+        trackDiv.addEventListener('drop', (e) => {
             e.preventDefault();
             this.handleDragLeave(e);
-            if (this.dragSource && this.dragTarget && this.dragSource.layer !== this.dragTarget.layer) {
-                this.handleDropOnLayer(e);
+            if (this.dragSource && this.dragTarget && this.dragSource.track !== this.dragTarget.track) {
+                this.handleDropOnTrack(e);
             }
         });
 
-        // Select layer (clicking the row, but not inputs/buttons)
-        layerDiv.onclick = (e) => {
+        // Select track (clicking the row, but not inputs/buttons)
+        trackDiv.onclick = (e) => {
             if (e.target.tagName === 'I' || e.target.tagName === 'INPUT') return;
-            this.selectLayer(layer.id);
+            this.selectTrack(track.id);
         };
 
-        container.appendChild(layerDiv);
+        container.appendChild(trackDiv);
     }
 
-/**
+    /**
      * Handle drag over event
      */
     handleDragOver(e) {
@@ -934,9 +975,9 @@ class LayerManager {
         // Handle folder drop targets
         const folderHeader = e.target.closest('.folder-header');
         if (folderHeader) {
-            // Remove previous drop targets from layers only
-            const previousLayerDropTargets = document.querySelectorAll('.layer-item.drag-over');
-            previousLayerDropTargets.forEach(el => el.classList.remove('drag-over'));
+            // Remove previous drop targets from tracks only
+            const previousTrackDropTargets = document.querySelectorAll('.layer-item.drag-over');
+            previousTrackDropTargets.forEach(el => el.classList.remove('drag-over'));
 
             // Remove drag-over from other folders
             const previousFolderDropTargets = document.querySelectorAll('.folder-header.drag-over');
@@ -957,7 +998,7 @@ class LayerManager {
             return;
         }
 
-        // Handle layer drop targets
+        // Handle track drop targets
         const targetElement = e.target.closest('.layer-item');
         if (!targetElement || targetElement === this.dragState.draggedElement) {
             // Remove folder drag-over if we're not over a folder anymore
@@ -967,9 +1008,9 @@ class LayerManager {
         }
 
         // Remove previous drop targets
-        const previousLayerDropTarget = UI.layersList.querySelector('.layer-item.drag-over');
-        if (previousLayerDropTarget) {
-            previousLayerDropTarget.classList.remove('drag-over');
+        const previousTrackDropTarget = document.querySelector('.layer-item.drag-over');
+        if (previousTrackDropTarget) {
+            previousTrackDropTarget.classList.remove('drag-over');
         }
         const previousFolderDropTargets = document.querySelectorAll('.folder-header.drag-over');
         previousFolderDropTargets.forEach(el => el.classList.remove('drag-over'));
@@ -995,10 +1036,10 @@ class LayerManager {
             e.target.classList.remove('drag-over');
         }
 
-        if (!this.dragSource || this.dragType !== 'layer') return;
+        if (!this.dragSource || this.dragType !== 'track') return;
 
-        // Move layer to this folder
-        this.addLayerToFolder(folderId, this.dragSource.layer);
+        // Move track to this folder
+        this.addTrackToFolder(folderId, this.dragSource.track);
     }
 
     handleDropOnCollectionGroup(e, collectionId, groupId) {
@@ -1010,13 +1051,13 @@ class LayerManager {
             e.target.classList.remove('drag-over');
         }
 
-        if (!this.dragSource || this.dragType !== 'layer') return;
+        if (!this.dragSource || this.dragType !== 'track') return;
 
-        // Move layer to this collection group
-        this.app.collectionManager.addLayerToGroup(collectionId, groupId, this.dragSource.layer.id);
+        // Move track to this collection group
+        this.app.collectionManager.addTrackToGroup(collectionId, groupId, this.dragSource.track.id);
     }
 
-    handleDropOnLayer(e) {
+    handleDropOnTrack(e) {
         e.preventDefault();
         e.stopPropagation();
 
@@ -1027,42 +1068,42 @@ class LayerManager {
 
         if (!this.dragSource || !this.dragTarget) return;
 
-        const sourceLayer = this.dragSource.layer;
-        const targetLayer = this.dragTarget.layer;
+        const sourceTrack = this.dragSource.track;
+        const targetTrack = this.dragTarget.track;
 
         // Same folder or both in main list
         if (this.dragSource.folderId === this.dragTarget.folderId) {
-            this.reorderLayersInSameContainer(this.dragSource, this.dragTarget);
+            this.reorderTracksInSameContainer(this.dragSource, this.dragTarget);
         }
         // Different containers - move from one to another
         else {
-            this.moveLayerBetweenContainers(this.dragSource, this.dragTarget);
+            this.moveTrackBetweenContainers(this.dragSource, this.dragTarget);
         }
     }
 
-    // Reorder layers within the same container (folder or main list)
-    reorderLayersInSameContainer(source, target) {
+    // Reorder tracks within the same container (folder or main list)
+    reorderTracksInSameContainer(source, target) {
         const containerId = source.folderId;
         const isFolder = containerId && containerId !== 'main';
         const container = isFolder
             ? this.folders.find(f => f.id === containerId)
-            : { layers: this.layers };
+            : { tracks: this.tracks };
 
-        if (!container || !container.layers) return;
+        if (!container || !container.tracks) return;
 
-        // Remove source layer
-        if (container.layers) {
-            container.layers.splice(source.originalIndex, 1);
+        // Remove source track
+        if (container.tracks) {
+            container.tracks.splice(source.originalIndex, 1);
             // Insert at target position
             const insertIndex = target.index > source.originalIndex ? target.index - 1 : target.index;
-            container.layers.splice(insertIndex, 0, source.layer);
+            container.tracks.splice(insertIndex, 0, source.track);
         }
 
         this.renderList();
     }
 
-    // Move layer between different containers (folder to folder, folder to main, etc.)
-    moveLayerBetweenContainers(source, target) {
+    // Move track between different containers (folder to folder, folder to main, etc.)
+    moveTrackBetweenContainers(source, target) {
         const sourceIsFolder = source.folderId && source.folderId !== 'main';
         const targetIsFolder = target.folderId && target.folderId !== 'main';
 
@@ -1070,27 +1111,27 @@ class LayerManager {
         if (sourceIsFolder) {
             const sourceFolder = this.folders.find(f => f.id === source.folderId);
             if (sourceFolder) {
-                sourceFolder.layers.splice(source.originalIndex, 1);
+                sourceFolder.tracks.splice(source.originalIndex, 1);
             }
         } else {
-            this.layers.splice(source.originalIndex, 1);
+            this.tracks.splice(source.originalIndex, 1);
         }
 
         // Add to target container at the target position
         if (targetIsFolder) {
             const targetFolder = this.folders.find(f => f.id === target.folderId);
             if (targetFolder) {
-                targetFolder.layers.splice(target.index, 0, source.layer);
+                targetFolder.tracks.splice(target.index, 0, source.track);
             }
         } else {
-            this.layers.splice(target.index, 0, source.layer);
+            this.tracks.splice(target.index, 0, source.track);
         }
 
         this.renderList();
     }
 
-    // Show folder selection dialog for adding layer to folder
-    showFolderSelection(layer) {
+    // Show folder selection dialog for adding track to folder
+    showFolderSelection(track) {
         // Create a simple dropdown to select folder
         const existingDropdown = document.getElementById('folder-select-dropdown');
         if (existingDropdown) existingDropdown.remove();
@@ -1106,10 +1147,10 @@ class LayerManager {
             <div class="dropdown-item new-folder-item">+ New Folder</div>
         `;
 
-        // Position near the layer
-        const layerElement = document.querySelector(`.layer-item[data-layer-id="${layer.id}"]`);
-        if (layerElement) {
-            const rect = layerElement.getBoundingClientRect();
+        // Position near the track
+        const trackElement = document.querySelector(`.layer-item[data-track-id="${track.id}"]`);
+        if (trackElement) {
+            const rect = trackElement.getBoundingClientRect();
             dropdown.style.position = 'absolute';
             dropdown.style.left = `${rect.right + 10}px`;
             dropdown.style.top = `${rect.top}px`;
@@ -1122,11 +1163,11 @@ class LayerManager {
                         const folderName = prompt('Enter folder name:', 'New Folder');
                         if (folderName) {
                             this.addFolder(folderName);
-                            this.addLayerToFolder(this.folders[this.folders.length - 1].id, layer);
+                            this.addTrackToFolder(this.folders[this.folders.length - 1].id, track);
                         }
                     } else {
                         const folderId = item.dataset.folderId;
-                        this.addLayerToFolder(folderId, layer);
+                        this.addTrackToFolder(folderId, track);
                     }
                     dropdown.remove();
                 });

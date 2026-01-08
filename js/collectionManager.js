@@ -1,13 +1,13 @@
 /**
- * CollectionManager.js - Manage collections and groups for organizing audio layers
+ * CollectionManager.js - Manage collections and groups for organizing audio tracks
  *
  * Architecture:
  * - Collections: Top-level containers (e.g., "Game SFX", "UI Sounds")
  * - Groups: Sub-containers within collections (e.g., "Explosions", "Footsteps")
- * - Layers: Individual audio layers that belong to groups
+ * - Tracks: Individual audio tracks that belong to groups
  *
  * Only one collection can be viewed at a time, but collections can be saved/loaded
- * Switching collections clears and loads the timeline with the groups and layers from that collection
+ * Switching collections clears and loads the timeline with the groups and tracks from that collection
  */
 
 class CollectionManager {
@@ -195,24 +195,50 @@ class CollectionManager {
         return this.addGroup(currentCollection.id, name);
     }
 
+    // Track Management (alias methods for backward compatibility with layerManager)
+    addTrackToCollection(collectionId, track) {
+        // Convert track to layer format and add to collection
+        const layerData = {
+            id: track.id,
+            name: track.name,
+            settings: { ...track.settings },
+            muted: track.muted,
+            solo: track.solo,
+            volume: track.volume,
+            startTime: track.startTime,
+            fadeIn: track.fadeIn,
+            fadeOut: track.fadeOut,
+            color: track.color
+        };
+        return this.addLayerToCollection(collectionId, layerData);
+    }
+
+    removeTrackFromCollection(collectionId, trackId) {
+        return this.removeLayerFromCollection(collectionId, trackId);
+    }
+
+    syncTrackToCollection(collectionId, trackId) {
+        return this.syncLayerToCollection(collectionId, trackId);
+    }
+
     // Layer Management within Groups
-    addLayerToGroup(collectionId, groupId, layerId) {
+    addTrackToGroup(collectionId, groupId, trackId) {
         const collection = this.getCollection(collectionId);
         if (!collection) return false;
 
         const group = collection.groups.find(g => g.id === groupId);
         if (!group) return false;
 
-        // Check if layer already exists in this group
-        if (group.layerIds.includes(layerId)) return false;
+        // Check if track already exists in this group
+        if (group.layerIds.includes(trackId)) return false;
 
-        // Check if the layer exists in the collection
-        if (!collection.layers.some(layer => layer.id === layerId)) {
-            console.warn(`Layer ${layerId} not found in collection ${collectionId}`);
+        // Check if the track exists in the collection
+        if (!collection.layers.some(layer => layer.id === trackId)) {
+            console.warn(`Track ${trackId} not found in collection ${collectionId}`);
             return false;
         }
 
-        group.layerIds.push(layerId);
+        group.layerIds.push(trackId);
         group.updatedAt = new Date().toISOString();
         collection.updatedAt = new Date().toISOString();
         this.notifyCollectionChange();
@@ -310,14 +336,14 @@ class CollectionManager {
         return true;
     }
 
-    removeLayerFromGroup(collectionId, groupId, layerId) {
+    removeTrackFromGroup(collectionId, groupId, trackId) {
         const collection = this.getCollection(collectionId);
         if (!collection) return false;
 
         const group = collection.groups.find(g => g.id === groupId);
         if (!group) return false;
 
-        const index = group.layerIds.indexOf(layerId);
+        const index = group.layerIds.indexOf(trackId);
         if (index === -1) return false;
 
         group.layerIds.splice(index, 1);
@@ -334,7 +360,7 @@ class CollectionManager {
 
         const allLayers = [];
         collection.groups.forEach(group => {
-            group.layers.forEach(layerId => {
+            group.layerIds.forEach(layerId => {
                 const layer = this.app.layerManager.getLayer(layerId);
                 if (layer) {
                     allLayers.push(layer);
@@ -567,6 +593,15 @@ class CollectionManager {
         // Listen for layer changes to sync back to collection storage
         document.addEventListener('layersChanged', (e) => {
             // Sync all layers in current collection
+            const currentCollection = this.getCurrentCollection();
+            if (currentCollection) {
+                currentCollection.layers.forEach(layer => {
+                    this.syncLayerToCollection(currentCollection.id, layer.id);
+                });
+            }
+        });
+        document.addEventListener('tracksChanged', (e) => {
+            // Sync all tracks in current collection
             const currentCollection = this.getCurrentCollection();
             if (currentCollection) {
                 currentCollection.layers.forEach(layer => {
