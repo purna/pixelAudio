@@ -27,6 +27,10 @@ class SFXGeneratorApp {
         // Playback state tracking
         this.isPlayingSelected = false;
         this.isPlayingAll = false;
+        
+        // Auto-save settings
+        this.autoSaveEnabled = true;
+        this.autoSaveInterval = null;
     }
 
     async init() {
@@ -114,6 +118,18 @@ class SFXGeneratorApp {
                 }
             }
         }
+
+        // Load custom presets from localStorage
+        this.fileManager.loadCustomPresets();
+        console.log('Loaded presets. Total presets available:', this.presets.getAll().length);
+
+        // Enable auto-save if setting is enabled
+        if (this.autoSaveEnabled) {
+            this.enableAutoSave();
+        }
+
+        // Auto-load from browser on startup
+        this.loadFromBrowser(true);
 
         // Mark as initialized
         this.initialized = true;
@@ -326,11 +342,22 @@ class SFXGeneratorApp {
             });
         }
 
-        // Save to Browser button
-        const saveToBrowserBtn = document.getElementById('saveToBrowserBtn');
-        if (saveToBrowserBtn) {
-            saveToBrowserBtn.addEventListener('click', () => {
+        // Save to Browser button (header)
+        const saveToBrowserHeader = document.getElementById('saveToBrowserHeader');
+        if (saveToBrowserHeader) {
+            saveToBrowserHeader.addEventListener('click', () => {
                 this.saveAllToBrowser();
+            });
+        }
+
+        // Load from Browser button (header)
+        const loadFromBrowserHeader = document.getElementById('loadFromBrowserHeader');
+        if (loadFromBrowserHeader) {
+            loadFromBrowserHeader.addEventListener('click', () => {
+                const loaded = this.loadFromBrowser(false);
+                if (!loaded) {
+                    this.notifications.showNotification('No saved project found in browser', 'info');
+                }
             });
         }
 
@@ -347,6 +374,21 @@ class SFXGeneratorApp {
             addTrackBtn.removeAttribute('onclick'); // Remove inline handler
             addTrackBtn.addEventListener('click', () => {
                 this.layerManager.addTrack();
+            });
+        }
+        
+        // Auto-save checkbox in settings
+        const autoSaveCheckbox = document.getElementById('settings-auto-save');
+        if (autoSaveCheckbox) {
+            // Load saved auto-save preference
+            const savedAutoSave = localStorage.getItem('pixelAudioAutoSave');
+            if (savedAutoSave !== null) {
+                autoSaveCheckbox.checked = savedAutoSave === 'true';
+                this.autoSaveEnabled = savedAutoSave === 'true';
+            }
+            
+            autoSaveCheckbox.addEventListener('change', (e) => {
+                this.toggleAutoSave(e.target.checked);
             });
         }
     }
@@ -510,12 +552,26 @@ class SFXGeneratorApp {
     }
 
     async loadPreset(presetName) {
+        console.log('loadPreset called with:', presetName);
+        
+        // Debug: Log available presets
+        const allPresets = this.presets.getAll();
+        console.log('Available presets:', allPresets.length, 'presets');
+        
         const preset = this.presets.get(presetName);
         if (!preset) {
             console.error('Preset not found:', presetName);
+            console.error('Available presets:', allPresets);
             return;
         }
 
+        // Merge preset with default values to ensure all required properties exist
+        const defaultSettings = this.getDefaultSettings();
+        const mergedPreset = { ...defaultSettings, ...preset };
+        
+        // Ensure all nested optional properties have defaults
+        mergedPreset.waveform = preset.waveform || 'square';
+        
         // Save state for undo
         this.saveUndoState();
 
@@ -523,13 +579,13 @@ class SFXGeneratorApp {
 
         if (selectedTrack) {
             // Apply preset to selected track
-            this.layerManager.updateTrackSettings(selectedTrack.id, preset);
+            this.layerManager.updateTrackSettings(selectedTrack.id, mergedPreset);
             
             // Force sync app's currentSettings
-            this.currentSettings = { ...preset };
+            this.currentSettings = { ...mergedPreset };
             
             // Update UI to show new values
-            this.ui.updateDisplay(preset);
+            this.ui.updateDisplay(mergedPreset);
             
             // Redraw timeline to show updated waveform
             this.timeline.render();
@@ -539,8 +595,8 @@ class SFXGeneratorApp {
         } else {
             // No track selected - this shouldn't happen, but handle it
             console.warn('No track selected when loading preset');
-            this.currentSettings = { ...preset };
-            this.ui.updateDisplay(preset);
+            this.currentSettings = { ...mergedPreset };
+            this.ui.updateDisplay(mergedPreset);
             await this.playCurrentSound();
         }
     }
@@ -698,6 +754,69 @@ class SFXGeneratorApp {
             this.notifications.showNotification('Error saving: ' + error.message, 'error');
             return false;
         }
+    }
+    
+    // Load from browser on startup (silent)
+    loadFromBrowser(silent = false) {
+        try {
+            const data = localStorage.getItem('pixelAudioCompleteProject');
+            if (data) {
+                const projectData = JSON.parse(data);
+                if (projectData.state) {
+                    this.setState(projectData.state);
+                    if (!silent) {
+                        this.notifications.showNotification('Project loaded from browser!', 'success');
+                    }
+                    console.log('Loaded project from browser');
+                    return true;
+                }
+            }
+        } catch (error) {
+            console.error('Error loading from browser:', error);
+            if (!silent) {
+                this.notifications.showNotification('Error loading from browser: ' + error.message, 'error');
+            }
+        }
+        return false;
+    }
+    
+    // Enable auto-save
+    enableAutoSave() {
+        if (this.autoSaveInterval) {
+            clearInterval(this.autoSaveInterval);
+        }
+        
+        this.autoSaveInterval = setInterval(() => {
+            if (this.autoSaveEnabled) {
+                this.saveAllToBrowser();
+            }
+        }, 60000); // Auto-save every 60 seconds
+        
+        console.log('Auto-save enabled');
+    }
+    
+    // Disable auto-save
+    disableAutoSave() {
+        if (this.autoSaveInterval) {
+            clearInterval(this.autoSaveInterval);
+            this.autoSaveInterval = null;
+        }
+        console.log('Auto-save disabled');
+    }
+    
+    // Toggle auto-save
+    toggleAutoSave(enabled) {
+        this.autoSaveEnabled = enabled;
+        if (enabled) {
+            this.enableAutoSave();
+            this.notifications.showNotification('Auto-save enabled', 'success');
+        } else {
+            this.disableAutoSave();
+            this.notifications.showNotification('Auto-save disabled', 'info');
+        }
+        
+        // Save setting to localStorage
+        localStorage.setItem('pixelAudioAutoSave', enabled ? 'true' : 'false');
     }
 }
 

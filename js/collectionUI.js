@@ -116,25 +116,47 @@ class CollectionUI {
             collectionEl.innerHTML = `
                 <div class="collection-header">
                     <i class="fas fa-archive collection-icon"></i>
-                    <input type="text" class="collection-name-input" value="${collection.name}">
+                    <span class="collection-name">${collection.name}</span>
                     <div class="collection-actions">
+                        <i class="fas fa-pencil-alt rename-collection" title="Rename"></i>
                         <i class="fas fa-trash delete-collection" title="Delete"></i>
                     </div>
                 </div>
+                <input type="text" class="collection-name-edit" value="${collection.name}" style="display:none;">
             `;
 
-            // Add event listeners for inline collection name editing
-            const nameInput = collectionEl.querySelector('.collection-name-input');
-            nameInput.addEventListener('click', (e) => e.stopPropagation());
-            nameInput.addEventListener('blur', () => {
-                const newName = nameInput.value.trim();
+            // Add event listeners for rename
+            const renameIcon = collectionEl.querySelector('.rename-collection');
+            const nameSpan = collectionEl.querySelector('.collection-name');
+            const editInput = collectionEl.querySelector('.collection-name-edit');
+            
+            renameIcon?.addEventListener('click', (e) => {
+                e.stopPropagation();
+                nameSpan.style.display = 'none';
+                renameIcon.style.display = 'none';
+                editInput.style.display = 'block';
+                editInput.focus();
+                editInput.select();
+            });
+
+            editInput?.addEventListener('blur', () => {
+                const newName = editInput.value.trim();
                 if (newName && newName !== collection.name) {
                     this.collectionManager.renameCollection(collection.id, newName);
                 }
+                nameSpan.style.display = 'block';
+                renameIcon.style.display = 'block';
+                editInput.style.display = 'none';
             });
-            nameInput.addEventListener('keydown', (e) => {
+
+            editInput?.addEventListener('keydown', (e) => {
                 if (e.key === 'Enter') {
-                    nameInput.blur();
+                    editInput.blur();
+                } else if (e.key === 'Escape') {
+                    editInput.value = collection.name;
+                    nameSpan.style.display = 'block';
+                    renameIcon.style.display = 'block';
+                    editInput.style.display = 'none';
                 }
             });
 
@@ -336,8 +358,25 @@ const collectionsCSS = `
     color: var(--accent-tertiary);
 }
 
+.collection-actions .fa-pencil-alt:hover {
+    color: var(--accent-tertiary);
+}
+
 .collection-actions .fa-trash:hover {
     color: #ff6b6b;
+}
+
+.collection-name-edit {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text-primary);
+    flex: 1;
+    margin-left: 8px;
+    background: var(--bg-medium);
+    border: 1px solid var(--accent-primary);
+    border-radius: 4px;
+    padding: 4px 8px;
+    color: var(--text-primary);
 }
 
 .collection-actions .fa-eye:hover {

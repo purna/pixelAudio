@@ -10,10 +10,13 @@ class FileManager {
     // Export entire project as JSON
     exportProject(filename = null) {
         try {
+            const currentCollection = this.app.collectionManager.getCurrentCollection();
+            const collectionName = currentCollection ? currentCollection.name.replace(/\s+/g, '_') : 'SFX_Project';
+            
             const projectData = {
                 version: '2.0', // Updated version for collections support
                 timestamp: Date.now(),
-                name: filename || 'SFX Project',
+                name: filename || collectionName,
                 layers: this.app.layerManager.getState(),
                 settings: this.app.currentSettings,
                 audioEngine: {
@@ -33,7 +36,7 @@ class FileManager {
             const a = document.createElement('a');
             a.style.display = 'none';
             a.href = url;
-            a.download = (filename || 'sfx_project') + '.json';
+            a.download = (filename || collectionName) + '.json';
 
             document.body.appendChild(a);
             a.click();
@@ -156,7 +159,9 @@ class FileManager {
     exportMixedOutput(filename = null) {
         try {
             console.log('Exporting mixed output');
-            const name = filename || `mixed_output_${Date.now()}.wav`;
+            const currentCollection = this.app.collectionManager.getCurrentCollection();
+            const collectionName = currentCollection ? currentCollection.name.replace(/[^a-z0-9]/gi, '_') : 'mixed_output';
+            const name = filename || `${collectionName}_${Date.now()}.wav`;
             this.app.layerManager.exportMixedAudio(name);
             this.app.notifications.showNotification('Mixed output exported!', 'success');
         } catch (error) {

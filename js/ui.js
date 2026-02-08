@@ -43,14 +43,46 @@ class UI {
             
             // Duty Cycle
             duty: document.getElementById('duty'),
-            dutySection: document.getElementById('duty-section'), 
+            dutySweep: document.getElementById('dutySweep'),
+            dutySection: document.getElementById('duty-section'),
+
+            // Harmonics
+            harmonic2: document.getElementById('harmonic2'),
+            harmonic3: document.getElementById('harmonic3'),
+            
+            // Frequency Jump
+            jumpEnable: document.getElementById('jumpEnable'),
+            jumpTime: document.getElementById('jumpTime'),
+            jumpFreq: document.getElementById('jumpFreq'),
+            
+            // Bitcrush
+            bitcrushEnable: document.getElementById('bitcrushEnable'),
+            bitcrush: document.getElementById('bitcrush'),
+            
+            // Distortion
+            distortionEnable: document.getElementById('distortionEnable'),
+            distortion: document.getElementById('distortion'),
+            
+            // Delay
+            delayEnable: document.getElementById('delayEnable'),
+            delayTime: document.getElementById('delayTime'),
+            delayFeedback: document.getElementById('delayFeedback'),
+            
+            // Bandpass Filter
+            bpfEnable: document.getElementById('bpfEnable'),
+            bpf: document.getElementById('bpf'),
+            bpfResonance: document.getElementById('bpfResonance'),
+            
+            // Envelope Advanced
+            sustainLevel: document.getElementById('sustainLevel'),
+            decayShape: document.getElementById('decayShape'),
 
             waveform: document.getElementById('waveform'),
             
             // Layer Volume
             volume: document.getElementById('layerVolume'),
             
-            // Settings Panel Controls (now handled by SettingsManager modal)
+            // Settings Panel Controls
             masterVolume: document.getElementById('masterVolume'),
             defaultLengthSettings: document.getElementById('defaultLengthSettings'),
             showTooltipsSettings: document.getElementById('showTooltipsSettings'),
@@ -74,6 +106,7 @@ class UI {
             slideVal: document.getElementById('slideVal'),
             deltaSlideVal: document.getElementById('deltaSlideVal'),
             dutyVal: document.getElementById('dutyVal'),
+            dutySweepVal: document.getElementById('dutySweepVal'),
             
             attackVal: document.getElementById('attackVal'),
             sustainVal: document.getElementById('sustainVal'),
@@ -83,6 +116,24 @@ class UI {
             vibratoSpeedVal: document.getElementById('vibratoSpeedVal'),
             arpMultVal: document.getElementById('arpMultVal'),
             arpSpeedVal: document.getElementById('arpSpeedVal'),
+            
+            harmonic2Val: document.getElementById('harmonic2Val'),
+            harmonic3Val: document.getElementById('harmonic3Val'),
+            
+            jumpTimeVal: document.getElementById('jumpTimeVal'),
+            jumpFreqVal: document.getElementById('jumpFreqVal'),
+            
+            bitcrushVal: document.getElementById('bitcrushVal'),
+            
+            distortionVal: document.getElementById('distortionVal'),
+            
+            delayTimeVal: document.getElementById('delayTimeVal'),
+            delayFeedbackVal: document.getElementById('delayFeedbackVal'),
+            
+            bpfVal: document.getElementById('bpfVal'),
+            bpfResonanceVal: document.getElementById('bpfResonanceVal'),
+            
+            sustainLevelVal: document.getElementById('sustainLevelVal'),
             
             layerVolumeVal: document.getElementById('layerVolumeVal'),
             masterVolumeVal: document.getElementById('masterVolumeVal')
@@ -95,7 +146,9 @@ class UI {
     setupEventListeners() {
         const inputs = [
             'attack', 'sustain', 'punch', 'decay', 'frequency', 'slide', 'deltaSlide',
-            'vibratoDepth', 'vibratoSpeed', 'arpMult', 'arpSpeed', 'duty', 'volume'
+            'vibratoDepth', 'vibratoSpeed', 'arpMult', 'arpSpeed', 'duty', 'dutySweep',
+            'harmonic2', 'harmonic3', 'jumpTime', 'jumpFreq', 'bitcrush', 'distortion',
+            'delayTime', 'delayFeedback', 'bpf', 'bpfResonance', 'sustainLevel', 'volume'
         ];
         
         inputs.forEach(key => {
@@ -104,7 +157,7 @@ class UI {
             }
         });
 
-        ['vibratoEnable', 'arpEnable'].forEach(key => {
+        ['vibratoEnable', 'arpEnable', 'jumpEnable', 'bitcrushEnable', 'distortionEnable', 'delayEnable', 'bpfEnable'].forEach(key => {
              if(this.elements[key]) {
                 this.elements[key].addEventListener('change', () => this.handleInput(key, this.elements[key]));
              }
@@ -112,6 +165,10 @@ class UI {
         
         if (this.elements.waveform) {
             this.elements.waveform.addEventListener('change', () => this.handleInput('waveform', this.elements.waveform));
+        }
+        
+        if (this.elements.decayShape) {
+            this.elements.decayShape.addEventListener('change', () => this.handleInput('decayShape', this.elements.decayShape));
         }
 
         // Settings Handlers
@@ -133,7 +190,7 @@ class UI {
             });
         }
         
-        // NEW: Show/Hide Tooltips
+        // Show/Hide Tooltips
         if (this.elements.showTooltipsSettings) {
             this.elements.showTooltipsSettings.addEventListener('change', (e) => {
                 if (e.target.checked) {
@@ -231,20 +288,13 @@ class UI {
         const centerStack = document.getElementById('center-stack');
         if (centerStack) {
             centerStack.addEventListener('click', (e) => {
-                // Only close if side panel is open and click is not on timeline controls
                 if (this.elements.sidePanel.classList.contains('open') &&
                     !e.target.closest('.timeline-controls')) {
-
-                    // Add closing class for animation
                     this.elements.sidePanel.classList.add('closing');
                     this.elements.sidePanel.classList.remove('open');
-
-                    // Remove closing class after animation completes
                     setTimeout(() => {
                         this.elements.sidePanel.classList.remove('closing');
                     }, 300);
-
-                    // Deactivate all tab buttons
                     this.elements.iconTabBtns.forEach(b => b.classList.remove('active'));
                     this.elements.panelContents.forEach(p => p.classList.remove('active'));
                 }
@@ -270,7 +320,7 @@ class UI {
     handleInput(key, element) {
         let value;
         if (element.type === 'checkbox') value = element.checked;
-        else if (key === 'waveform') value = element.value;
+        else if (key === 'waveform' || key === 'decayShape') value = element.value;
         else value = parseFloat(element.value);
 
         const updates = { [key]: value };
@@ -278,15 +328,12 @@ class UI {
 
         const layer = this.app.layerManager.getSelectedLayer();
         if (layer && key === 'volume') {
-            // ✅ Update only the selected layer's volume (true per-layer control)
             this.app.layerManager.updateLayer(layer.id, { volume: updates.volume });
-
-            // ✅ Update UI to reflect the change
             if (this.displays.layerVolumeVal) {
                 this.displays.layerVolumeVal.textContent = Math.round(updates.volume * 100) + '%';
             }
             if (this.elements.volume) {
-                this.elements.volume.value = value; // Keep slider in sync
+                this.elements.volume.value = value;
             }
         } else if (layer) {
             this.app.layerManager.updateLayerSettings(layer.id, updates);
@@ -308,6 +355,7 @@ class UI {
         updateText(this.displays.slideVal, settings.slide?.toFixed(2));
         updateText(this.displays.deltaSlideVal, settings.deltaSlide?.toFixed(2));
         updateText(this.displays.dutyVal, settings.duty + '%');
+        updateText(this.displays.dutySweepVal, (settings.dutySweep || 0) + '%');
         
         // Envelope
         updateText(this.displays.attackVal, settings.attack.toFixed(3) + 's');
@@ -321,7 +369,32 @@ class UI {
         updateText(this.displays.arpMultVal, settings.arpMult.toFixed(2));
         updateText(this.displays.arpSpeedVal, settings.arpSpeed.toFixed(3));
         
-        // Volume - show selected layer's volume, not global settings
+        // Harmonics
+        updateText(this.displays.harmonic2Val, (settings.harmonic2 || 0) + '%');
+        updateText(this.displays.harmonic3Val, (settings.harmonic3 || 0) + '%');
+        
+        // Frequency Jump
+        updateText(this.displays.jumpTimeVal, (settings.jumpTime || 0).toFixed(2) + 's');
+        updateText(this.displays.jumpFreqVal, Math.round(settings.jumpFreq || 880));
+        
+        // Bitcrush
+        updateText(this.displays.bitcrushVal, settings.bitcrush || 0);
+        
+        // Distortion
+        updateText(this.displays.distortionVal, (settings.distortion || 0) + '%');
+        
+        // Delay
+        updateText(this.displays.delayTimeVal, (settings.delayTime || 0).toFixed(2) + 's');
+        updateText(this.displays.delayFeedbackVal, (settings.delayFeedback || 30) + '%');
+        
+        // Bandpass
+        updateText(this.displays.bpfVal, Math.round(settings.bpf || 1000));
+        updateText(this.displays.bpfResonanceVal, (settings.bpfResonance || 0).toFixed(1));
+        
+        // Envelope Advanced
+        updateText(this.displays.sustainLevelVal, (settings.sustainLevel || 100) + '%');
+        
+        // Volume
         const selectedLayer = this.app.layerManager.getSelectedLayer();
         if (this.displays.layerVolumeVal) {
             if (selectedLayer && selectedLayer.volume !== undefined) {
@@ -348,6 +421,7 @@ class UI {
         setInput('slide', settings.slide);
         setInput('deltaSlide', settings.deltaSlide);
         setInput('duty', settings.duty);
+        setInput('dutySweep', settings.dutySweep || 0);
         setInput('attack', settings.attack);
         setInput('sustain', settings.sustain);
         setInput('decay', settings.decay);
@@ -356,11 +430,28 @@ class UI {
         setInput('vibratoSpeed', settings.vibratoSpeed);
         setInput('arpMult', settings.arpMult);
         setInput('arpSpeed', settings.arpSpeed);
+        setInput('harmonic2', settings.harmonic2 || 0);
+        setInput('harmonic3', settings.harmonic3 || 0);
+        setInput('jumpTime', settings.jumpTime || 0);
+        setInput('jumpFreq', settings.jumpFreq || 880);
+        setInput('bitcrush', settings.bitcrush || 0);
+        setInput('distortion', settings.distortion || 0);
+        setInput('delayTime', settings.delayTime || 0.1);
+        setInput('delayFeedback', settings.delayFeedback || 30);
+        setInput('bpf', settings.bpf || 1000);
+        setInput('bpfResonance', settings.bpfResonance || 0);
+        setInput('sustainLevel', settings.sustainLevel || 100);
         
         if(this.elements.waveform) this.elements.waveform.value = settings.waveform;
+        if(this.elements.decayShape) this.elements.decayShape.value = settings.decayShape || 'linear';
 
         if(this.elements.vibratoEnable) this.elements.vibratoEnable.checked = settings.vibratoEnable;
         if(this.elements.arpEnable) this.elements.arpEnable.checked = settings.arpEnable;
+        if(this.elements.jumpEnable) this.elements.jumpEnable.checked = settings.jumpEnable;
+        if(this.elements.bitcrushEnable) this.elements.bitcrushEnable.checked = settings.bitcrushEnable;
+        if(this.elements.distortionEnable) this.elements.distortionEnable.checked = settings.distortionEnable;
+        if(this.elements.delayEnable) this.elements.delayEnable.checked = settings.delayEnable;
+        if(this.elements.bpfEnable) this.elements.bpfEnable.checked = settings.bpfEnable;
         
         // Volume slider - sync with selected layer's volume
         if(this.elements.volume) {
