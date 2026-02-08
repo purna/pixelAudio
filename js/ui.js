@@ -12,11 +12,11 @@ class UI {
     init() {
         this.cacheElements();
         this.setupEventListeners();
-        
+
         window.addEventListener('resize', () => {
             this.handleResize();
         });
-        
+
         setTimeout(() => {
             this.handleResize();
             this.updateDisplay(this.app.currentSettings);
@@ -40,7 +40,7 @@ class UI {
             arpEnable: document.getElementById('arpEnable'),
             arpMult: document.getElementById('arpMult'),
             arpSpeed: document.getElementById('arpSpeed'),
-            
+
             // Duty Cycle
             duty: document.getElementById('duty'),
             dutySweep: document.getElementById('dutySweep'),
@@ -49,53 +49,53 @@ class UI {
             // Harmonics
             harmonic2: document.getElementById('harmonic2'),
             harmonic3: document.getElementById('harmonic3'),
-            
+
             // Frequency Jump
             jumpEnable: document.getElementById('jumpEnable'),
             jumpTime: document.getElementById('jumpTime'),
             jumpFreq: document.getElementById('jumpFreq'),
-            
+
             // Bitcrush
             bitcrushEnable: document.getElementById('bitcrushEnable'),
             bitcrush: document.getElementById('bitcrush'),
-            
+
             // Distortion
             distortionEnable: document.getElementById('distortionEnable'),
             distortion: document.getElementById('distortion'),
-            
+
             // Delay
             delayEnable: document.getElementById('delayEnable'),
             delayTime: document.getElementById('delayTime'),
             delayFeedback: document.getElementById('delayFeedback'),
-            
+
             // Bandpass Filter
             bpfEnable: document.getElementById('bpfEnable'),
             bpf: document.getElementById('bpf'),
             bpfResonance: document.getElementById('bpfResonance'),
-            
+
             // Envelope Advanced
             sustainLevel: document.getElementById('sustainLevel'),
             decayShape: document.getElementById('decayShape'),
 
             waveform: document.getElementById('waveform'),
-            
+
             // Layer Volume
             volume: document.getElementById('layerVolume'),
-            
+
             // Settings Panel Controls
             masterVolume: document.getElementById('masterVolume'),
             defaultLengthSettings: document.getElementById('defaultLengthSettings'),
             showTooltipsSettings: document.getElementById('showTooltipsSettings'),
             saveToBrowserBtn: document.getElementById('saveToBrowserBtn'),
             loadFromBrowserBtn: document.getElementById('loadFromBrowserBtn'),
-            
+
             // Layout
             totalLength: document.getElementById('totalLength'),
             sidePanel: document.getElementById('side-panel'),
             iconTabBtns: document.querySelectorAll('.icon-tab-btn'),
             panelContents: document.querySelectorAll('.panel-content'),
             toggleSectBtns: document.querySelectorAll('.toggle-sect-btn'),
-            
+
             // Canvas
             timelineCanvas: document.getElementById('timeline-canvas'),
             timelineWrapper: document.querySelector('.timeline-canvas-wrapper')
@@ -107,7 +107,7 @@ class UI {
             deltaSlideVal: document.getElementById('deltaSlideVal'),
             dutyVal: document.getElementById('dutyVal'),
             dutySweepVal: document.getElementById('dutySweepVal'),
-            
+
             attackVal: document.getElementById('attackVal'),
             sustainVal: document.getElementById('sustainVal'),
             decayVal: document.getElementById('decayVal'),
@@ -116,25 +116,25 @@ class UI {
             vibratoSpeedVal: document.getElementById('vibratoSpeedVal'),
             arpMultVal: document.getElementById('arpMultVal'),
             arpSpeedVal: document.getElementById('arpSpeedVal'),
-            
+
             harmonic2Val: document.getElementById('harmonic2Val'),
             harmonic3Val: document.getElementById('harmonic3Val'),
-            
+
             jumpTimeVal: document.getElementById('jumpTimeVal'),
             jumpFreqVal: document.getElementById('jumpFreqVal'),
-            
+
             bitcrushVal: document.getElementById('bitcrushVal'),
-            
+
             distortionVal: document.getElementById('distortionVal'),
-            
+
             delayTimeVal: document.getElementById('delayTimeVal'),
             delayFeedbackVal: document.getElementById('delayFeedbackVal'),
-            
+
             bpfVal: document.getElementById('bpfVal'),
             bpfResonanceVal: document.getElementById('bpfResonanceVal'),
-            
+
             sustainLevelVal: document.getElementById('sustainLevelVal'),
-            
+
             layerVolumeVal: document.getElementById('layerVolumeVal'),
             masterVolumeVal: document.getElementById('masterVolumeVal')
         };
@@ -150,23 +150,23 @@ class UI {
             'harmonic2', 'harmonic3', 'jumpTime', 'jumpFreq', 'bitcrush', 'distortion',
             'delayTime', 'delayFeedback', 'bpf', 'bpfResonance', 'sustainLevel', 'volume'
         ];
-        
+
         inputs.forEach(key => {
-            if(this.elements[key]) {
+            if (this.elements[key]) {
                 this.elements[key].addEventListener('input', () => this.handleInput(key, this.elements[key]));
             }
         });
 
         ['vibratoEnable', 'arpEnable', 'jumpEnable', 'bitcrushEnable', 'distortionEnable', 'delayEnable', 'bpfEnable'].forEach(key => {
-             if(this.elements[key]) {
+            if (this.elements[key]) {
                 this.elements[key].addEventListener('change', () => this.handleInput(key, this.elements[key]));
-             }
+            }
         });
-        
+
         if (this.elements.waveform) {
             this.elements.waveform.addEventListener('change', () => this.handleInput('waveform', this.elements.waveform));
         }
-        
+
         if (this.elements.decayShape) {
             this.elements.decayShape.addEventListener('change', () => this.handleInput('decayShape', this.elements.decayShape));
         }
@@ -189,7 +189,7 @@ class UI {
                 this.app.notifications.showNotification(`Default length set to ${val}s`, 'success');
             });
         }
-        
+
         // Show/Hide Tooltips
         if (this.elements.showTooltipsSettings) {
             this.elements.showTooltipsSettings.addEventListener('change', (e) => {
@@ -219,7 +219,7 @@ class UI {
                         const state = JSON.parse(saved);
                         if (this.app.setState) this.app.setState(state);
                         this.app.notifications.showNotification('Project loaded!', 'success');
-                    } catch(e) {
+                    } catch (e) {
                         this.app.notifications.showNotification('Failed to load project', 'error');
                     }
                 } else {
@@ -261,6 +261,11 @@ class UI {
                         btn.classList.add('active');
                         this.elements.sidePanel.classList.add('open');
                         if (targetContent) targetContent.classList.add('active');
+                    }
+
+                    // Refresh FMOD UI when FMOD panel is shown
+                    if (panelName === 'fmod' && this.app.fmodUI) {
+                        this.app.fmodUI.refresh();
                     }
                 });
             });
@@ -347,8 +352,8 @@ class UI {
 
     updateDisplay(settings) {
         if (!settings) return;
-        
-        const updateText = (el, val) => { if(el) el.textContent = val; };
+
+        const updateText = (el, val) => { if (el) el.textContent = val; };
 
         // Pitch
         updateText(this.displays.freqVal, Math.round(settings.frequency));
@@ -356,7 +361,7 @@ class UI {
         updateText(this.displays.deltaSlideVal, settings.deltaSlide?.toFixed(2));
         updateText(this.displays.dutyVal, settings.duty + '%');
         updateText(this.displays.dutySweepVal, (settings.dutySweep || 0) + '%');
-        
+
         // Envelope
         updateText(this.displays.attackVal, settings.attack.toFixed(3) + 's');
         updateText(this.displays.sustainVal, settings.sustain.toFixed(3) + 's');
@@ -368,32 +373,32 @@ class UI {
         updateText(this.displays.vibratoSpeedVal, settings.vibratoSpeed.toFixed(1));
         updateText(this.displays.arpMultVal, settings.arpMult.toFixed(2));
         updateText(this.displays.arpSpeedVal, settings.arpSpeed.toFixed(3));
-        
+
         // Harmonics
         updateText(this.displays.harmonic2Val, (settings.harmonic2 || 0) + '%');
         updateText(this.displays.harmonic3Val, (settings.harmonic3 || 0) + '%');
-        
+
         // Frequency Jump
         updateText(this.displays.jumpTimeVal, (settings.jumpTime || 0).toFixed(2) + 's');
         updateText(this.displays.jumpFreqVal, Math.round(settings.jumpFreq || 880));
-        
+
         // Bitcrush
         updateText(this.displays.bitcrushVal, settings.bitcrush || 0);
-        
+
         // Distortion
         updateText(this.displays.distortionVal, (settings.distortion || 0) + '%');
-        
+
         // Delay
         updateText(this.displays.delayTimeVal, (settings.delayTime || 0).toFixed(2) + 's');
         updateText(this.displays.delayFeedbackVal, (settings.delayFeedback || 30) + '%');
-        
+
         // Bandpass
         updateText(this.displays.bpfVal, Math.round(settings.bpf || 1000));
         updateText(this.displays.bpfResonanceVal, (settings.bpfResonance || 0).toFixed(1));
-        
+
         // Envelope Advanced
         updateText(this.displays.sustainLevelVal, (settings.sustainLevel || 100) + '%');
-        
+
         // Volume
         const selectedLayer = this.app.layerManager.getSelectedLayer();
         if (this.displays.layerVolumeVal) {
@@ -416,7 +421,7 @@ class UI {
         }
 
         // Sync inputs
-        const setInput = (id, val) => { const el = document.getElementById(id); if(el) el.value = val; };
+        const setInput = (id, val) => { const el = document.getElementById(id); if (el) el.value = val; };
         setInput('frequency', settings.frequency);
         setInput('slide', settings.slide);
         setInput('deltaSlide', settings.deltaSlide);
@@ -441,20 +446,20 @@ class UI {
         setInput('bpf', settings.bpf || 1000);
         setInput('bpfResonance', settings.bpfResonance || 0);
         setInput('sustainLevel', settings.sustainLevel || 100);
-        
-        if(this.elements.waveform) this.elements.waveform.value = settings.waveform;
-        if(this.elements.decayShape) this.elements.decayShape.value = settings.decayShape || 'linear';
 
-        if(this.elements.vibratoEnable) this.elements.vibratoEnable.checked = settings.vibratoEnable;
-        if(this.elements.arpEnable) this.elements.arpEnable.checked = settings.arpEnable;
-        if(this.elements.jumpEnable) this.elements.jumpEnable.checked = settings.jumpEnable;
-        if(this.elements.bitcrushEnable) this.elements.bitcrushEnable.checked = settings.bitcrushEnable;
-        if(this.elements.distortionEnable) this.elements.distortionEnable.checked = settings.distortionEnable;
-        if(this.elements.delayEnable) this.elements.delayEnable.checked = settings.delayEnable;
-        if(this.elements.bpfEnable) this.elements.bpfEnable.checked = settings.bpfEnable;
-        
+        if (this.elements.waveform) this.elements.waveform.value = settings.waveform;
+        if (this.elements.decayShape) this.elements.decayShape.value = settings.decayShape || 'linear';
+
+        if (this.elements.vibratoEnable) this.elements.vibratoEnable.checked = settings.vibratoEnable;
+        if (this.elements.arpEnable) this.elements.arpEnable.checked = settings.arpEnable;
+        if (this.elements.jumpEnable) this.elements.jumpEnable.checked = settings.jumpEnable;
+        if (this.elements.bitcrushEnable) this.elements.bitcrushEnable.checked = settings.bitcrushEnable;
+        if (this.elements.distortionEnable) this.elements.distortionEnable.checked = settings.distortionEnable;
+        if (this.elements.delayEnable) this.elements.delayEnable.checked = settings.delayEnable;
+        if (this.elements.bpfEnable) this.elements.bpfEnable.checked = settings.bpfEnable;
+
         // Volume slider - sync with selected layer's volume
-        if(this.elements.volume) {
+        if (this.elements.volume) {
             if (selectedLayer && selectedLayer.volume !== undefined) {
                 this.elements.volume.value = Math.round(selectedLayer.volume * 100);
             } else if (settings.volume !== undefined) {
@@ -468,7 +473,7 @@ class UI {
 
         const ctx = this.waveformCtx;
         const canvas = this.waveformCanvas;
-        
+
         if (canvas.width !== canvas.offsetWidth || canvas.height !== canvas.offsetHeight) {
             canvas.width = canvas.offsetWidth;
             canvas.height = canvas.offsetHeight;
@@ -477,48 +482,48 @@ class UI {
         const w = canvas.width;
         const h = canvas.height;
 
-        ctx.fillStyle = '#0f0f1b'; 
+        ctx.fillStyle = '#0f0f1b';
         ctx.fillRect(0, 0, w, h);
 
         ctx.strokeStyle = '#333';
         ctx.lineWidth = 1;
         ctx.beginPath();
-        ctx.moveTo(0, h/2); ctx.lineTo(w, h/2);
+        ctx.moveTo(0, h / 2); ctx.lineTo(w, h / 2);
         ctx.stroke();
 
         try {
-            const buffer = this.app.soundGenerator.generate(settings, 44100); 
+            const buffer = this.app.soundGenerator.generate(settings, 44100);
             if (!buffer) return;
             const data = buffer.getChannelData(0);
             const step = Math.ceil(data.length / w);
-            
+
             ctx.strokeStyle = '#00ff41';
             ctx.lineWidth = 2;
             ctx.beginPath();
-            
+
             for (let x = 0; x < w; x++) {
                 const i = Math.floor(x * step);
                 if (i >= data.length) break;
                 const val = data[i];
-                const y = (h/2) - (val * (h/2 - 10)); 
+                const y = (h / 2) - (val * (h / 2 - 10));
                 if (x === 0) ctx.moveTo(x, y);
                 else ctx.lineTo(x, y);
             }
             ctx.stroke();
 
             // Envelope Overlay
-            ctx.strokeStyle = 'rgba(255, 0, 110, 0.4)'; 
+            ctx.strokeStyle = 'rgba(255, 0, 110, 0.4)';
             ctx.setLineDash([4, 4]);
             ctx.lineWidth = 2;
             ctx.beginPath();
-            
+
             for (let x = 0; x < w; x++) {
                 const i = Math.floor(x * step);
                 const t = i / 44100;
-                
+
                 if (this.app.soundGenerator.calculateEnvelope) {
                     const env = this.app.soundGenerator.calculateEnvelope(t, settings);
-                    const y = (h/2) - (env * (h/2 - 10)); 
+                    const y = (h / 2) - (env * (h / 2 - 10));
                     if (x === 0) ctx.moveTo(x, y);
                     else ctx.lineTo(x, y);
                 }
@@ -538,13 +543,13 @@ class UI {
             this.elements.timelineCanvas.height = wrapper.offsetHeight;
             if (this.app.timeline) this.app.timeline.render();
         }
-        
+
         if (this.elements.waveform && this.elements.waveform.parentElement) {
-             const parent = this.elements.waveform.parentElement;
-             this.elements.waveform.width = parent.offsetWidth;
-             this.elements.waveform.height = parent.offsetHeight;
-             this.drawWaveformPreview(this.app.currentSettings);
+            const parent = this.elements.waveform.parentElement;
+            this.elements.waveform.width = parent.offsetWidth;
+            this.elements.waveform.height = parent.offsetHeight;
+            this.drawWaveformPreview(this.app.currentSettings);
         }
     }
-    
+
 }

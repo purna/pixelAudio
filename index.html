@@ -18,6 +18,7 @@
             font-style: normal;
             font-display: swap;
         }
+
         @font-face {
             font-family: 'Inter';
             src: url('fonts/inter-bold.woff2') format('woff2');
@@ -32,6 +33,7 @@
     <link rel="stylesheet" href="css/settings.css">
     <link rel="stylesheet" href="css/modal.css">
     <link rel="stylesheet" href="css/tutorials.css">
+    <link rel="stylesheet" href="css/fmod.css">
 
 </head>
 
@@ -44,8 +46,10 @@
             <span class="badge">Studio Pro V1.0</span>
         </div>
         <div class="header-controls">
-            <button id="loadFromBrowserHeader" class="header-btn" title="Load from Browser"><i class="fas fa-download"></i></button>
-            <button id="saveToBrowserHeader" class="header-btn action" title="Save to Browser"><i class="fas fa-save"></i></button>
+            <button id="loadFromBrowserHeader" class="header-btn" title="Load from Browser"><i
+                    class="fas fa-download"></i></button>
+            <button id="saveToBrowserHeader" class="header-btn action" title="Save to Browser"><i
+                    class="fas fa-save"></i></button>
             <div class="separator"></div>
             <button onclick="randomize()" class="tool-btn"><i class="fas fa-random"></i> Randomize</button>
             <div class="separator"></div>
@@ -64,6 +68,9 @@
             </button>
             <div class="sidebar-spacer"></div>
             <div class="separator" style="margin: 8px 0;"></div>
+            <button class="icon-tab-btn" data-panel="fmod" data-tooltip-right="FMOD Banks">
+                <i class="fas fa-database"></i>
+            </button>
             <button class="icon-tab-btn" data-panel="settings" data-tooltip-right="Settings">
                 <i class="fas fa-cog"></i>
             </button>
@@ -340,7 +347,8 @@
                             <input type="range" id="delayTime" min="0.01" max="1" step="0.01" value="0.1">
                         </div>
                         <div class="control-group mt-1">
-                            <label for="delayFeedback">Feedback <span class="value" id="delayFeedbackVal">30%</span></label>
+                            <label for="delayFeedback">Feedback <span class="value"
+                                    id="delayFeedbackVal">30%</span></label>
                             <input type="range" id="delayFeedback" min="0" max="90" step="1" value="30">
                         </div>
                     </div>
@@ -454,6 +462,73 @@
             <!-- SLIDING RIGHT PANEL -->
             <div id="side-panel">
 
+                <!-- FMOD BANKS PANEL -->
+                <div id="panel-fmod" class="panel-content">
+                    <div class="panel-title-row">
+                        <h3><i class="fas fa-database"></i> FMOD Banks</h3>
+                        <span class="tooltip-icon"
+                            data-tooltip="FMOD Banks - Group your sounds into banks for export to Unity and other game engines"><i
+                                class="fas fa-question-circle"></i></span>
+                    </div>
+
+                    <!-- Bank Templates -->
+                    <div class="panel-section">
+                        <div class="panel-title-row">
+                            <h3>Banks</h3>
+                            <div class="bank-controls">
+                                <button id="fmod-add-bank" class="small-btn" title="Add Bank">
+                                    <i class="fas fa-plus"></i>
+                                </button>
+                                <button id="fmod-add-collection" class="small-btn" title="Add Collection to Bank">
+                                    <i class="fas fa-folder-plus"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div id="fmod-banks-list" class="fmod-banks-list">
+                            <!-- Banks will be populated by JavaScript -->
+                        </div>
+                    </div>
+
+                    <!-- Collections in Bank (hidden - now shown within bank items) -->
+                    <div class="panel-section" id="collections-section" style="display: none;">
+                        <div class="section-heading">
+                            Collections in Bank
+                            <span class="tooltip-icon" data-tooltip="Collections assigned to the selected bank"><i
+                                    class="fas fa-question-circle"></i></span>
+                        </div>
+                        <div id="fmod-bank-collections" class="fmod-bank-collections">
+                            <p
+                                style="color: var(--text-secondary); font-size: 0.8rem; padding: 12px; text-align: center;">
+                                Select a bank to view or add collections
+                            </p>
+                        </div>
+                        <button id="fmod-add-collection" class="btn" style="width: 100%; margin-top: 8px;">
+                            <i class="fas fa-folder-plus"></i> Add Collection to Bank
+                        </button>
+                    </div>
+
+                    <!-- Export Actions -->
+                    <div class="panel-section">
+                        <div class="section-heading">
+                            Export
+                            <span class="tooltip-icon"
+                                data-tooltip="Export banks for use in Unity or other game engines"><i
+                                    class="fas fa-question-circle"></i></span>
+                        </div>
+                        <div class="property-group">
+                            <button id="fmod-export-bank" class="btn primary" style="width: 100%;">
+                                <i class="fas fa-file-export"></i> Export Current Bank
+                            </button>
+                            <button id="fmod-export-unity" class="btn" style="width: 100%;">
+                                <i class="fas fa-code"></i> Export Unity Scripts
+                            </button>
+                            <button id="fmod-export-all" class="btn" style="width: 100%;">
+                                <i class="fas fa-download"></i> Export All Banks
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- TRACKS -->
                 <div id="panel-tracks" class="panel-content">
                     <div class="current-collection-display">
@@ -491,104 +566,173 @@
 
                     <div class="preset-category">Core Gameplay Sounds</div>
                     <div class="preset-grid">
-                        <button class="preset-btn" onclick="loadPreset('pickup')"><i class="fas fa-coins"></i> Pickup</button>
-                        <button class="preset-btn" onclick="loadPreset('laser')"><i class="fas fa-bolt"></i> Laser</button>
-                        <button class="preset-btn" onclick="loadPreset('explosion')"><i class="fas fa-bomb"></i> Boom</button>
-                        <button class="preset-btn" onclick="loadPreset('powerup')"><i class="fas fa-rocket"></i> Power</button>
+                        <button class="preset-btn" onclick="loadPreset('pickup')"><i class="fas fa-coins"></i>
+                            Pickup</button>
+                        <button class="preset-btn" onclick="loadPreset('laser')"><i class="fas fa-bolt"></i>
+                            Laser</button>
+                        <button class="preset-btn" onclick="loadPreset('explosion')"><i class="fas fa-bomb"></i>
+                            Boom</button>
+                        <button class="preset-btn" onclick="loadPreset('powerup')"><i class="fas fa-rocket"></i>
+                            Power</button>
                         <button class="preset-btn" onclick="loadPreset('hit')"><i class="fas fa-gavel"></i> Hit</button>
-                        <button class="preset-btn" onclick="loadPreset('jump')"><i class="fas fa-angle-double-up"></i> Jump</button>
-                        <button class="preset-btn" onclick="loadPreset('blip')"><i class="fas fa-dot-circle"></i> Blip</button>
+                        <button class="preset-btn" onclick="loadPreset('jump')"><i class="fas fa-angle-double-up"></i>
+                            Jump</button>
+                        <button class="preset-btn" onclick="loadPreset('blip')"><i class="fas fa-dot-circle"></i>
+                            Blip</button>
                     </div>
 
                     <div class="preset-category">Environment & World</div>
                     <div class="preset-grid">
-                        <button class="preset-btn" onclick="loadPreset('step_stone')"><i class="fas fa-square"></i> Stone</button>
-                        <button class="preset-btn" onclick="loadPreset('step_wood')"><i class="fas fa-tree"></i> Wood</button>
-                        <button class="preset-btn" onclick="loadPreset('step_sand')"><i class="fas fa-hourglass-start"></i> Sand</button>
-                        <button class="preset-btn" onclick="loadPreset('step_snow')"><i class="fas fa-snowflake"></i> Snow</button>
-                        <button class="preset-btn" onclick="loadPreset('step_gravel')"><i class="fas fa-shapes"></i> Gravel</button>
-                        <button class="preset-btn" onclick="loadPreset('thunder')"><i class="fas fa-cloud-bolt"></i> Thunder</button>
-                        <button class="preset-btn" onclick="loadPreset('volcanic_eruption')"><i class="fas fa-volcano"></i> Volcano</button>
-                        <button class="preset-btn" onclick="loadPreset('forest_ambience')"><i class="fas fa-tree"></i> Forest</button>
-                        <button class="preset-btn" onclick="loadPreset('water_splash')"><i class="fas fa-water"></i> Splash</button>
-                        <button class="preset-btn" onclick="loadPreset('fire_crackle')"><i class="fas fa-fire-alt"></i> Fire</button>
-                        <button class="preset-btn" onclick="loadPreset('wind_howl')"><i class="fas fa-cloud"></i> Wind</button>
-                        <button class="preset-btn" onclick="loadPreset('whoosh')"><i class="fas fa-wind"></i> Whoosh</button>
+                        <button class="preset-btn" onclick="loadPreset('step_stone')"><i class="fas fa-square"></i>
+                            Stone</button>
+                        <button class="preset-btn" onclick="loadPreset('step_wood')"><i class="fas fa-tree"></i>
+                            Wood</button>
+                        <button class="preset-btn" onclick="loadPreset('step_sand')"><i
+                                class="fas fa-hourglass-start"></i> Sand</button>
+                        <button class="preset-btn" onclick="loadPreset('step_snow')"><i class="fas fa-snowflake"></i>
+                            Snow</button>
+                        <button class="preset-btn" onclick="loadPreset('step_gravel')"><i class="fas fa-shapes"></i>
+                            Gravel</button>
+                        <button class="preset-btn" onclick="loadPreset('thunder')"><i class="fas fa-cloud-bolt"></i>
+                            Thunder</button>
+                        <button class="preset-btn" onclick="loadPreset('volcanic_eruption')"><i
+                                class="fas fa-volcano"></i> Volcano</button>
+                        <button class="preset-btn" onclick="loadPreset('forest_ambience')"><i class="fas fa-tree"></i>
+                            Forest</button>
+                        <button class="preset-btn" onclick="loadPreset('water_splash')"><i class="fas fa-water"></i>
+                            Splash</button>
+                        <button class="preset-btn" onclick="loadPreset('fire_crackle')"><i class="fas fa-fire-alt"></i>
+                            Fire</button>
+                        <button class="preset-btn" onclick="loadPreset('wind_howl')"><i class="fas fa-cloud"></i>
+                            Wind</button>
+                        <button class="preset-btn" onclick="loadPreset('whoosh')"><i class="fas fa-wind"></i>
+                            Whoosh</button>
                     </div>
 
                     <div class="preset-category">UI & Feedback</div>
                     <div class="preset-grid">
-                        <button class="preset-btn" onclick="loadPreset('click')"><i class="fas fa-mouse-pointer"></i> Click</button>
-                        <button class="preset-btn" onclick="loadPreset('hover')"><i class="fas fa-hand-pointer"></i> Hover</button>
-                        <button class="preset-btn" onclick="loadPreset('alarm')"><i class="fas fa-bell"></i> Alarm</button>
-                        <button class="preset-btn" onclick="loadPreset('switch_select')"><i class="fas fa-toggle-on"></i> Switch</button>
-                        <button class="preset-btn" onclick="loadPreset('menu_move')"><i class="fas fa-compass"></i> Menu</button>
-                        <button class="preset-btn" onclick="loadPreset('ui_confirm')"><i class="fas fa-check"></i> Confirm</button>
-                        <button class="preset-btn" onclick="loadPreset('ui_cancel')"><i class="fas fa-times"></i> Cancel</button>
-                        <button class="preset-btn" onclick="loadPreset('clock_ticking')"><i class="fas fa-clock"></i> Tick</button>
-                        <button class="preset-btn" onclick="loadPreset('error')"><i class="fas fa-times-circle"></i> Error</button>
-                        <button class="preset-btn" onclick="loadPreset('success')"><i class="fas fa-check-circle"></i> Success</button>
+                        <button class="preset-btn" onclick="loadPreset('click')"><i class="fas fa-mouse-pointer"></i>
+                            Click</button>
+                        <button class="preset-btn" onclick="loadPreset('hover')"><i class="fas fa-hand-pointer"></i>
+                            Hover</button>
+                        <button class="preset-btn" onclick="loadPreset('alarm')"><i class="fas fa-bell"></i>
+                            Alarm</button>
+                        <button class="preset-btn" onclick="loadPreset('switch_select')"><i
+                                class="fas fa-toggle-on"></i> Switch</button>
+                        <button class="preset-btn" onclick="loadPreset('menu_move')"><i class="fas fa-compass"></i>
+                            Menu</button>
+                        <button class="preset-btn" onclick="loadPreset('ui_confirm')"><i class="fas fa-check"></i>
+                            Confirm</button>
+                        <button class="preset-btn" onclick="loadPreset('ui_cancel')"><i class="fas fa-times"></i>
+                            Cancel</button>
+                        <button class="preset-btn" onclick="loadPreset('clock_ticking')"><i class="fas fa-clock"></i>
+                            Tick</button>
+                        <button class="preset-btn" onclick="loadPreset('error')"><i class="fas fa-times-circle"></i>
+                            Error</button>
+                        <button class="preset-btn" onclick="loadPreset('success')"><i class="fas fa-check-circle"></i>
+                            Success</button>
                     </div>
 
                     <div class="preset-category">Characters & Creatures</div>
                     <div class="preset-grid">
-                        <button class="preset-btn" onclick="loadPreset('sword_swing')"><i class="fas fa-khanda"></i> Sword</button>
-                        <button class="preset-btn" onclick="loadPreset('shield_block')"><i class="fas fa-shield-alt"></i> Shield</button>
-                        <button class="preset-btn" onclick="loadPreset('magic_spell')"><i class="fas fa-hat-wizard"></i> Magic</button>
-                        <button class="preset-btn" onclick="loadPreset('engine')"><i class="fas fa-cogs"></i> Engine</button>
-                        <button class="preset-btn" onclick="loadPreset('helicopter')"><i class="fas fa-helicopter"></i> Copter</button>
-                        <button class="preset-btn" onclick="loadPreset('bubble_pop')"><i class="fas fa-bug"></i> Bubble</button>
-                        <button class="preset-btn" onclick="loadPreset('door_creak')"><i class="fas fa-door-open"></i> Creak</button>
-                        <button class="preset-btn" onclick="loadPreset('keyboard')"><i class="fas fa-keyboard"></i> Keyboard</button>
+                        <button class="preset-btn" onclick="loadPreset('sword_swing')"><i class="fas fa-khanda"></i>
+                            Sword</button>
+                        <button class="preset-btn" onclick="loadPreset('shield_block')"><i
+                                class="fas fa-shield-alt"></i> Shield</button>
+                        <button class="preset-btn" onclick="loadPreset('magic_spell')"><i class="fas fa-hat-wizard"></i>
+                            Magic</button>
+                        <button class="preset-btn" onclick="loadPreset('engine')"><i class="fas fa-cogs"></i>
+                            Engine</button>
+                        <button class="preset-btn" onclick="loadPreset('helicopter')"><i class="fas fa-helicopter"></i>
+                            Copter</button>
+                        <button class="preset-btn" onclick="loadPreset('bubble_pop')"><i class="fas fa-bug"></i>
+                            Bubble</button>
+                        <button class="preset-btn" onclick="loadPreset('door_creak')"><i class="fas fa-door-open"></i>
+                            Creak</button>
+                        <button class="preset-btn" onclick="loadPreset('keyboard')"><i class="fas fa-keyboard"></i>
+                            Keyboard</button>
                     </div>
 
                     <div class="preset-category">Progression & Rewards</div>
                     <div class="preset-grid">
-                        <button class="preset-btn" onclick="loadPreset('coin_collect')"><i class="fas fa-coins"></i> Coin</button>
-                        <button class="preset-btn" onclick="loadPreset('bit8_coin')"><i class="fas fa-money-bill-wave"></i> 8-Bit Coin</button>
-                        <button class="preset-btn" onclick="loadPreset('bit8_jump')"><i class="fas fa-arrow-up"></i> 8-Bit Jump</button>
-                        <button class="preset-btn" onclick="loadPreset('powerup_arcade')"><i class="fas fa-gamepad"></i> Arcade</button>
-                        <button class="preset-btn" onclick="loadPreset('level_complete')"><i class="fas fa-trophy"></i> Victory</button>
-                        <button class="preset-btn" onclick="loadPreset('boss_defeated')"><i class="fas fa-crown"></i> Boss</button>
+                        <button class="preset-btn" onclick="loadPreset('coin_collect')"><i class="fas fa-coins"></i>
+                            Coin</button>
+                        <button class="preset-btn" onclick="loadPreset('bit8_coin')"><i
+                                class="fas fa-money-bill-wave"></i> 8-Bit Coin</button>
+                        <button class="preset-btn" onclick="loadPreset('bit8_jump')"><i class="fas fa-arrow-up"></i>
+                            8-Bit Jump</button>
+                        <button class="preset-btn" onclick="loadPreset('powerup_arcade')"><i class="fas fa-gamepad"></i>
+                            Arcade</button>
+                        <button class="preset-btn" onclick="loadPreset('level_complete')"><i class="fas fa-trophy"></i>
+                            Victory</button>
+                        <button class="preset-btn" onclick="loadPreset('boss_defeated')"><i class="fas fa-crown"></i>
+                            Boss</button>
                     </div>
 
                     <div class="preset-category">Narrative & Cinematic</div>
                     <div class="preset-grid">
-                        <button class="preset-btn" onclick="loadPreset('retro_explosion')"><i class="fas fa-fire"></i> Retro</button>
-                        <button class="preset-btn" onclick="loadPreset('sci_fi_laser')"><i class="fas fa-meteor"></i> Sci-Fi</button>
-                        <button class="preset-btn" onclick="loadPreset('laser_retro')"><i class="fas fa-crosshairs"></i> Laser</button>
-                        <button class="preset-btn" onclick="loadPreset('metallic_clang')"><i class="fas fa-bell"></i> Metal</button>
-                        <button class="preset-btn" onclick="loadPreset('wood_impact')"><i class="fas fa-drum"></i> Wood</button>
-                        <button class="preset-btn" onclick="loadPreset('glass_shatter')"><i class="fas fa-glass-cheers"></i> Glass</button>
-                        <button class="preset-btn" onclick="loadPreset('glitch_hit')"><i class="fas fa-exclamation-triangle"></i> Glitch</button>
-                        <button class="preset-btn" onclick="loadPreset('sonar')"><i class="fas fa-wave-square"></i> Sonar</button>
+                        <button class="preset-btn" onclick="loadPreset('retro_explosion')"><i class="fas fa-fire"></i>
+                            Retro</button>
+                        <button class="preset-btn" onclick="loadPreset('sci_fi_laser')"><i class="fas fa-meteor"></i>
+                            Sci-Fi</button>
+                        <button class="preset-btn" onclick="loadPreset('laser_retro')"><i class="fas fa-crosshairs"></i>
+                            Laser</button>
+                        <button class="preset-btn" onclick="loadPreset('metallic_clang')"><i class="fas fa-bell"></i>
+                            Metal</button>
+                        <button class="preset-btn" onclick="loadPreset('wood_impact')"><i class="fas fa-drum"></i>
+                            Wood</button>
+                        <button class="preset-btn" onclick="loadPreset('glass_shatter')"><i
+                                class="fas fa-glass-cheers"></i> Glass</button>
+                        <button class="preset-btn" onclick="loadPreset('glitch_hit')"><i
+                                class="fas fa-exclamation-triangle"></i> Glitch</button>
+                        <button class="preset-btn" onclick="loadPreset('sonar')"><i class="fas fa-wave-square"></i>
+                            Sonar</button>
                     </div>
 
                     <div class="preset-category">Special & Misc</div>
                     <div class="preset-grid">
-                        <button class="preset-btn" onclick="loadPreset('synth_pad')"><i class="fas fa-music"></i> Pad</button>
-                        <button class="preset-btn" onclick="loadPreset('distorted_bass')"><i class="fas fa-music"></i> Distort Bass</button>
-                        <button class="preset-btn" onclick="loadPreset('phased_sweep')"><i class="fas fa-wave-up"></i> Phased</button>
-                        <button class="preset-btn" onclick="loadPreset('space_echo')"><i class="fas fa-satellite"></i> Space Echo</button>
-                        <button class="preset-btn" onclick="loadPreset('retro_organ')"><i class="fas fa-music"></i> Retro Organ</button>
-                        <button class="preset-btn" onclick="loadPreset('bitcrush_bass')"><i class="fas fa-volume-down"></i> Bit Bass</button>
-                        <button class="preset-btn" onclick="loadPreset('filtered_sweep')"><i class="fas fa-filter"></i> Filter Sweep</button>
-                        <button class="preset-btn" onclick="loadPreset('metallic_echo')"><i class="fas fa-broadcast-tower"></i> Metal Echo</button>
-                        <button class="preset-btn" onclick="loadPreset('lofi_pad')"><i class="fas fa-headphones"></i> Lofi Pad</button>
+                        <button class="preset-btn" onclick="loadPreset('synth_pad')"><i class="fas fa-music"></i>
+                            Pad</button>
+                        <button class="preset-btn" onclick="loadPreset('distorted_bass')"><i class="fas fa-music"></i>
+                            Distort Bass</button>
+                        <button class="preset-btn" onclick="loadPreset('phased_sweep')"><i class="fas fa-wave-up"></i>
+                            Phased</button>
+                        <button class="preset-btn" onclick="loadPreset('space_echo')"><i class="fas fa-satellite"></i>
+                            Space Echo</button>
+                        <button class="preset-btn" onclick="loadPreset('retro_organ')"><i class="fas fa-music"></i>
+                            Retro Organ</button>
+                        <button class="preset-btn" onclick="loadPreset('bitcrush_bass')"><i
+                                class="fas fa-volume-down"></i> Bit Bass</button>
+                        <button class="preset-btn" onclick="loadPreset('filtered_sweep')"><i class="fas fa-filter"></i>
+                            Filter Sweep</button>
+                        <button class="preset-btn" onclick="loadPreset('metallic_echo')"><i
+                                class="fas fa-broadcast-tower"></i> Metal Echo</button>
+                        <button class="preset-btn" onclick="loadPreset('lofi_pad')"><i class="fas fa-headphones"></i>
+                            Lofi Pad</button>
                     </div>
 
                     <div class="preset-category">Music / Songs</div>
                     <div class="preset-grid">
-                        <button class="preset-btn" onclick="loadPreset('chip_melody')"><i class="fas fa-music"></i> Chip Melody</button>
-                        <button class="preset-btn" onclick="loadPreset('retro_bass_line')"><i class="fas fa-guitar"></i> Retro Bass</button>
-                        <button class="preset-btn" onclick="loadPreset('space_arpeggio')"><i class="fas fa-rocket"></i> Space Arp</button>
-                        <button class="preset-btn" onclick="loadPreset('dreamy_sequence')"><i class="fas fa-cloud"></i> Dreamy</button>
-                        <button class="preset-btn" onclick="loadPreset('bit8_dance')"><i class="fas fa-record-vinyl"></i> 8-Bit Dance</button>
-                        <button class="preset-btn" onclick="loadPreset('funky_waveform')"><i class="fas fa-wave-square"></i> Funky</button>
-                        <button class="preset-btn" onclick="loadPreset('arcade_tune')"><i class="fas fa-gamepad"></i> Arcade Tune</button>
-                        <button class="preset-btn" onclick="loadPreset('synth_wave')"><i class="fas fa-compact-disc"></i> Synth Wave</button>
-                        <button class="preset-btn" onclick="loadPreset('glitchy_groove')"><i class="fas fa-bolt"></i> Glitchy</button>
-                        <button class="preset-btn" onclick="loadPreset('cosmic_journey')"><i class="fas fa-satellite-dish"></i> Cosmic</button>
+                        <button class="preset-btn" onclick="loadPreset('chip_melody')"><i class="fas fa-music"></i> Chip
+                            Melody</button>
+                        <button class="preset-btn" onclick="loadPreset('retro_bass_line')"><i class="fas fa-guitar"></i>
+                            Retro Bass</button>
+                        <button class="preset-btn" onclick="loadPreset('space_arpeggio')"><i class="fas fa-rocket"></i>
+                            Space Arp</button>
+                        <button class="preset-btn" onclick="loadPreset('dreamy_sequence')"><i class="fas fa-cloud"></i>
+                            Dreamy</button>
+                        <button class="preset-btn" onclick="loadPreset('bit8_dance')"><i
+                                class="fas fa-record-vinyl"></i> 8-Bit Dance</button>
+                        <button class="preset-btn" onclick="loadPreset('funky_waveform')"><i
+                                class="fas fa-wave-square"></i> Funky</button>
+                        <button class="preset-btn" onclick="loadPreset('arcade_tune')"><i class="fas fa-gamepad"></i>
+                            Arcade Tune</button>
+                        <button class="preset-btn" onclick="loadPreset('synth_wave')"><i
+                                class="fas fa-compact-disc"></i> Synth Wave</button>
+                        <button class="preset-btn" onclick="loadPreset('glitchy_groove')"><i class="fas fa-bolt"></i>
+                            Glitchy</button>
+                        <button class="preset-btn" onclick="loadPreset('cosmic_journey')"><i
+                                class="fas fa-satellite-dish"></i> Cosmic</button>
                     </div>
                 </div>
 
@@ -637,7 +781,8 @@
                                     <input type="checkbox" id="settings-auto-save" checked>
                                     <span class="checkmark"></span> Auto Save
                                 </label>
-                                <div class="setting-description">Automatically save your work to browser every 60 seconds</div>
+                                <div class="setting-description">Automatically save your work to browser every 60
+                                    seconds</div>
 
                                 <label class="setting-label">
                                     <input type="checkbox" id="settings-darkmode" checked>
@@ -653,11 +798,11 @@
                             <div class="property-group">
                                 <label class="property-label" for="settings-default-length">
                                     Length:
-                                    <input type="number" id="settings-default-length" name="settings-default-length" min="0.1" max="10" step="0.1"
-                                        value="1.0"
+                                    <input type="number" id="settings-default-length" name="settings-default-length"
+                                        min="0.1" max="10" step="0.1" value="1.0"
                                         style="background: var(--bg-light); border: 1px solid var(--border-color); border-radius: 4px; padding: 6px 10px; font-size: 0.8rem; color: var(--text-primary); width: 100%; margin-top: 6px;">
                                 </label>
-                                 <div class="setting-description">Default Timeline Length (s)</div>
+                                <div class="setting-description">Default Timeline Length (s)</div>
 
 
                                 <label class="property-label" for="settings-theme">
@@ -685,11 +830,11 @@
                             <div class="property-group">
                                 <label class="property-label" for="settings-master-volume">
                                     Volume:
-                                    <input type="range" id="settings-master-volume" name="settings-master-volume" min="0" max="100" value="100"
-                                        style="width: 100%; margin-top: 6px;">
+                                    <input type="range" id="settings-master-volume" name="settings-master-volume"
+                                        min="0" max="100" value="100" style="width: 100%; margin-top: 6px;">
                                     <span class="range-value" id="master-volume-value">100%</span>
                                 </label>
-                                 <div class="setting-description">Master Volume Control (0-100)</div>
+                                <div class="setting-description">Master Volume Control (0-100)</div>
 
 
                                 <label class="setting-label">
@@ -713,22 +858,24 @@
                             <div class="property-group">
                                 <label class="property-label" for="settings-export-quality">
                                     Quality:
-                                    <input type="range" id="settings-export-quality" name="settings-export-quality" min="0.1" max="1.0" step="0.1"
-                                        value="1.0" style="width: 100%; margin-top: 6px;">
+                                    <input type="range" id="settings-export-quality" name="settings-export-quality"
+                                        min="0.1" max="1.0" step="0.1" value="1.0"
+                                        style="width: 100%; margin-top: 6px;">
                                     <span class="range-value" id="export-quality-value">100%</span>
                                 </label>
-                                 <div class="setting-description">Export quality (0.1-1.0)</div>
+                                <div class="setting-description">Export quality (0.1-1.0)</div>
 
                                 <label class="property-label" for="settings-export-format">
-                                     Format:
-                                    <select id="settings-export-format" name="settings-export-format" class="settings-select">
+                                    Format:
+                                    <select id="settings-export-format" name="settings-export-format"
+                                        class="settings-select">
                                         <option value="wav" selected>WAV (Lossless)</option>
                                         <option value="mp3">MP3 (Compressed)</option>
                                         <option value="ogg">OGG (Compressed)</option>
                                         <option value="midi">MIDI (Music Data)</option>
                                     </select>
                                 </label>
-                                  <div class="setting-description">Export Format (WAV, MP3, OGG, MIDI)</div>
+                                <div class="setting-description">Export Format (WAV, MP3, OGG, MIDI)</div>
 
                             </div>
 
@@ -750,12 +897,13 @@
                             <button id="saveToBrowserBtn" class="btn">
                                 <i class="fas fa-save"></i> Save to Browser
                             </button>
-                            <button id="loadFromBrowserBtn" class="btn secondary" >
+                            <button id="loadFromBrowserBtn" class="btn secondary">
                                 <i class="fas fa-download"></i> Load from Browser
                             </button>
                         </div>
                         <div class="property-group">
-                            <button id="clearAllContentBtn" class="btn" style="background-color: #ff4444; color: white;">
+                            <button id="clearAllContentBtn" class="btn"
+                                style="background-color: #ff4444; color: white;">
                                 <i class="fas fa-trash-alt"></i> Clear All Content
                             </button>
                         </div>
@@ -791,7 +939,7 @@
                         <div class="settings-section">
                             <div class="section-heading">Tutorial Actions</div>
                             <div class="property-group">
-                                <button id="startTutorialBtn" class="btn" >
+                                <button id="startTutorialBtn" class="btn">
                                     <i class="fas fa-graduation-cap"></i> Start Tutorial
                                 </button>
                                 <button id="resetTutorialProgressBtn" class="btn secondary">
@@ -830,11 +978,13 @@
     <script src="js/notifications.js"></script>
     <script src="js/settings-manager.js"></script>
     <script src="js/ui.js"></script>
+    <script src="js/fmodManager.js"></script>
+    <script src="js/fmodUI.js"></script>
     <script src="js/main.js"></script>
     <!-- Font verification script -->
     <script>
         // Simple font verification
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function () {
             // Check if Press Start 2P font is loaded
             const fontTest = document.getElementById('font-test');
             if (fontTest) {

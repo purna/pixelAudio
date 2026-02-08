@@ -1,0 +1,530 @@
+/* fmod.css - FMOD Manager UI Styling */
+
+/* FMOD Section in Settings */
+.section-heading {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--text-primary, #e0e0e0);
+    padding-top: 16px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border-color, #444);
+}
+
+.property-group {
+    margin-bottom: 16px;
+}
+
+/* FMOD Buttons */
+.property-group .btn {
+    width: 100%;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 10px 16px;
+    font-size: 0.85rem;
+}
+
+.property-group .btn i {
+    font-size: 1rem;
+}
+
+/* FMOD Event List Panel */
+#panel-fmod-events {
+    padding: 16px;
+}
+
+/* FMOD Bank Controls */
+.bank-controls {
+    display: flex;
+    gap: 6px;
+    margin-left: auto;
+}
+
+/* FMOD Banks List */
+.fmod-banks-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 12px;
+}
+
+.fmod-bank-item {
+    display: flex;
+    flex-direction: column;
+    background: var(--bg-light, #2a2a2a);
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: 2px solid transparent;
+    overflow: hidden;
+}
+
+.fmod-bank-item:hover {
+    background: var(--bg-hover, #3a3a3a);
+}
+
+.fmod-bank-item.selected {
+    border-color: var(--accent-color, #4a90d9);
+    background: var(--bg-hover, #3a3a3a);
+}
+
+.fmod-bank-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px;
+    width: 100%;
+}
+
+.fmod-bank-info {
+    flex: 1;
+}
+
+.fmod-bank-name {
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--text-primary, #e0e0e0);
+}
+
+.fmod-bank-category {
+    font-size: 0.7rem;
+    opacity: 0.7;
+    text-transform: uppercase;
+    color: var(--text-secondary, #aaa);
+}
+
+.fmod-bank-count {
+    font-size: 0.75rem;
+    color: var(--text-secondary, #aaa);
+    margin-right: 8px;
+}
+
+.fmod-bank-badge {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+}
+
+.fmod-badge-ui {
+    background: #4CAF50;
+}
+
+.fmod-badge-gameplay {
+    background: #2196F3;
+}
+
+.fmod-badge-environment {
+    background: #FF9800;
+}
+
+.fmod-badge-music {
+    background: #9C27B0;
+}
+
+.fmod-badge-voice {
+    background: #E91E63;
+}
+
+/* Collections within Bank */
+.fmod-bank-collections-list {
+    padding: 0 12px 12px 12px;
+    margin-left: 12px;
+    border-left: 2px solid var(--border-color, #444);
+}
+
+.fmod-no-collections {
+    font-size: 0.75rem;
+    color: var(--text-secondary, #888);
+    font-style: italic;
+}
+
+.fmod-bank-collection-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 6px 8px;
+    background: var(--bg-dark, #1a1a1a);
+    border-radius: 4px;
+    margin-bottom: 4px;
+}
+
+.fmod-collection-name {
+    font-size: 0.75rem;
+    color: var(--text-primary, #e0e0e0);
+}
+
+.fmod-collection-name i {
+    margin-right: 6px;
+    color: var(--text-secondary, #aaa);
+}
+
+.fmod-remove-collection {
+    background: none;
+    border: none;
+    color: var(--text-secondary, #aaa);
+    cursor: pointer;
+    padding: 2px 6px;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+    font-size: 0.7rem;
+}
+
+.fmod-remove-collection:hover {
+    background: rgba(255, 68, 68, 0.2);
+    color: #ff4444;
+}
+
+.fmod-event-list {
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.fmod-event-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 12px;
+    background: var(--bg-light, #2a2a2a);
+    border-radius: 6px;
+    margin-bottom: 8px;
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+
+.fmod-event-item:hover {
+    background: var(--bg-hover, #3a3a3a);
+}
+
+.fmod-event-item.selected {
+    background: var(--accent-color, #4a90d9);
+    color: white;
+}
+
+.fmod-event-name {
+    font-size: 0.85rem;
+    font-weight: 500;
+}
+
+.fmod-event-category {
+    font-size: 0.7rem;
+    opacity: 0.7;
+    text-transform: uppercase;
+}
+
+.fmod-event-badge {
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 0.65rem;
+    font-weight: 600;
+}
+
+.fmod-badge-ui {
+    background: #4CAF50;
+    color: white;
+}
+
+.fmod-badge-gameplay {
+    background: #2196F3;
+    color: white;
+}
+
+.fmod-badge-environment {
+    background: #FF9800;
+    color: white;
+}
+
+.fmod-badge-music {
+    background: #9C27B0;
+    color: white;
+}
+
+.fmod-badge-voice {
+    background: #E91E63;
+    color: white;
+}
+
+/* FMOD Parameter Controls */
+.fmod-parameter-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--border-color, #333);
+}
+
+.fmod-param-label {
+    font-size: 0.8rem;
+    color: var(--text-secondary, #aaa);
+}
+
+.fmod-param-value {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--text-primary, #e0e0e0);
+    min-width: 60px;
+    text-align: right;
+}
+
+/* FMOD Automation Curve Editor */
+.automation-curve-container {
+    position: relative;
+    height: 120px;
+    background: var(--bg-light, #2a2a2a);
+    border-radius: 8px;
+    margin: 16px 0;
+    overflow: hidden;
+}
+
+.automation-curve-canvas {
+    width: 100%;
+    height: 100%;
+}
+
+.automation-point {
+    position: absolute;
+    width: 12px;
+    height: 12px;
+    background: var(--accent-color, #4a90d9);
+    border: 2px solid white;
+    border-radius: 50%;
+    cursor: grab;
+    transform: translate(-50%, -50%);
+    z-index: 10;
+}
+
+.automation-point:hover {
+    transform: translate(-50%, -50%) scale(1.2);
+}
+
+.automation-point.dragging {
+    cursor: grabbing;
+    background: var(--accent-hover, #5aa0e9);
+}
+
+/* FMOD Master Bus Meter */
+.master-bus-meter {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px;
+    background: var(--bg-light, #2a2a2a);
+    border-radius: 8px;
+    margin-bottom: 16px;
+}
+
+.meter-label {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--text-primary, #e0e0e0);
+    min-width: 80px;
+}
+
+.meter-bar-container {
+    flex: 1;
+    height: 8px;
+    background: var(--bg-dark, #1a1a1a);
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.meter-bar {
+    height: 100%;
+    background: linear-gradient(90deg, #4CAF50, #FFEB3B, #FF5722);
+    width: 0%;
+    transition: width 0.05s linear;
+}
+
+.meter-value {
+    font-size: 0.75rem;
+    color: var(--text-secondary, #aaa);
+    min-width: 50px;
+    text-align: right;
+}
+
+/* FMOD EQ Controls */
+.fmod-eq-controls {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    padding: 12px;
+    background: var(--bg-light, #2a2a2a);
+    border-radius: 8px;
+    margin-bottom: 16px;
+}
+
+.eq-band-control {
+    text-align: center;
+}
+
+.eq-band-label {
+    font-size: 0.7rem;
+    color: var(--text-secondary, #aaa);
+    margin-bottom: 6px;
+    text-transform: uppercase;
+}
+
+.eq-band-slider {
+    width: 100%;
+    height: 80px;
+    -webkit-appearance: none;
+    appearance: none;
+    writing-mode: bt-lr;
+    /* IE/Edge */
+    -webkit-appearance: slider-vertical;
+    /* WebKit */
+    width: 8px;
+    height: 60px;
+    background: transparent;
+    cursor: pointer;
+}
+
+.eq-band-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 16px;
+    height: 16px;
+    background: var(--accent-color, #4a90d9);
+    border-radius: 50%;
+    cursor: pointer;
+}
+
+.eq-band-value {
+    font-size: 0.75rem;
+    color: var(--text-primary, #e0e0e0);
+    margin-top: 4px;
+}
+
+/* FMOD Effects Chain */
+.effects-chain {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px;
+    background: var(--bg-light, #2a2a2a);
+    border-radius: 8px;
+    overflow-x: auto;
+}
+
+.effect-module {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 8px 12px;
+    background: var(--bg-dark, #1a1a1a);
+    border-radius: 6px;
+    min-width: 60px;
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+
+.effect-module:hover {
+    background: var(--bg-hover, #3a3a3a);
+}
+
+.effect-module.active {
+    background: var(--accent-color, #4a90d9);
+}
+
+.effect-module.bypassed {
+    opacity: 0.5;
+}
+
+.effect-icon {
+    font-size: 1.2rem;
+    margin-bottom: 4px;
+}
+
+.effect-name {
+    font-size: 0.65rem;
+    color: var(--text-secondary, #aaa);
+    text-transform: uppercase;
+}
+
+.effect-module.active .effect-name {
+    color: white;
+}
+
+.effect-connector {
+    width: 20px;
+    height: 2px;
+    background: var(--border-color, #444);
+}
+
+/* Tooltip icons */
+.tooltip-icon {
+    color: var(--text-secondary, #aaa);
+    cursor: help;
+    margin-left: 8px;
+    font-size: 0.8rem;
+}
+
+.tooltip-icon:hover {
+    color: var(--accent-color, #4a90d9);
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+    .fmod-eq-controls {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 8px;
+    }
+
+    .effects-chain {
+        flex-wrap: wrap;
+    }
+}
+
+/* FMOD Dialog Styles */
+.fmod-dialog-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
+}
+
+.fmod-dialog-content {
+    background: var(--bg-panel);
+    padding: 24px;
+    border-radius: 8px;
+    max-width: 400px;
+    width: 90%;
+}
+
+.fmod-dialog-title {
+    margin-bottom: 16px;
+}
+
+.fmod-dialog-description {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    margin-bottom: 16px;
+}
+
+.fmod-dialog-select {
+    width: 100%;
+    padding: 8px;
+    margin-bottom: 12px;
+}
+
+.fmod-dialog-confirm {
+    width: 100%;
+    margin-top: 12px;
+}
+
+.fmod-dialog-cancel {
+    width: 100%;
+    margin-top: 8px;
+}
+
+/* Hide the separate collections section since we now show them in the bank items */
+#fmod-bank-collections {
+    display: none;
+}

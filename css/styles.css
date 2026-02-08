@@ -29,6 +29,8 @@
     --tile-dim: 32;
     /* The number of logical pixels across the tile */
     --pixel-size: 16px;
+
+    --bg-panel: #1a1a2e;
 }
 
 /* ============================================= */

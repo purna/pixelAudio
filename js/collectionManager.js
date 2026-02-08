@@ -71,6 +71,11 @@ class CollectionManager {
         return this.collections.find(c => c.id === this.currentCollectionId);
     }
 
+    // Get all collections
+    getAllCollections() {
+        return this.collections;
+    }
+
     renameCollection(collectionId, newName) {
         const collection = this.collections.find(c => c.id === collectionId);
         if (collection) {

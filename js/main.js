@@ -23,11 +23,11 @@ class SFXGeneratorApp {
 
         // Copy/paste track clipboard
         this.copiedTrack = null;
-        
+
         // Playback state tracking
         this.isPlayingSelected = false;
         this.isPlayingAll = false;
-        
+
         // Auto-save settings
         this.autoSaveEnabled = true;
         this.autoSaveInterval = null;
@@ -66,7 +66,7 @@ class SFXGeneratorApp {
 
         // Setup event listeners
         this.setupEventListeners();
-        
+
         // Initialize UI first, then layers
         this.ui.init();
 
@@ -83,6 +83,24 @@ class SFXGeneratorApp {
         // Initialize database manager and UI
         if (this.databaseManager) {
             // Database UI will be added automatically when settings are opened
+        }
+
+        // Initialize FMOD Manager
+        if (typeof FMODManager !== 'undefined') {
+            console.log('main.js: FMODManager class found');
+            this.fmodManager = new FMODManager(this.audioEngine);
+            console.log('FMOD Manager initialized');
+
+            // Initialize FMOD UI
+            if (typeof FMODUI !== 'undefined') {
+                console.log('main.js: FMODUI class found');
+                this.fmodUI = new FMODUI(this);
+                console.log('FMOD UI initialized');
+            } else {
+                console.error('main.js: FMODUI class not found');
+            }
+        } else {
+            console.error('main.js: FMODManager class not found');
         }
 
         // Auto-start tutorial if enabled (default: enabled)
@@ -133,7 +151,7 @@ class SFXGeneratorApp {
 
         // Mark as initialized
         this.initialized = true;
-        
+
         // Initialize play button icons
         this.updatePlayButtonIcons();
     }
@@ -346,18 +364,43 @@ class SFXGeneratorApp {
         const saveToBrowserHeader = document.getElementById('saveToBrowserHeader');
         if (saveToBrowserHeader) {
             saveToBrowserHeader.addEventListener('click', () => {
-                this.saveAllToBrowser();
+                console.log('Save to Browser button clicked');
+                const result = this.saveAllToBrowser();
+                console.log('saveAllToBrowser result:', result);
             });
+        } else {
+            console.error('saveToBrowserHeader button not found in DOM');
         }
 
         // Load from Browser button (header)
         const loadFromBrowserHeader = document.getElementById('loadFromBrowserHeader');
         if (loadFromBrowserHeader) {
             loadFromBrowserHeader.addEventListener('click', () => {
+                console.log('Load from Browser button clicked');
                 const loaded = this.loadFromBrowser(false);
-                if (!loaded) {
-                    this.notifications.showNotification('No saved project found in browser', 'info');
-                }
+                console.log('loadFromBrowser result:', loaded);
+            });
+        } else {
+            console.error('loadFromBrowserHeader button not found in DOM');
+        }
+
+        // Save to Browser button (settings modal)
+        const saveToBrowserBtn = document.getElementById('saveToBrowserBtn');
+        if (saveToBrowserBtn) {
+            saveToBrowserBtn.addEventListener('click', () => {
+                console.log('saveToBrowserBtn clicked');
+                const result = this.saveAllToBrowser();
+                console.log('saveAllToBrowser result:', result);
+            });
+        }
+
+        // Load from Browser button (settings modal)
+        const loadFromBrowserBtn = document.getElementById('loadFromBrowserBtn');
+        if (loadFromBrowserBtn) {
+            loadFromBrowserBtn.addEventListener('click', () => {
+                console.log('loadFromBrowserBtn clicked');
+                const loaded = this.loadFromBrowser(false);
+                console.log('loadFromBrowser result:', loaded);
             });
         }
 
@@ -376,7 +419,7 @@ class SFXGeneratorApp {
                 this.layerManager.addTrack();
             });
         }
-        
+
         // Auto-save checkbox in settings
         const autoSaveCheckbox = document.getElementById('settings-auto-save');
         if (autoSaveCheckbox) {
@@ -386,7 +429,7 @@ class SFXGeneratorApp {
                 autoSaveCheckbox.checked = savedAutoSave === 'true';
                 this.autoSaveEnabled = savedAutoSave === 'true';
             }
-            
+
             autoSaveCheckbox.addEventListener('change', (e) => {
                 this.toggleAutoSave(e.target.checked);
             });
@@ -466,12 +509,12 @@ class SFXGeneratorApp {
         const playSelectedBtn = document.getElementById('playSelectedBtn');
         const playSelected = document.getElementById('playSelected');
         const playTimelineBtn = document.getElementById('playTimeline');
-        
+
         const playIconClass = 'fas fa-play';
         const pauseIconClass = 'fas fa-pause';
         const playCircleIconClass = 'fas fa-play-circle';
         const pauseCircleIconClass = 'fas fa-pause-circle';
-        
+
         // Update play selected buttons
         [playSelectedBtn, playSelected].forEach(btn => {
             if (btn) {
@@ -483,7 +526,7 @@ class SFXGeneratorApp {
                 btn.title = this.isPlayingSelected ? 'Pause' : 'Play Selected';
             }
         });
-        
+
         // Update play all button (uses play-circle icon)
         if (playTimelineBtn) {
             const icon = playTimelineBtn.querySelector('i');
@@ -505,20 +548,20 @@ class SFXGeneratorApp {
                 this.notifications.showNotification('No track selected', 'error');
                 return;
             }
-            
+
             const settings = selectedTrack.settings;
             console.log('Generating sound with settings:', settings);
-            
+
             const buffer = this.soundGenerator.generate(
                 settings,
                 this.audioEngine.sampleRate
             );
             console.log('Buffer generated:', buffer);
-            
+
             // Calculate duration for timeline synchronization
             const duration = this.soundGenerator.calculateDuration(settings);
             console.log('Sound duration:', duration, 'seconds');
-            
+
             // Play with callback to stop timeline when done
             await this.audioEngine.playBuffer(buffer, () => {
                 // Stop timeline playback when sound ends
@@ -553,11 +596,11 @@ class SFXGeneratorApp {
 
     async loadPreset(presetName) {
         console.log('loadPreset called with:', presetName);
-        
+
         // Debug: Log available presets
         const allPresets = this.presets.getAll();
         console.log('Available presets:', allPresets.length, 'presets');
-        
+
         const preset = this.presets.get(presetName);
         if (!preset) {
             console.error('Preset not found:', presetName);
@@ -568,10 +611,10 @@ class SFXGeneratorApp {
         // Merge preset with default values to ensure all required properties exist
         const defaultSettings = this.getDefaultSettings();
         const mergedPreset = { ...defaultSettings, ...preset };
-        
+
         // Ensure all nested optional properties have defaults
         mergedPreset.waveform = preset.waveform || 'square';
-        
+
         // Save state for undo
         this.saveUndoState();
 
@@ -580,16 +623,16 @@ class SFXGeneratorApp {
         if (selectedTrack) {
             // Apply preset to selected track
             this.layerManager.updateTrackSettings(selectedTrack.id, mergedPreset);
-            
+
             // Force sync app's currentSettings
             this.currentSettings = { ...mergedPreset };
-            
+
             // Update UI to show new values
             this.ui.updateDisplay(mergedPreset);
-            
+
             // Redraw timeline to show updated waveform
             this.timeline.render();
-            
+
             // Play the updated track
             await this.playCurrentSound();
         } else {
@@ -603,22 +646,22 @@ class SFXGeneratorApp {
 
     async randomize() {
         const randomSettings = this.presets.generateRandom();
-        
+
         // Save state for undo
         this.saveUndoState();
-        
+
         const selectedTrack = this.layerManager.getSelectedTrack();
-        
+
         if (selectedTrack) {
             // Apply to selected track
             this.layerManager.updateTrackSettings(selectedTrack.id, randomSettings);
-            
+
             // Force sync app's currentSettings
             this.currentSettings = { ...randomSettings };
-            
+
             // Update UI
             this.ui.updateDisplay(randomSettings);
-            
+
             // Redraw timeline
             this.timeline.render();
         } else {
@@ -626,19 +669,19 @@ class SFXGeneratorApp {
             this.currentSettings = { ...randomSettings };
             this.ui.updateDisplay(randomSettings);
         }
-        
+
         await this.playCurrentSound();
     }
 
     saveUndoState() {
         const state = this.getState();
         this.undoStack.push(JSON.parse(JSON.stringify(state)));
-        
+
         // Limit undo stack size
         if (this.undoStack.length > this.maxUndoSteps) {
             this.undoStack.shift();
         }
-        
+
         // Clear redo stack when new action is performed
         this.redoStack = [];
     }
@@ -648,15 +691,15 @@ class SFXGeneratorApp {
             this.notifications.showNotification('Nothing to undo', 'info');
             return;
         }
-        
+
         // Save current state to redo stack
         const currentState = this.getState();
         this.redoStack.push(JSON.parse(JSON.stringify(currentState)));
-        
+
         // Restore previous state
         const previousState = this.undoStack.pop();
         this.setState(previousState);
-        
+
         this.notifications.showNotification('Undo', 'info');
     }
 
@@ -665,15 +708,15 @@ class SFXGeneratorApp {
             this.notifications.showNotification('Nothing to redo', 'info');
             return;
         }
-        
+
         // Save current state to undo stack
         const currentState = this.getState();
         this.undoStack.push(JSON.parse(JSON.stringify(currentState)));
-        
+
         // Restore next state
         const nextState = this.redoStack.pop();
         this.setState(nextState);
-        
+
         this.notifications.showNotification('Redo', 'info');
     }
 
@@ -745,8 +788,8 @@ class SFXGeneratorApp {
             this.notifications.showNotification('All content saved to browser!', 'success');
 
             console.log('Saved complete project to browser with',
-                       completeState.collections.collections.length, 'collections and',
-                       completeState.tracks.tracks.length, 'tracks');
+                completeState.collections.collections.length, 'collections and',
+                completeState.tracks.tracks.length, 'tracks');
 
             return true;
         } catch (error) {
@@ -755,7 +798,7 @@ class SFXGeneratorApp {
             return false;
         }
     }
-    
+
     // Load from browser on startup (silent)
     loadFromBrowser(silent = false) {
         try {
@@ -779,22 +822,22 @@ class SFXGeneratorApp {
         }
         return false;
     }
-    
+
     // Enable auto-save
     enableAutoSave() {
         if (this.autoSaveInterval) {
             clearInterval(this.autoSaveInterval);
         }
-        
+
         this.autoSaveInterval = setInterval(() => {
             if (this.autoSaveEnabled) {
                 this.saveAllToBrowser();
             }
         }, 60000); // Auto-save every 60 seconds
-        
+
         console.log('Auto-save enabled');
     }
-    
+
     // Disable auto-save
     disableAutoSave() {
         if (this.autoSaveInterval) {
@@ -803,7 +846,7 @@ class SFXGeneratorApp {
         }
         console.log('Auto-save disabled');
     }
-    
+
     // Toggle auto-save
     toggleAutoSave(enabled) {
         this.autoSaveEnabled = enabled;
@@ -814,7 +857,7 @@ class SFXGeneratorApp {
             this.disableAutoSave();
             this.notifications.showNotification('Auto-save disabled', 'info');
         }
-        
+
         // Save setting to localStorage
         localStorage.setItem('pixelAudioAutoSave', enabled ? 'true' : 'false');
     }
@@ -825,8 +868,9 @@ let app;
 
 document.addEventListener('DOMContentLoaded', () => {
     app = new SFXGeneratorApp();
+    window.app = app; // Make globally accessible for FMOD UI and other components
     app.init();
-    
+
     // Mark as initialized after everything is set up
     app.initialized = true;
 });
