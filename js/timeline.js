@@ -24,6 +24,8 @@ class Timeline {
         this.trackPadding = 5;
         this.rulerHeight = 30;
         this.totalLength = 5; // seconds (user can change)
+        this.waveformCache = new Map();
+        this.settingsHashes = new Map();
     }
 
     init() {
@@ -168,17 +170,28 @@ class Timeline {
                 this.ctx.fillRect(x + width - 4, y + 5, 8, this.trackHeight - 10);
             }
 
-            // WAVEFORM VISUALIZATION - Only draw if width is reasonable
+// WAVEFORM VISUALIZATION - Only draw if width is reasonable
             if (width > 10) {
                 try {
-                    const buffer = this.app.soundGenerator.generate(layer.settings, 44100);
+                    let buffer;
+                    const layerId = layer.id;
+                    const settingsStr = JSON.stringify(layer.settings);
+                    
+                    if (this.settingsHashes.get(layerId) !== settingsStr) {
+                        buffer = this.app.soundGenerator.generate(layer.settings, 44100);
+                        this.waveformCache.set(layerId, buffer);
+                        this.settingsHashes.set(layerId, settingsStr);
+                    } else {
+                        buffer = this.waveformCache.get(layerId);
+                    }
+                    
                     if (!buffer || !buffer.getChannelData) {
                         throw new Error('Invalid audio buffer');
                     }
                     
                     const raw = buffer.getChannelData(0);
                     const samples = raw.length;
-                    
+
                     if (samples === 0) {
                         throw new Error('Empty audio buffer');
                     }
@@ -186,41 +199,40 @@ class Timeline {
                     const amp = (this.trackHeight - 16) / 2;
 
                     this.ctx.save();
-                    this.ctx.translate(x, y + 5 + (this.trackHeight - 10) / 2);
-                    this.ctx.strokeStyle = layer.id === this.app.layerManager.selectedLayerId ? '#ffffff' : '#e0e7ff';
-                    this.ctx.lineWidth = layer.id === this.app.layerManager.selectedLayerId ? 2 : 1.2;
-                    this.ctx.globalAlpha = layer.muted ? 0.4 : 0.9;
+                    try {
+                        this.ctx.beginPath();
+                        this.ctx.rect(x, y + 5, width, this.trackHeight - 10);
+                        this.ctx.clip();
+                        this.ctx.translate(x, y + 5 + (this.trackHeight - 10) / 2);
+                        this.ctx.strokeStyle = layer.id === this.app.layerManager.selectedLayerId ? '#ffffff' : '#e0e7ff';
+                        this.ctx.lineWidth = layer.id === this.app.layerManager.selectedLayerId ? 2 : 1.2;
+                        this.ctx.globalAlpha = layer.muted ? 0.4 : 0.9;
 
-                    this.ctx.beginPath();
-                    let first = true;
-
-                    for (let i = 0; i < width; i += 1) {
-                        const sampleIndex = Math.floor(i * samples / width);
-                        const val = raw[sampleIndex] || 0;
-                        const h = val * amp;
-
-                        if (first) {
-                            this.ctx.moveTo(i, h);
-                            first = false;
-                        } else {
+                        this.ctx.beginPath();
+                        
+                        for (let i = 0; i < width; i += 1) {
+                            if (width <= 0) break;
+                            const sampleIndex = Math.floor(i * samples / width);
+                            const val = raw[sampleIndex] || 0;
+                            const h = val * amp;
                             this.ctx.lineTo(i, h);
                         }
-                    }
 
-                    // Mirror for symmetric waveform
-                    for (let i = width; i >= 0; i -= 1) {
-                        const sampleIndex = Math.floor(i * samples / width);
-                        const val = raw[sampleIndex] || 0;
-                        const h = val * amp;
-                        this.ctx.lineTo(i, -h);
-                    }
+                        for (let i = width; i >= 0; i -= 1) {
+                            if (width <= 0) break;
+                            const sampleIndex = Math.floor(i * samples / width);
+                            const val = raw[sampleIndex] || 0;
+                            const h = val * amp;
+                            this.ctx.lineTo(i, -h);
+                        }
 
-                    this.ctx.closePath();
-                    this.ctx.stroke();
-                    this.ctx.restore();
+                        this.ctx.closePath();
+                        this.ctx.stroke();
+                    } finally {
+                        this.ctx.restore();
+                    }
                 } catch (e) {
                     console.error('Error drawing waveform:', e);
-                    // Fallback: just draw a simple pulse
                     this.ctx.fillStyle = '#ffffff44';
                     this.ctx.fillRect(x + width * 0.3, y + 15, width * 0.4, 20);
                 }

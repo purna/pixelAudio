@@ -24,16 +24,11 @@ class AudioEngine {
     }
 
     async playBuffer(buffer, onEnded = null) {
-        console.log('AudioEngine.playBuffer called');
-        console.log('Context state before:', this.context.state);
-        
         // Ensure context is resumed before playing - wait longer for browser policies
         await this.ensureContextResumed();
         
         // Add additional delay for browser audio policies
         await new Promise(resolve => setTimeout(resolve, 100));
-        
-        console.log('Context state after resume:', this.context.state);
 
         // Stop any currently playing sound
         if (this.currentSource) {
@@ -41,7 +36,6 @@ class AudioEngine {
                 this.currentSource.stop();
             } catch (e) {
                 // Source might have already stopped
-                console.log('Previous source already stopped');
             }
         }
 
@@ -49,14 +43,12 @@ class AudioEngine {
         source.buffer = buffer;
         source.connect(this.context.destination);
         
-        console.log('Starting playback...');
         source.start();
         
         this.currentSource = source;
         
         // Clear reference when done
         source.onended = () => {
-            console.log('Playback ended');
             if (this.currentSource === source) {
                 this.currentSource = null;
             }
@@ -95,8 +87,9 @@ class AudioEngine {
     }
 
     stopAll() {
-        // Stop all currently playing sources (from playAllTracks)
-        this.playingSources.forEach(source => {
+        // Clone before iterating to avoid race condition
+        const sources = [...this.playingSources];
+        sources.forEach(source => {
             try {
                 source.stop();
             } catch (e) {
