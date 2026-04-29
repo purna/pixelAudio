@@ -102,6 +102,13 @@ class Presets {
                 lpfEnable: false, lpf: 22050, hpfEnable: false, hpf: 0,
                 volume: 0.5
             },
+            button_click: {
+                attack: 0, sustain: 0.03, punch: 0, decay: 0.08,
+                frequency: 800, minFreq: 0, slide: 0, deltaSlide: 0,
+                vibratoEnable: false, duty: 50, waveform: 'square',
+                lpfEnable: false, lpf: 22050, hpfEnable: false, hpf: 0,
+                volume: 0.5
+            },
             hover: {
                 attack: 0.01, sustain: 0.06, punch: 0, decay: 0.05,
                 frequency: 1000, minFreq: 0, slide: 0, deltaSlide: 0,
@@ -109,21 +116,45 @@ class Presets {
                 lpfEnable: false, lpf: 22050, hpfEnable: false, hpf: 0,
                 volume: 0.4
             },
-            synth_pad: {
-                attack: 0.1, sustain: 0.3, punch: 0, decay: 0.2,
-                frequency: 440, minFreq: 0, slide: 0, deltaSlide: 0,
-                vibratoEnable: true, vibratoDepth: 20, vibratoSpeed: 5,
-                arpEnable: false, duty: 50, waveform: 'sawtooth',
+            panel_open: {
+                attack: 0.02, sustain: 0.15, punch: 0, decay: 0.2,
+                frequency: 400, minFreq: 0, slide: 0.1, deltaSlide: 0,
+                vibratoEnable: false, duty: 50, waveform: 'sine',
                 lpfEnable: false, lpf: 22050, hpfEnable: false, hpf: 0,
                 volume: 0.6
             },
-            alarm: {
-                 attack: 0.01, sustain: 0.2, punch: 0, decay: 0.1,
-                 frequency: 880, minFreq: 0, slide: 0, deltaSlide: 0,
-                 vibratoEnable: false, arpEnable: true, arpMult: 1.5, arpSpeed: 0.15,
-                 waveform: 'square', volume: 0.6
+            panel_close: {
+                attack: 0.01, sustain: 0.1, punch: 0, decay: 0.15,
+                frequency: 300, minFreq: 0, slide: -0.2, deltaSlide: 0,
+                vibratoEnable: false, duty: 50, waveform: 'sine',
+                lpfEnable: false, lpf: 22050, hpfEnable: false, hpf: 0,
+                volume: 0.5
             },
+            alarm: {
+                  attack: 0.01, sustain: 0.2, punch: 0, decay: 0.1,
+                  frequency: 880, minFreq: 0, slide: 0, deltaSlide: 0,
+                  vibratoEnable: false, arpEnable: true, arpMult: 1.5, arpSpeed: 0.15,
+                  waveform: 'square', volume: 0.6
+              },
             
+            quest_done: {
+                attack: 0.02, sustain: 0.3, punch: 0, decay: 0.3,
+                frequency: 600, minFreq: 0, slide: 0.2, deltaSlide: 0.1,
+                vibratoEnable: false, arpEnable: true, arpMult: 1.25, arpSpeed: 0.1,
+                waveform: 'triangle',
+                lpfEnable: false, hpfEnable: false,
+                volume: 0.6
+            },
+            victory: {
+                attack: 0.05, sustain: 0.4, punch: 0, decay: 0.5,
+                frequency: 523, minFreq: 0, slide: 0, deltaSlide: 0,
+                vibratoEnable: true, vibratoDepth: 10, vibratoSpeed: 5,
+                arpEnable: true, arpMult: 1.5, arpSpeed: 0.12, arpMode: 'updown',
+                waveform: 'sine',
+                lpfEnable: false, hpfEnable: false,
+                volume: 0.7
+            },
+             
             // --- SF MAKER INSPIRED ---
             sword_swing: {
                 attack: 0.01, sustain: 0.1, punch: 0, decay: 0.15,

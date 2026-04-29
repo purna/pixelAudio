@@ -27,20 +27,20 @@ class TutorialConfig {
                         arrowPosition: 'none', // No arrow for center position
                         arrowPositionOverride: 'center', // Arrow position along the side (center, top-third, middle-third, bottom-third)
                         marginOverride: '0',
-                        heading: 'Welcome to Pixel Audio!',
-                        content: 'This quick tutorial will guide you through the main features of the SFX Studio Pro.',
+                        heading: 'Welcome to Pixel Audio Studio Pro!',
+                        content: 'This quick tutorial will guide you through the main features of the SFX creation studio. Click Next to begin.',
                         showNext: true,
                         showSkip: true
                     },
                     {
-                        id: 'layers',
-                        elementId: 'panel-layers',
+                        id: 'tracks',
+                        elementId: 'panel-tracks',
                         position: 'right',
                         arrowPosition: 'left', // Arrow is on the left side of the tutorial panel, points left (away from tutorial panel)
                         arrowPositionOverride: 'top-third', // Arrow positioned in the top third of the right side
                         marginOverride: '60px', // Additional margin for better spacing
-                        heading: 'Layers Panel',
-                        content: 'Here you can add, remove, and manage different sound layers. Each layer can have its own unique sound settings.',
+                        heading: 'Tracks Panel',
+                        content: 'Manage your sound layers here. Add, remove, and organize multiple tracks to build complex sound compositions. Each layer can have its own unique sound settings.',
                         showNext: true,
                         showSkip: true
                     },
@@ -51,8 +51,8 @@ class TutorialConfig {
                         arrowPosition: 'left', // Arrow is on the left side of the tutorial panel, points left (away from tutorial panel)
                         arrowPositionOverride: 'middle-third',
                         marginOverride: '60px', // Additional margin for better spacing
-                        heading: 'Presets',
-                        content: 'Quickly load pre-configured sound presets for common game effects like jumps, explosions, and UI sounds.',
+                        heading: 'Sound Presets',
+                        content: 'Over 100 pre-configured sound presets for game development! Categories include Core Gameplay, UI Feedback, Environment, Characters, Music, and Special Effects. Click any preset to instantly load its settings.',
                         showNext: true,
                         showSkip: true
                     },
@@ -63,7 +63,7 @@ class TutorialConfig {
                         arrowPosition: 'left', // Arrow is on the left side of the tutorial panel, points left (away from tutorial panel)
                         marginOverride: '35px', // Slightly less margin for this panel
                         heading: 'Synthesizer Controls',
-                        content: 'Adjust waveform, envelope, frequency, and other parameters to create your perfect sound.',
+                        content: 'The powerful sound generator lets you create custom sounds from scratch. Adjust waveform (Square, Sine, Triangle, Saw, Noise), ADSR envelope, frequency, vibrato, filters, and advanced effects like distortion and bitcrush.',
                         showNext: true,
                         showSkip: true
                     },
@@ -73,8 +73,8 @@ class TutorialConfig {
                         position: 'center',
                         arrowPosition: 'none', 
                         marginOverride: '0px', // More margin for timeline positioning
-                        heading: 'Timeline',
-                        content: 'Control playback and visualize your sound layers over time. Use the transport controls to play, stop, and adjust timing.',
+                        heading: 'Timeline & Transport',
+                        content: 'Control playback with the transport buttons. Visualize all your sound layers over time, adjust the total length, and use Undo/Redo to experiment freely. Play individual tracks or the full mix.',
                         showNext: true,
                         showSkip: true
                     },
@@ -85,7 +85,7 @@ class TutorialConfig {
                         arrowPosition: 'top', // Arrow is on the top side of the tutorial panel, points up (towards target panel)
                         marginOverride: '25px', // Margin for export button positioning
                         heading: 'Export Your Sounds',
-                        content: 'When you\'re happy with your creation, use the Export Mix button to save your sound as a WAV file.',
+                        content: 'When you are happy with your creation, click Export Mix to render and save your sounds as WAV files. Perfect for integrating into your game engine or project!',
                         showNext: true,
                         showSkip: true
                     }
