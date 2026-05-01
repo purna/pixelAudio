@@ -507,11 +507,6 @@
                         </button>
                     </div>
 
-
-
-
-                    </div>
-
                     <!-- Export Actions -->
                     <div class="panel-section">
                         <div class="section-heading">
@@ -858,79 +853,6 @@
                                     <input type="checkbox" id="settings-auto-play" checked>
                                     <span class="checkmark"></span> Auto Play on Preset Load
                                 </label>
-                            </div>
-                        </div>
-
-                        <!-- FMOD Master Bus Controls -->
-                        <div class="settings-section">
-                            <div class="section-heading">Master Bus Effects</div>
-
-                            <!-- Master Bus Meter -->
-                            <div class="master-bus-meter">
-                                <div class="meter-label">Master</div>
-                                <div class="meter-bar-container">
-                                    <div class="meter-bar" id="fmod-master-meter"></div>
-                                </div>
-                                <div class="meter-value" id="fmod-master-meter-value">-∞ dB</div>
-                            </div>
-
-                            <!-- EQ Controls -->
-                            <div class="fmod-eq-controls">
-                                <div class="eq-band-control">
-                                    <div class="eq-band-label">Low</div>
-                                    <input type="range" id="fmod-eq-low" class="eq-band-slider" min="-20" max="20" value="0" orient="vertical">
-                                    <div class="eq-band-value" id="fmod-eq-low-value">0dB</div>
-                                </div>
-                                <div class="eq-band-control">
-                                    <div class="eq-band-label">Mid</div>
-                                    <input type="range" id="fmod-eq-mid" class="eq-band-slider" min="-20" max="20" value="0" orient="vertical">
-                                    <div class="eq-band-value" id="fmod-eq-mid-value">0dB</div>
-                                </div>
-                                <div class="eq-band-control">
-                                    <div class="eq-band-label">High</div>
-                                    <input type="range" id="fmod-eq-high" class="eq-band-slider" min="-20" max="20" value="0" orient="vertical">
-                                    <div class="eq-band-value" id="fmod-eq-high-value">0dB</div>
-                                </div>
-                            </div>
-
-                            <!-- Master Volume -->
-                            <div class="property-group">
-                                <label class="property-label" for="fmod-master-volume">FMOD Master Volume <span class="value" id="fmod-master-volume-value">100%</span></label>
-                                <input type="range" id="fmod-master-volume" min="0" max="100" value="100">
-                            </div>
-
-                            <!-- Compressor Controls -->
-                            <div class="property-group">
-                                <label class="property-label" for="fmod-compressor-threshold">Compressor Threshold <span class="value" id="fmod-compressor-threshold-value">-24dB</span></label>
-                                <input type="range" id="fmod-compressor-threshold" min="-60" max="0" value="-24">
-                            </div>
-
-                            <div class="property-group">
-                                <label class="property-label" for="fmod-compressor-ratio">Compressor Ratio <span class="value" id="fmod-compressor-ratio-value">4:1</span></label>
-                                <input type="range" id="fmod-compressor-ratio" min="1" max="20" value="4" step="0.1">
-                            </div>
-
-                            <!-- Effects Chain Visualization -->
-                            <div class="effects-chain">
-                                <div class="effect-module">
-                                    <div class="effect-icon">🎛️</div>
-                                    <div class="effect-name">EQ</div>
-                                </div>
-                                <div class="effect-connector">→</div>
-                                <div class="effect-module">
-                                    <div class="effect-icon">📊</div>
-                                    <div class="effect-name">Compressor</div>
-                                </div>
-                                <div class="effect-connector">→</div>
-                                <div class="effect-module">
-                                    <div class="effect-icon">🔊</div>
-                                    <div class="effect-name">Limiter</div>
-                                </div>
-                                <div class="effect-connector">→</div>
-                                <div class="effect-module active">
-                                    <div class="effect-icon">📻</div>
-                                    <div class="effect-name">Output</div>
-                                </div>
                             </div>
                         </div>
 

@@ -19,14 +19,13 @@ class FMODUI {
 
     init() {
         console.log('FMODUI.init() called');
-
+        
         // Try to get fmodManager from app
         if (this.app && this.app.fmodManager) {
             this.fmodManager = this.app.fmodManager;
             console.log('FMODUI: FMOD Manager found, binding events');
             this.bindEvents();
             this.renderBanksList();
-            this.startMeterMonitoring();
             console.log('FMODUI: Initialization complete');
         } else {
             console.log('FMODUI: fmodManager not available yet, waiting...');
@@ -37,7 +36,6 @@ class FMODUI {
                     console.log('FMODUI: FMOD Manager found on retry, binding events');
                     this.bindEvents();
                     this.renderBanksList();
-                    this.startMeterMonitoring();
                     console.log('FMODUI: Initialization complete');
                 } else {
                     console.log('FMODUI: Still waiting for FMOD Manager...');
@@ -49,204 +47,101 @@ class FMODUI {
 
     bindEvents() {
         console.log('FMODUI.bindEvents: Starting');
-
-        // Bind FMOD control events
-        this.bindFMODControls();
-
-        // Simple direct event binding for FMOD buttons
-        const buttonHandlers = {
-            'fmod-add-bank': () => this.addBank(),
-            'fmod-add-collection': () => this.addCollectionToBank(),
-            'fmod-export-bank': () => this.exportCurrentBank(),
-            'fmod-export-unity': () => this.exportUnityScripts(),
-            'fmod-export-all': () => this.exportAllBanks()
-        };
-
-        // Bind events when DOM is ready
-        const bindButtonEvents = () => {
-            Object.keys(buttonHandlers).forEach(id => {
+        
+        // STRATEGY: Use BOTH delegation AND direct listeners for maximum compatibility
+        
+        // Method 1: Event delegation on the side panel (handles all clicks)
+        const sidePanel = document.getElementById('side-panel');
+        if (sidePanel) {
+            console.log('FMODUI: side-panel element found, setting up event delegation');
+            
+            sidePanel.addEventListener('click', (e) => {
+                console.log('FMODUI: Click detected on side-panel', {
+                    target: e.target.tagName,
+                    targetId: e.target.id,
+                    targetClass: e.target.className
+                });
+                
+                // Find the button that was clicked (handles clicks on child elements like icons)
+                const button = e.target.closest('button');
+                
+                if (!button) {
+                    console.log('FMODUI: No button found in click path');
+                    return;
+                }
+                
+                console.log('FMODUI: Button found:', button.id);
+                
+                // Check if this is an FMOD button
+                const fmodButtonIds = ['fmod-add-bank', 'fmod-add-collection', 'fmod-export-bank', 'fmod-export-unity', 'fmod-export-all'];
+                
+                if (!fmodButtonIds.includes(button.id)) {
+                    console.log('FMODUI: Not an FMOD button, ignoring');
+                    return;
+                }
+                
+                console.log('FMODUI: FMOD button clicked:', button.id);
+                e.preventDefault();
+                e.stopPropagation();
+                
+                // Route to appropriate handler
+                switch(button.id) {
+                    case 'fmod-add-bank':
+                        console.log('FMODUI: Calling addBank()');
+                        this.addBank();
+                        break;
+                    case 'fmod-add-collection':
+                        console.log('FMODUI: Calling addCollectionToBank()');
+                        this.addCollectionToBank();
+                        break;
+                    case 'fmod-export-bank':
+                        console.log('FMODUI: Calling exportCurrentBank()');
+                        this.exportCurrentBank();
+                        break;
+                    case 'fmod-export-unity':
+                        console.log('FMODUI: Calling exportUnityScripts()');
+                        this.exportUnityScripts();
+                        break;
+                    case 'fmod-export-all':
+                        console.log('FMODUI: Calling exportAllBanks()');
+                        this.exportAllBanks();
+                        break;
+                }
+            }, true); // Use capture phase to catch events early
+            
+            console.log('FMODUI: Event delegation added to side panel (capture phase)');
+        } else {
+            console.error('FMODUI: side-panel element NOT FOUND!');
+        }
+        
+        // Method 2: Direct listeners as backup (wait a bit for DOM to be ready)
+        setTimeout(() => {
+            const buttonIds = ['fmod-add-bank', 'fmod-add-collection', 'fmod-export-bank', 'fmod-export-unity', 'fmod-export-all'];
+            const handlers = {
+                'fmod-add-bank': () => this.addBank(),
+                'fmod-add-collection': () => this.addCollectionToBank(),
+                'fmod-export-bank': () => this.exportCurrentBank(),
+                'fmod-export-unity': () => this.exportUnityScripts(),
+                'fmod-export-all': () => this.exportAllBanks()
+            };
+            
+            buttonIds.forEach(id => {
                 const btn = document.getElementById(id);
                 if (btn) {
+                    console.log(`FMODUI: Found button ${id}, adding direct listener`);
                     btn.addEventListener('click', (e) => {
+                        console.log(`FMODUI: Direct listener triggered for ${id}`);
                         e.preventDefault();
                         e.stopPropagation();
-                        buttonHandlers[id]();
+                        handlers[id]();
                     });
-                    console.log(`FMODUI: Bound event for ${id}`);
                 } else {
-                    console.warn(`FMODUI: Button ${id} not found`);
+                    console.warn(`FMODUI: Button ${id} not found for direct listener`);
                 }
             });
-        };
-
-        // Try immediately, then retry after DOM load
-        bindButtonEvents();
-        if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', bindButtonEvents);
-        }
-
+        }, 500);
+        
         console.log('FMODUI.bindEvents: Complete');
-    }
-
-    bindFMODControls() {
-        // Bind controls when settings modal is opened
-        const bindControls = () => {
-            // EQ Controls
-            const eqControls = ['low', 'mid', 'high'];
-            eqControls.forEach(band => {
-                const slider = document.getElementById(`fmod-eq-${band}`);
-                const valueDisplay = document.getElementById(`fmod-eq-${band}-value`);
-
-                if (slider && valueDisplay) {
-                    slider.addEventListener('input', (e) => {
-                        const value = parseFloat(e.target.value);
-                        this.fmodManager.setEQ(band, value);
-                        valueDisplay.textContent = `${value > 0 ? '+' : ''}${value}dB`;
-                    });
-
-                    // Initialize display
-                    const currentValue = this.fmodManager.getEQ(band);
-                    valueDisplay.textContent = `${currentValue > 0 ? '+' : ''}${currentValue}dB`;
-                }
-            });
-
-            // Master Volume
-            const masterVolume = document.getElementById('fmod-master-volume');
-            const masterVolumeValue = document.getElementById('fmod-master-volume-value');
-
-            if (masterVolume && masterVolumeValue) {
-                masterVolume.addEventListener('input', (e) => {
-                    const value = parseFloat(e.target.value) / 100;
-                    this.fmodManager.setMasterVolume(value);
-                    masterVolumeValue.textContent = `${Math.round(value * 100)}%`;
-                });
-
-                // Initialize display
-                const currentVolume = this.fmodManager.masterBus.gain.value;
-                masterVolumeValue.textContent = `${Math.round(currentVolume * 100)}%`;
-            }
-
-            // Compressor Controls
-            const compressorThreshold = document.getElementById('fmod-compressor-threshold');
-            const compressorThresholdValue = document.getElementById('fmod-compressor-threshold-value');
-            const compressorRatio = document.getElementById('fmod-compressor-ratio');
-            const compressorRatioValue = document.getElementById('fmod-compressor-ratio-value');
-
-            if (compressorThreshold && compressorThresholdValue) {
-                compressorThreshold.addEventListener('input', (e) => {
-                    const value = parseFloat(e.target.value);
-                    this.fmodManager.setCompressor(value, this.fmodManager.compressor.ratio.value);
-                    compressorThresholdValue.textContent = `${value}dB`;
-                });
-
-                // Initialize display
-                compressorThresholdValue.textContent = `${this.fmodManager.compressor.threshold.value}dB`;
-            }
-
-            if (compressorRatio && compressorRatioValue) {
-                compressorRatio.addEventListener('input', (e) => {
-                    const value = parseFloat(e.target.value);
-                    this.fmodManager.setCompressor(this.fmodManager.compressor.threshold.value, value);
-                    compressorRatioValue.textContent = `${value}:1`;
-                });
-
-                // Initialize display
-                compressorRatioValue.textContent = `${this.fmodManager.compressor.ratio.value}:1`;
-            }
-        };
-
-        // Bind controls immediately and when settings modal opens
-        bindControls();
-
-        // Also bind when settings modal becomes visible
-        const settingsModal = document.getElementById('settings-modal');
-        if (settingsModal) {
-            const observer = new MutationObserver((mutations) => {
-                mutations.forEach((mutation) => {
-                    if (mutation.type === 'attributes' && mutation.attributeName === 'style') {
-                        const display = window.getComputedStyle(settingsModal).display;
-                        if (display !== 'none') {
-                            // Settings modal is now visible, bind controls
-                            setTimeout(bindControls, 100);
-                        }
-                    }
-                });
-            });
-            observer.observe(settingsModal, { attributes: true, attributeFilter: ['style'] });
-        }
-    }
-
-    startMeterMonitoring() {
-        if (!this.fmodManager) return;
-
-        const settingsModal = document.getElementById('settings-modal');
-        if (!settingsModal) return;
-
-        // Start/stop meter based on settings modal visibility
-        const updateMeterVisibility = () => {
-            const isVisible = window.getComputedStyle(settingsModal).display !== 'none';
-            const isAudioTab = document.querySelector('.settings-tab[data-tab="audio"]')?.classList.contains('active');
-
-            if (isVisible && isAudioTab) {
-                // Start monitoring
-                if (!this.meterCallback) {
-                    this.startMeterUpdates();
-                }
-            } else {
-                // Stop monitoring
-                if (this.meterCallback) {
-                    this.fmodManager.stopMeterMonitoring();
-                    this.meterCallback = null;
-                }
-            }
-        };
-
-        // Monitor settings modal visibility and tab changes
-        const observer = new MutationObserver((mutations) => {
-            mutations.forEach((mutation) => {
-                if (mutation.type === 'attributes' && mutation.attributeName === 'style') {
-                    updateMeterVisibility();
-                }
-            });
-        });
-
-        // Also monitor tab changes
-        const audioTab = document.querySelector('.settings-tab[data-tab="audio"]');
-        if (audioTab) {
-            audioTab.addEventListener('click', updateMeterVisibility);
-        }
-
-        observer.observe(settingsModal, { attributes: true, attributeFilter: ['style'] });
-
-        // Initial check
-        updateMeterVisibility();
-    }
-
-    startMeterUpdates() {
-        const meterBar = document.getElementById('fmod-master-meter');
-        const meterValue = document.getElementById('fmod-master-meter-value');
-
-        if (!meterBar || !meterValue) return;
-
-        this.meterCallback = (level) => {
-            // Update meter bar (0-100% based on dB level, -60dB = 0%, 0dB = 100%)
-            const percentage = Math.max(0, Math.min(100, (level + 60) * (100 / 60)));
-            meterBar.style.width = `${percentage}%`;
-
-            // Update color based on level (green -> yellow -> red)
-            if (level < -20) {
-                meterBar.style.background = 'linear-gradient(90deg, #4CAF50, #FFEB3B)';
-            } else if (level < -6) {
-                meterBar.style.background = 'linear-gradient(90deg, #FFEB3B, #FF5722)';
-            } else {
-                meterBar.style.background = '#FF5722';
-            }
-
-            // Update text display
-            meterValue.textContent = level === -Infinity ? '-∞ dB' : `${level.toFixed(1)} dB`;
-        };
-
-        this.fmodManager.startMeterMonitoring(this.meterCallback);
     }
 
     addBank() {
