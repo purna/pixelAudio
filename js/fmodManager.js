@@ -13,11 +13,17 @@ class FMODManager {
         this.compressor = this.createCompressor();
         this.limiter = this.createLimiter();
 
+        // Analyser for metering
+        this.analyser = this.context.createAnalyser();
+        this.analyser.fftSize = 256;
+        this.analyser.smoothingTimeConstant = 0.8;
+
         // Connect effects chain
         this.masterBus.connect(this.eq.input);
         this.eq.connect(this.compressor);
         this.compressor.connect(this.limiter);
-        this.limiter.connect(this.context.destination);
+        this.limiter.connect(this.analyser);
+        this.analyser.connect(this.context.destination);
 
         // Event system
         this.events = new Map();
@@ -378,7 +384,50 @@ class FMODManager {
 
     applyParameterToActiveSounds(paramName, value) {
         // Apply parameter value to currently playing sounds
-        // This would hook into the audio engine's active sources
+        if (!this.audioEngine || !this.audioEngine.playingSources) return;
+
+        this.audioEngine.playingSources.forEach(source => {
+            if (!source || !source.sourceNode) return;
+
+            try {
+                switch(paramName) {
+                    case 'pitch':
+                        // Apply pitch shift (value is semitones)
+                        if (source.sourceNode.playbackRate) {
+                            source.sourceNode.playbackRate.value = Math.pow(2, value / 12);
+                        }
+                        break;
+
+                    case 'volume':
+                        // Apply volume change
+                        if (source.gainNode) {
+                            source.gainNode.gain.value = value;
+                        }
+                        break;
+
+                    case 'attack':
+                        // This would need to be applied when sound starts
+                        // For now, store for future reference
+                        if (!source.fmodParams) source.fmodParams = {};
+                        source.fmodParams.attack = value;
+                        break;
+
+                    case 'decay':
+                        if (!source.fmodParams) source.fmodParams = {};
+                        source.fmodParams.decay = value;
+                        break;
+
+                    case 'filterFreq':
+                        // Apply filter frequency if source has filter
+                        if (source.filterNode && source.filterNode.frequency) {
+                            source.filterNode.frequency.value = value;
+                        }
+                        break;
+                }
+            } catch (e) {
+                console.warn('FMOD parameter application error:', e);
+            }
+        });
     }
 
     // ============ FMOD STUDIO EXPORT ============
@@ -562,10 +611,49 @@ class FMODManager {
         this.masterBus.gain.value = volume;
     }
 
-    // Get current meter level
+    // Get current meter level (RMS in dB)
     getMeterLevel() {
-        // Would need AnalyserNode for real metering
-        return this.masterBus.gain.value;
+        if (!this.analyser) return -Infinity;
+
+        const bufferLength = this.analyser.frequencyBinCount;
+        const dataArray = new Float32Array(bufferLength);
+        this.analyser.getFloatFrequencyData(dataArray);
+
+        // Calculate RMS
+        let sum = 0;
+        for (let i = 0; i < bufferLength; i++) {
+            const amplitude = Math.pow(10, dataArray[i] / 20); // Convert dB to linear
+            sum += amplitude * amplitude;
+        }
+        const rms = Math.sqrt(sum / bufferLength);
+
+        // Convert to dB
+        return rms > 0 ? 20 * Math.log10(rms) : -Infinity;
+    }
+
+    // Start meter monitoring
+    startMeterMonitoring(callback) {
+        this.meterCallback = callback;
+        this.monitorMeter();
+    }
+
+    // Stop meter monitoring
+    stopMeterMonitoring() {
+        this.meterCallback = null;
+        if (this.meterAnimationId) {
+            cancelAnimationFrame(this.meterAnimationId);
+            this.meterAnimationId = null;
+        }
+    }
+
+    // Internal meter monitoring loop
+    monitorMeter() {
+        if (!this.meterCallback) return;
+
+        const level = this.getMeterLevel();
+        this.meterCallback(level);
+
+        this.meterAnimationId = requestAnimationFrame(() => this.monitorMeter());
     }
 }
 
