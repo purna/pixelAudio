@@ -44,6 +44,7 @@ class SFXGeneratorApp {
         this.collectionManager = new CollectionManager(this);
         this.collectionUI = new CollectionUI(this);
         this.databaseManager = new DatabaseManager(this);
+        this.databaseUI = new DatabaseUI(this);
 
         // Initialize tutorial system if available
         if (typeof TutorialConfig !== 'undefined') {
@@ -66,6 +67,11 @@ class SFXGeneratorApp {
 
         // Setup event listeners
         this.setupEventListeners();
+
+        // Initialize Firebase auth manager if available
+        if (typeof getFirebaseAuthManager === 'function') {
+            this.firebaseAuthManager = getFirebaseAuthManager();
+        }
 
         // Initialize UI first, then layers
         this.ui.init();
@@ -102,6 +108,9 @@ class SFXGeneratorApp {
         } else {
             console.error('main.js: FMODManager class not found');
         }
+
+        // Initialize Gemini Manager (outside FMOD check)
+        this.geminiManager = new GeminiManager(this);
 
         // Auto-start tutorial if enabled (default: enabled)
         if (this.tutorialSystem && this.tutorialConfig) {
@@ -420,6 +429,29 @@ class SFXGeneratorApp {
             });
         }
 
+        // AI Scene Generator button
+        const aiSceneBtn = document.getElementById('tool-ai-scene');
+        if (aiSceneBtn) {
+            aiSceneBtn.addEventListener('click', () => {
+                this.openAISceneModal();
+            });
+        }
+
+        // AI Scene Modal buttons
+        const btnAICancel = document.getElementById('btn-ai-cancel');
+        if (btnAICancel) {
+            btnAICancel.addEventListener('click', () => {
+                this.closeAISceneModal();
+            });
+        }
+
+        const btnAIGenerate = document.getElementById('btn-ai-generate');
+        if (btnAIGenerate) {
+            btnAIGenerate.addEventListener('click', async () => {
+                await this.generateAIScene();
+            });
+        }
+
         // Auto-save checkbox in settings
         const autoSaveCheckbox = document.getElementById('settings-auto-save');
         if (autoSaveCheckbox) {
@@ -433,6 +465,110 @@ class SFXGeneratorApp {
             autoSaveCheckbox.addEventListener('change', (e) => {
                 this.toggleAutoSave(e.target.checked);
             });
+        }
+
+        // Google Sign In button
+        const googleSignInBtn = document.getElementById('google-signin-btn');
+        if (googleSignInBtn) {
+            googleSignInBtn.addEventListener('click', async () => {
+                
+                if (this.databaseManager && typeof this.databaseManager.isFirebaseConfigured === 'function' && this.databaseManager.isFirebaseConfigured()) {
+                    if (this.databaseManager.isDatabaseConnected()) {
+                        // Sign out
+                        if (confirm('Are you sure you want to sign out?')) {
+                            try {
+                                await this.databaseManager.signOut();
+                                this.updateGoogleButtonState(false);
+                                this.notifications.showNotification('Signed out successfully', 'info');
+                            } catch (error) {
+                                console.error('Sign out failed:', error);
+                                this.notifications.showNotification('Sign out failed', 'error');
+                            }
+                        }
+                    } else {
+                        // Sign in
+                        const googleBtnLabel = document.getElementById('google-btn-label');
+                        if (googleBtnLabel) googleBtnLabel.textContent = 'Signing in...';
+                        
+                        try {
+                            const user = await this.databaseManager.signInWithGoogle();
+                            
+                            if (user) {
+                                this.updateGoogleButtonState(true, user.email);
+                                this.notifications.showNotification(
+                                    `Signed in as ${user.email}`, 
+                                    'success'
+                                );
+                                
+                                // Auto-sync if enabled
+                                if (this.databaseManager.getAutoSync()) {
+                                    this.notifications.showNotification('Syncing collections from cloud...', 'info');
+                                    const count = await this.databaseManager.loadCollectionsFromDatabase();
+                                    if (count > 0) {
+                                        this.notifications.showNotification(`${count} collections synced from cloud`, 'success');
+                                    }
+                                }
+                            }
+                        } catch (error) {
+                            console.error('Sign in failed:', error);
+                            this.notifications.showNotification(
+                                'Sign in failed: ' + error.message, 
+                                'error'
+                            );
+                        } finally {
+                            if (googleBtnLabel) googleBtnLabel.textContent = 'Cloud Login';
+                        }
+                    }
+                } else {
+                    // Firebase not configured
+                    this.notifications.showNotification(
+                        'Cloud database not configured. Please configure Firebase in js/firebaseConfig.js',
+                        'error'
+                    );
+                }
+            });
+        }
+        
+        // Update Google button state
+        this.updateGoogleButtonState();
+    }
+    
+    /**
+     * Update Google sign-in button state
+     */
+    updateGoogleButtonState(isLoggedIn = false, email = '') {
+        const googleSignInBtn = document.getElementById('google-signin-btn');
+        const googleBtnLabel = document.getElementById('google-btn-label');
+        const userStatus = document.getElementById('user-status');
+        const userEmailSpan = document.getElementById('user-email');
+        
+        if (!this.databaseManager || typeof this.databaseManager.isFirebaseConfigured !== 'function' || !this.databaseManager.isFirebaseConfigured()) {
+            // Firebase not configured
+            if (googleSignInBtn) {
+                googleSignInBtn.disabled = true;
+                googleSignInBtn.title = 'Cloud database not configured';
+                if (googleBtnLabel) googleBtnLabel.textContent = 'Not Configured';
+            }
+            if (userStatus) userStatus.style.display = 'none';
+        } else if (this.databaseManager.isDatabaseConnected()) {
+            // User is logged in
+            if (googleSignInBtn) {
+                googleSignInBtn.style.background = '#f44336';
+                googleSignInBtn.title = 'Sign Out';
+                if (googleBtnLabel) googleBtnLabel.textContent = 'Logout';
+            }
+            if (userStatus) {
+                userStatus.style.display = 'inline';
+                if (userEmailSpan) userEmailSpan.textContent = email || 'Logged in';
+            }
+        } else {
+            // User is not logged in
+            if (googleSignInBtn) {
+                googleSignInBtn.style.background = '';
+                googleSignInBtn.title = 'Sign In with Google';
+                if (googleBtnLabel) googleBtnLabel.textContent = 'Cloud Login';
+            }
+            if (userStatus) userStatus.style.display = 'none';
         }
     }
 
@@ -860,6 +996,47 @@ class SFXGeneratorApp {
 
         // Save setting to localStorage
         localStorage.setItem('pixelAudioAutoSave', enabled ? 'true' : 'false');
+    }
+
+    openAISceneModal() {
+        const modal = document.getElementById('ai-modal');
+        if (modal) {
+            modal.classList.add('open');
+            document.getElementById('ai-prompt-input').value = '';
+            document.getElementById('ai-spinner').style.display = 'none';
+        }
+    }
+
+    closeAISceneModal() {
+        const modal = document.getElementById('ai-modal');
+        if (modal) {
+            modal.classList.remove('open');
+        }
+    }
+
+    async generateAIScene() {
+        const input = document.getElementById('ai-prompt-input').value.trim();
+        const spinner = document.getElementById('ai-spinner');
+
+        if (!input) {
+            this.notifications.showNotification('Please enter a scene description', 'error');
+            return;
+        }
+
+        spinner.style.display = 'block';
+
+        try {
+            const settings = await this.geminiManager.generateSoundEffect(input);
+            this.saveUndoState();
+            const newTrack = this.layerManager.addTrack();
+            this.layerManager.updateTrackSettings(newTrack.id, settings);
+            this.notifications.showNotification('Sound effect generated!', 'success');
+            this.closeAISceneModal();
+        } catch (e) {
+            this.notifications.showNotification('Error: ' + e.message, 'error');
+        } finally {
+            spinner.style.display = 'none';
+        }
     }
 }
 

@@ -1,6 +1,6 @@
 // presets.js — Sound presets and random generation
 //
-// 83 presets across 9 categories.
+// 103 presets across 10 categories.
 // Each preset is tuned and reviewed; see spreadsheet for full change history.
 //
 // Categories:
@@ -13,6 +13,7 @@
 //   Classic SFXR  — sonar, whoosh, helicopter, impacts, nature
 //   Advanced FX   — delay, phasing, harmonics, bitcrush, filters
 //   Music         — chiptune melodies, arpeggios, pads, grooves
+//   Platformer 2D — game-specific UI and action sounds
 
 class Presets {
     constructor() {
@@ -1130,6 +1131,267 @@ class Presets {
             hpfEnable: false,
             bpfEnable: true, bpf: 1000, bpfResonance: 2,
             volume: 0.5
+        },
+
+            // ── PLATFORMER 2D ──────────────────────────────────────────────────
+        // victory_fanfare
+        victory_fanfare: {
+            // Short triumphant sting — Rapid 3-note arpeggio fanfare — bright square with vibrato, updown mode, punchy and short
+            attack: 0.01, sustain: 0.25, punch: 20, decay: 0.35,
+            frequency: 523, minFreq: 0, slide: 0.1, deltaSlide: 0.05,
+            vibratoEnable: true, vibratoDepth: 12, vibratoSpeed: 8,
+            arpEnable: true, arpMult: 1.5, arpSpeed: 0.06, arpMode: 'updown',
+            duty: 50, waveform: 'square',
+            lpfEnable: false,
+            hpfEnable: false,
+            volume: 0.7
+        },
+
+        // panel_open_2d
+        panel_open_2d: {
+            // UI panel slides in — Panel swoops open — sine rising slide from low to mid, soft attack
+            attack: 0.02, sustain: 0.12, punch: 0, decay: 0.15,
+            frequency: 280, minFreq: 0, slide: 0.35, deltaSlide: 0,
+            vibratoEnable: false,
+            arpEnable: false,
+            duty: 50, waveform: 'sine',
+            lpfEnable: false,
+            hpfEnable: false,
+            volume: 0.55
+        },
+
+        // panel_close_2d
+        panel_close_2d: {
+            // UI panel slides out — Panel swoops closed — sine falling slide from mid to low, mirrored close
+            attack: 0.01, sustain: 0.1, punch: 0, decay: 0.12,
+            frequency: 620, minFreq: 0, slide: -0.4, deltaSlide: 0,
+            vibratoEnable: false,
+            arpEnable: false,
+            duty: 50, waveform: 'sine',
+            lpfEnable: false,
+            hpfEnable: false,
+            volume: 0.5
+        },
+
+        // collectable
+        collectable: {
+            // Sparkly item collect — Bright gem/star/ring collect — very high square with fast arp and upward slide
+            attack: 0, sustain: 0.04, punch: 15, decay: 0.1,
+            frequency: 1800, minFreq: 0, slide: 0.25, deltaSlide: 0.08,
+            vibratoEnable: false,
+            arpEnable: true, arpMult: 1.4, arpSpeed: 0.06,
+            duty: 50, waveform: 'square',
+            lpfEnable: false,
+            hpfEnable: false,
+            volume: 0.55
+        },
+
+        // clang
+        clang: {
+            // Hard metal impact — Sharp metal clang — sawtooth with instant punch, fast vibrato ring-out, HPF for brightness
+            attack: 0, sustain: 0.04, punch: 90, decay: 0.22,
+            frequency: 350, minFreq: 0, slide: -0.15, deltaSlide: 0,
+            vibratoEnable: true, vibratoDepth: 35, vibratoSpeed: 25,
+            arpEnable: false,
+            duty: 50, waveform: 'sawtooth',
+            lpfEnable: true, lpf: 6000,
+            hpfEnable: true, hpf: 180,
+            volume: 0.8
+        },
+
+        // wobble
+        wobble: {
+            // Springy rubber bounce — Rubbery wobble — sine with heavy vibrato giving a cartoon spring/bounce feel
+            attack: 0.005, sustain: 0.18, punch: 30, decay: 0.2,
+            frequency: 380, minFreq: 0, slide: 0.15, deltaSlide: 0,
+            vibratoEnable: true, vibratoDepth: 60, vibratoSpeed: 18,
+            arpEnable: false,
+            duty: 0, waveform: 'sine',
+            lpfEnable: false,
+            hpfEnable: false,
+            volume: 0.6
+        },
+
+        // checkpoint
+        checkpoint: {
+            // Reached a save point — Save point activated — 2-note ascending arp, satisfying but brief. More restrained than quest_complete
+            attack: 0.01, sustain: 0.15, punch: 0, decay: 0.25,
+            frequency: 660, minFreq: 0, slide: 0.1, deltaSlide: 0.04,
+            vibratoEnable: true, vibratoDepth: 8, vibratoSpeed: 6,
+            arpEnable: true, arpMult: 1.33, arpSpeed: 0.09,
+            duty: 50, waveform: 'square',
+            lpfEnable: false,
+            hpfEnable: false,
+            volume: 0.6
+        },
+
+        // button_click_2d
+        button_click_2d: {
+            // Soft menu button tap — Soft UI button press — triangle wave for warmth, very short, slight downward slide
+            attack: 0, sustain: 0.025, punch: 0, decay: 0.06,
+            frequency: 900, minFreq: 0, slide: -0.08, deltaSlide: 0,
+            vibratoEnable: false,
+            arpEnable: false,
+            duty: 0, waveform: 'triangle',
+            lpfEnable: false,
+            hpfEnable: false,
+            volume: 0.5
+        },
+
+        // boing
+        boing: {
+            // Springboard launch — Classic cartoon boing — sine with extreme positive slide, high punch, instant attack
+            attack: 0, sustain: 0.08, punch: 60, decay: 0.28,
+            frequency: 180, minFreq: 0, slide: 0.85, deltaSlide: 0.1,
+            vibratoEnable: false,
+            arpEnable: false,
+            duty: 0, waveform: 'sine',
+            lpfEnable: false,
+            hpfEnable: false,
+            volume: 0.65
+        },
+
+        // quest_complete
+        quest_complete: {
+            // Objective cleared fanfare — Quest objective complete — longer triangle arp with vibrato and delta slide, more rewarding than checkpoint
+            attack: 0.02, sustain: 0.35, punch: 0, decay: 0.4,
+            frequency: 500, minFreq: 0, slide: 0.15, deltaSlide: 0.08,
+            vibratoEnable: true, vibratoDepth: 12, vibratoSpeed: 5,
+            arpEnable: true, arpMult: 1.25, arpSpeed: 0.08, arpMode: 'updown',
+            duty: 0, waveform: 'triangle',
+            lpfEnable: false,
+            hpfEnable: false,
+            volume: 0.65
+        },
+
+        // pickup_2d
+        pickup_2d: {
+            // Quick item grab — Instant item pickup — very high bright square, tiny positive slide, ultra short
+            attack: 0, sustain: 0.03, punch: 10, decay: 0.07,
+            frequency: 2200, minFreq: 0, slide: 0.12, deltaSlide: 0,
+            vibratoEnable: false,
+            arpEnable: false,
+            duty: 50, waveform: 'square',
+            lpfEnable: false,
+            hpfEnable: false,
+            volume: 0.5
+        },
+
+        // enter_portal
+        enter_portal: {
+            // Pulled into portal — Entering a portal — sine descends with vibrato, LPF closes down, sucked-inward feel
+            attack: 0.03, sustain: 0.25, punch: 0, decay: 0.35,
+            frequency: 880, minFreq: 0, slide: -0.5, deltaSlide: -0.05,
+            vibratoEnable: true, vibratoDepth: 25, vibratoSpeed: 8,
+            arpEnable: false,
+            duty: 0, waveform: 'sine',
+            lpfEnable: true, lpf: 3000,
+            hpfEnable: false,
+            volume: 0.6
+        },
+
+        // exit_portal
+        exit_portal: {
+            // Emerging from portal — Exiting a portal — sine rises with vibrato, expanding outward feel
+            attack: 0.02, sustain: 0.2, punch: 10, decay: 0.35,
+            frequency: 220, minFreq: 0, slide: 0.55, deltaSlide: 0.05,
+            vibratoEnable: true, vibratoDepth: 20, vibratoSpeed: 8,
+            arpEnable: false,
+            duty: 0, waveform: 'sine',
+            lpfEnable: false,
+            hpfEnable: false,
+            volume: 0.6
+        },
+
+        // footstep_2d
+        footstep_2d: {
+            // Generic platform step — Light platformer footstep — short noise burst, punchy, HPF for tap crispness
+            attack: 0.003, sustain: 0.018, punch: 50, decay: 0.06,
+            frequency: 400, minFreq: 30, slide: -0.08, deltaSlide: 0,
+            vibratoEnable: false,
+            arpEnable: false,
+            duty: 0, waveform: 'noise',
+            lpfEnable: true, lpf: 7000,
+            hpfEnable: true, hpf: 250,
+            volume: 0.7
+        },
+
+        // land_hard
+        land_hard: {
+            // Heavy landing impact — Player lands from a height — low punchy noise thud, instant, LPF keeps bass weight
+            attack: 0, sustain: 0.04, punch: 80, decay: 0.18,
+            frequency: 120, minFreq: 10, slide: -0.2, deltaSlide: 0,
+            vibratoEnable: false,
+            arpEnable: false,
+            duty: 0, waveform: 'noise',
+            lpfEnable: true, lpf: 2500,
+            hpfEnable: true, hpf: 40,
+            volume: 0.85
+        },
+
+        // hurt
+        hurt: {
+            // Player takes damage — Damage hit — square descends steeply with vibrato buzz, classic game hurt sound
+            attack: 0, sustain: 0.08, punch: 20, decay: 0.18,
+            frequency: 340, minFreq: 0, slide: -0.7, deltaSlide: -0.05,
+            vibratoEnable: true, vibratoDepth: 40, vibratoSpeed: 25,
+            arpEnable: false,
+            duty: 50, waveform: 'square',
+            lpfEnable: false,
+            hpfEnable: false,
+            volume: 0.7
+        },
+
+        // power_down
+        power_down: {
+            // Power lost / death — Losing a life or power — sawtooth descends with accelerating pitch drop, longer and more dramatic
+            attack: 0.01, sustain: 0.3, punch: 0, decay: 0.55,
+            frequency: 520, minFreq: 0, slide: -0.4, deltaSlide: -0.12,
+            vibratoEnable: true, vibratoDepth: 15, vibratoSpeed: 6,
+            arpEnable: false,
+            duty: 50, waveform: 'sawtooth',
+            lpfEnable: true, lpf: 4000,
+            hpfEnable: false,
+            volume: 0.7
+        },
+
+        // spring
+        spring: {
+            // Spring platform bounce — Spring platform — fast ascending arp with delta slide, punchy, distinct from boing
+            attack: 0, sustain: 0.06, punch: 40, decay: 0.2,
+            frequency: 300, minFreq: 0, slide: 0.6, deltaSlide: 0.15,
+            vibratoEnable: false,
+            arpEnable: true, arpMult: 1.5, arpSpeed: 0.04,
+            duty: 0, waveform: 'sine',
+            lpfEnable: false,
+            hpfEnable: false,
+            volume: 0.65
+        },
+
+        // door_open
+        door_open: {
+            // Wooden door swings open — Wooden door opening — low sawtooth creaks upward slowly, LPF keeps wood warmth
+            attack: 0.04, sustain: 0.28, punch: 0, decay: 0.3,
+            frequency: 140, minFreq: 40, slide: 0.12, deltaSlide: 0,
+            vibratoEnable: true, vibratoDepth: 18, vibratoSpeed: 6,
+            arpEnable: false,
+            duty: 50, waveform: 'sawtooth',
+            lpfEnable: true, lpf: 1000,
+            hpfEnable: false,
+            volume: 0.65
+        },
+
+        // coin_drop
+        coin_drop: {
+            // Coin tinks on ground — Coin hitting the floor — triangle with slight downward slide and punch, bright tink
+            attack: 0, sustain: 0.03, punch: 70, decay: 0.14,
+            frequency: 1400, minFreq: 0, slide: -0.12, deltaSlide: 0,
+            vibratoEnable: false,
+            arpEnable: false,
+            duty: 0, waveform: 'triangle',
+            lpfEnable: false,
+            hpfEnable: false,
+            volume: 0.55
         }
         };
     }

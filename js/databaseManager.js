@@ -1,9 +1,9 @@
 /**
  * DatabaseManager.js - Handle saving and loading collections to/from a database
  *
- * This implementation uses GitHub as a simple database solution by:
- * 1. Creating a GitHub repository for user collections
- * 2. Using GitHub API to save/load collection data as JSON files
+ * This implementation uses Firebase Firestore as the primary database solution by:
+ * 1. Authenticating users with Google login
+ * 2. Using Firestore to save/load collection data
  * 3. Providing offline fallback to localStorage
  */
 
@@ -11,70 +11,78 @@ class DatabaseManager {
     constructor(app) {
         this.app = app;
         this.collectionManager = app.collectionManager;
-        this.GITHUB_API_URL = 'https://api.github.com';
-        this.REPO_NAME = 'pixel-audio-collections';
-        this.USERNAME = 'pixel-audio-user'; // This would be replaced with actual GitHub username
-        this.ACCESS_TOKEN = null; // This would be obtained via OAuth
+        this.firebaseAuth = getFirebaseAuthManager();
+        this.db = getFirestore();
 
-        // Check if we have GitHub credentials
-        this.checkGitHubCredentials();
+        // Check if we have Firebase credentials
+        this.checkFirebaseCredentials();
     }
 
     /**
-     * Check if GitHub credentials are available
+     * Check if Firebase credentials are available
      */
-    checkGitHubCredentials() {
-        // In a real implementation, this would check for stored OAuth tokens
-        // For this demo, we'll use localStorage as a fallback
-        this.ACCESS_TOKEN = localStorage.getItem('github_access_token');
+    checkFirebaseCredentials() {
+        // Check if Firebase is configured
+        if (!isFirebaseConfigured()) {
+            console.warn('Firebase is not configured. Using localStorage as primary database.');
+            this.isConfigured = false;
+            return;
+        }
 
-        if (!this.ACCESS_TOKEN) {
-            console.log('No GitHub credentials found. Using localStorage fallback.');
-            // In a real app, you would prompt the user to connect GitHub here
+        this.isConfigured = true;
+        console.log('Firebase is configured and available');
+        
+        // Listen for auth state changes
+        this.firebaseAuth.onAuthStateChanged((user) => {
+            if (user) {
+                this.userId = user.uid;
+                this.isConnected = true;
+                console.log('DatabaseManager: User authenticated, userId:', this.userId);
+                
+                // Auto-load collections when user logs in
+                if (this.autoSyncEnabled) {
+                    this.loadCollectionsFromDatabase();
+                }
+            } else {
+                this.userId = null;
+                this.isConnected = false;
+                console.log('DatabaseManager: User logged out');
+            }
+        });
+        
+        // Check if user is already logged in
+        const currentUser = this.firebaseAuth.getCurrentUser();
+        if (currentUser) {
+            this.userId = currentUser.uid;
+            this.isConnected = true;
+            this.autoSyncEnabled = localStorage.getItem('pixelAudioAutoSync') !== 'false';
         }
     }
 
     /**
-     * Connect to GitHub (simulated OAuth flow)
+     * Set auto-sync preference
      */
-    async connectToGitHub() {
-        // In a real implementation, this would:
-        // 1. Open GitHub OAuth dialog
-        // 2. Get access token
-        // 3. Store token securely
-        // 4. Create repository if it doesn't exist
-
-        // For this demo, we'll simulate a successful connection
-        this.ACCESS_TOKEN = 'simulated-github-token-' + Math.random().toString(36).substr(2, 8);
-        localStorage.setItem('github_access_token', this.ACCESS_TOKEN);
-
-        // Simulate repository creation
-        await this.createRepositoryIfNotExists();
-
-        this.app.notifications.showNotification('Connected to GitHub database', 'success');
-        return true;
+    setAutoSync(enabled) {
+        this.autoSyncEnabled = enabled;
+        localStorage.setItem('pixelAudioAutoSync', enabled);
     }
 
     /**
-     * Create repository if it doesn't exist
+     * Get auto-sync preference
      */
-    async createRepositoryIfNotExists() {
-        // In a real implementation, this would use GitHub API to create the repo
-        // For this demo, we'll just log the action
-        console.log('Checking/creating GitHub repository:', this.REPO_NAME);
-
-        // Simulate API call delay
-        await new Promise(resolve => setTimeout(resolve, 500));
-
-        return true;
+    getAutoSync() {
+        if (this.autoSyncEnabled === undefined) {
+            this.autoSyncEnabled = localStorage.getItem('pixelAudioAutoSync') !== 'false';
+        }
+        return this.autoSyncEnabled;
     }
 
     /**
      * Save a collection to the database
      */
     async saveCollectionToDatabase(collectionId) {
-        if (!this.ACCESS_TOKEN) {
-            // Fallback to localStorage if no GitHub connection
+        // If not configured or not connected, fallback to localStorage
+        if (!this.isConfigured || !this.isConnected) {
             return this.saveCollectionToLocalStorage(collectionId);
         }
 
@@ -87,27 +95,45 @@ class DatabaseManager {
             // Export collection data
             const exportData = this.collectionManager.exportCollection(collectionId);
 
-            // Create file content
-            const fileContent = JSON.stringify(exportData, null, 2);
-            const fileName = `${collection.name.replace(/\s+/g, '_')}_${collectionId}.json`;
+            // Save to Firestore
+            const userId = this.userId;
+            const dbRef = this.db.collection('pixelAudioDatabases').doc(userId);
+            const doc = await dbRef.get();
+            
+            let collections = [];
+            if (doc.exists) {
+                collections = doc.data().collections || [];
+            }
 
-            // In a real implementation, this would:
-            // 1. Create a blob with the file content
-            // 2. Use GitHub API to commit the file to the repository
-            // 3. Handle conflicts if the file already exists
+            // Find and update existing collection or add new one
+            const existingIndex = collections.findIndex(c => c.id === collectionId);
+            const collectionData = {
+                ...exportData,
+                updatedAt: new Date().toISOString(),
+                syncedAt: new Date().toISOString()
+            };
 
-            console.log('Saving collection to GitHub:', fileName);
-            console.log('File content:', fileContent);
+            if (existingIndex >= 0) {
+                collections[existingIndex] = collectionData;
+            } else {
+                collections.push({
+                    ...collectionData,
+                    createdAt: new Date().toISOString()
+                });
+            }
 
-            // Simulate API call
-            await new Promise(resolve => setTimeout(resolve, 1000));
+            await dbRef.set({
+                collections: collections,
+                updatedAt: new Date().toISOString(),
+                userId: userId
+            }, { merge: true });
 
-            this.app.notifications.showNotification(`Collection "${collection.name}" saved to GitHub`, 'success');
+            this.app.notifications.showNotification(`Collection "${collection.name}" saved to cloud`, 'success');
             return true;
 
         } catch (error) {
-            console.error('Error saving collection to GitHub:', error);
-            this.app.notifications.showNotification('Error saving to GitHub: ' + error.message, 'error');
+            console.error('Error saving collection to Firebase:', error);
+            this.app.notifications.showNotification('Error saving to cloud: ' + error.message, 'error');
 
             // Fallback to localStorage
             return this.saveCollectionToLocalStorage(collectionId);
@@ -143,57 +169,53 @@ class DatabaseManager {
      * Load all collections from database
      */
     async loadCollectionsFromDatabase() {
-        if (!this.ACCESS_TOKEN) {
-            // Fallback to localStorage if no GitHub connection
+        // If not configured or not connected, fallback to localStorage
+        if (!this.isConfigured || !this.isConnected) {
             return this.loadCollectionsFromLocalStorage();
         }
 
         try {
-            // In a real implementation, this would:
-            // 1. Use GitHub API to list all files in the repository
-            // 2. Filter for .json files
-            // 3. Download each file and parse as collection data
-            // 4. Import each collection
+            const userId = this.userId;
+            const dbRef = this.db.collection('pixelAudioDatabases').doc(userId);
+            const doc = await dbRef.get();
 
-            console.log('Loading collections from GitHub...');
+            if (!doc.exists) {
+                console.log('No database found for user. Creating new one...');
+                return 0;
+            }
 
-            // Simulate API call
-            await new Promise(resolve => setTimeout(resolve, 1500));
+            const dbData = doc.data();
+            const collections = dbData.collections || [];
 
-            // For this demo, we'll simulate finding some collections
-            const simulatedCollections = [
-                {
-                    collection: {
-                        id: 1001,
-                        name: 'Game SFX Collection',
-                        groups: [
-                            {
-                                id: 2001,
-                                name: 'Explosions',
-                                layers: []
-                            },
-                            {
-                                id: 2002,
-                                name: 'Footsteps',
-                                layers: []
-                            }
-                        ]
-                    },
-                    layers: []
-                }
-            ];
+            // Clear existing collections (except the default one created on init)
+            const existingCollections = this.collectionManager.getAllCollections();
+            if (existingCollections.length > 0) {
+                this.collectionManager.collections = [];
+                this.collectionManager.currentCollectionId = null;
+                this.collectionManager.nextCollectionId = 1;
+            }
 
             // Import each collection
-            simulatedCollections.forEach(collectionData => {
+            let importedCount = 0;
+            for (const collectionData of collections) {
                 this.collectionManager.importCollection(collectionData);
-            });
+                importedCount++;
+            }
 
-            this.app.notifications.showNotification('Collections loaded from GitHub', 'success');
-            return simulatedCollections.length;
+            // Ensure at least one collection exists
+            if (this.collectionManager.getAllCollections().length === 0) {
+                this.collectionManager.addCollection('Default Collection');
+            }
+
+            // Update collections display
+            this.collectionManager.updateCurrentCollectionDisplay();
+            
+            this.app.notifications.showNotification(`${importedCount} collections loaded from cloud`, 'success');
+            return importedCount;
 
         } catch (error) {
-            console.error('Error loading collections from GitHub:', error);
-            this.app.notifications.showNotification('Error loading from GitHub: ' + error.message, 'error');
+            console.error('Error loading collections from Firebase:', error);
+            this.app.notifications.showNotification('Error loading from cloud: ' + error.message, 'error');
 
             // Fallback to localStorage
             return this.loadCollectionsFromLocalStorage();
@@ -207,6 +229,14 @@ class DatabaseManager {
         try {
             let loadedCount = 0;
 
+            // Clear existing collections
+            const existingCollections = this.collectionManager.getAllCollections();
+            if (existingCollections.length > 0) {
+                this.collectionManager.collections = [];
+                this.collectionManager.currentCollectionId = null;
+                this.collectionManager.nextCollectionId = 1;
+            }
+
             // Load all collections from localStorage
             for (let i = 0; i < localStorage.length; i++) {
                 const key = localStorage.key(i);
@@ -217,6 +247,14 @@ class DatabaseManager {
                 }
             }
 
+            // Ensure at least one collection exists
+            if (this.collectionManager.getAllCollections().length === 0) {
+                this.collectionManager.addCollection('Default Collection');
+            }
+
+            // Update collections display
+            this.collectionManager.updateCurrentCollectionDisplay();
+
             if (loadedCount > 0) {
                 this.app.notifications.showNotification(`${loadedCount} collections loaded from local storage`, 'success');
             }
@@ -226,6 +264,11 @@ class DatabaseManager {
         } catch (error) {
             console.error('Error loading collections from localStorage:', error);
             this.app.notifications.showNotification('Error loading collections: ' + error.message, 'error');
+            
+            // Create default collection if nothing was loaded
+            if (this.collectionManager.getAllCollections().length === 0) {
+                this.collectionManager.addCollection('Default Collection');
+            }
             return 0;
         }
     }
@@ -234,33 +277,37 @@ class DatabaseManager {
      * Delete a collection from database
      */
     async deleteCollectionFromDatabase(collectionId) {
-        if (!this.ACCESS_TOKEN) {
-            // Fallback to localStorage if no GitHub connection
+        const collection = this.collectionManager.getCollection(collectionId);
+        if (!collection) {
+            throw new Error('Collection not found');
+        }
+
+        // If not configured or not connected, fallback to localStorage
+        if (!this.isConfigured || !this.isConnected) {
             return this.deleteCollectionFromLocalStorage(collectionId);
         }
 
         try {
-            const collection = this.collectionManager.getCollection(collectionId);
-            if (!collection) {
-                throw new Error('Collection not found');
+            const userId = this.userId;
+            const dbRef = this.db.collection('pixelAudioDatabases').doc(userId);
+            const doc = await dbRef.get();
+            
+            if (doc.exists) {
+                const collections = doc.data().collections || [];
+                const filteredCollections = collections.filter(c => c.id !== collectionId);
+                
+                await dbRef.update({
+                    collections: filteredCollections,
+                    updatedAt: new Date().toISOString()
+                });
             }
 
-            // In a real implementation, this would:
-            // 1. Find the file corresponding to this collection
-            // 2. Use GitHub API to delete the file
-            // 3. Handle any conflicts
-
-            console.log('Deleting collection from GitHub:', collectionId);
-
-            // Simulate API call
-            await new Promise(resolve => setTimeout(resolve, 800));
-
-            this.app.notifications.showNotification(`Collection "${collection.name}" deleted from GitHub`, 'success');
+            this.app.notifications.showNotification(`Collection "${collection.name}" deleted from cloud`, 'success');
             return true;
 
         } catch (error) {
-            console.error('Error deleting collection from GitHub:', error);
-            this.app.notifications.showNotification('Error deleting from GitHub: ' + error.message, 'error');
+            console.error('Error deleting collection from Firebase:', error);
+            this.app.notifications.showNotification('Error deleting from cloud: ' + error.message, 'error');
 
             // Fallback to localStorage
             return this.deleteCollectionFromLocalStorage(collectionId);
@@ -272,6 +319,7 @@ class DatabaseManager {
      */
     deleteCollectionFromLocalStorage(collectionId) {
         try {
+            const collection = this.collectionManager.getCollection(collectionId);
             const storageKey = `pixelAudioCollection_${collectionId}`;
             localStorage.removeItem(storageKey);
 
@@ -286,44 +334,66 @@ class DatabaseManager {
     }
 
     /**
-     * Get GitHub connection status
-     */
-    isGitHubConnected() {
-        return !!this.ACCESS_TOKEN;
-    }
-
-    /**
-     * Disconnect from GitHub
-     */
-    disconnectFromGitHub() {
-        this.ACCESS_TOKEN = null;
-        localStorage.removeItem('github_access_token');
-        this.app.notifications.showNotification('Disconnected from GitHub', 'info');
-    }
-
-    /**
-     * Get database status information
+     * Get database connection status
      */
     getDatabaseStatus() {
         return {
-            githubConnected: this.isGitHubConnected(),
-            localCollections: this.getLocalCollectionCount(),
-            repoName: this.REPO_NAME
+            configured: this.isConfigured,
+            connected: this.isConnected,
+            loggedIn: this.firebaseAuth.isLoggedIn(),
+            userId: this.userId || null
         };
     }
 
     /**
-     * Get count of locally stored collections
+     * Check if database is connected
      */
-    getLocalCollectionCount() {
-        let count = 0;
-        for (let i = 0; i < localStorage.length; i++) {
-            const key = localStorage.key(i);
-            if (key && key.startsWith('pixelAudioCollection_')) {
-                count++;
-            }
+    isDatabaseConnected() {
+        return this.isConnected;
+    }
+
+    /**
+     * Check if Firebase is configured
+     */
+    isFirebaseConfigured() {
+        return this.isConfigured;
+    }
+
+    /**
+     * Get current user profile
+     */
+    getCurrentUserProfile() {
+        return this.firebaseAuth.getUserProfile();
+    }
+
+    /**
+     * Sign in with Google
+     */
+    async signInWithGoogle() {
+        try {
+            const user = await this.firebaseAuth.signInWithGoogle();
+            this.isConnected = true;
+            this.userId = user.uid;
+            return user;
+        } catch (error) {
+            console.error('Google sign-in failed:', error);
+            throw error;
         }
-        return count;
+    }
+
+    /**
+     * Sign out
+     */
+    async signOut() {
+        try {
+            await this.firebaseAuth.signOut();
+            this.isConnected = false;
+            this.userId = null;
+            return true;
+        } catch (error) {
+            console.error('Sign out failed:', error);
+            throw error;
+        }
     }
 }
 
@@ -333,44 +403,83 @@ class DatabaseUI {
         this.app = app;
         this.databaseManager = new DatabaseManager(app);
 
-        // Add database controls to settings
-        this.addDatabaseControlsToSettings();
+        // Add database controls to settings after a short delay to ensure DOM is ready
+        setTimeout(() => {
+            this.addDatabaseControlsToSettings();
+        }, 1000);
     }
 
     addDatabaseControlsToSettings() {
         // Find the export settings section
         const exportSettingsSection = document.querySelector('.settings-tab-content[data-tab-content="export"]');
-        if (!exportSettingsSection) return;
+        if (!exportSettingsSection) {
+            console.warn('Export settings section not found, retrying...');
+            setTimeout(() => this.addDatabaseControlsToSettings(), 500);
+            return;
+        }
+
+        // Check if database section already exists
+        if (document.getElementById('database-settings-section')) {
+            return;
+        }
 
         // Add database section
         const databaseSection = document.createElement('div');
+        databaseSection.id = 'database-settings-section';
         databaseSection.className = 'settings-section';
         databaseSection.innerHTML = `
-            <div class="section-heading">Database Settings</div>
+            <div class="section-heading">
+                <div class="label-group">
+                    <span>Database Settings</span>
+                    <i class="fas fa-circle-question info-icon small" data-tooltip="Save and sync your collections across devices using Google Cloud Firestore"></i>
+                </div>
+            </div>
             <div class="property-group">
                 <div class="database-status" id="database-status">
                     <i class="fas fa-database"></i>
-                    <span id="db-status-text">Not connected</span>
-                    <button id="connect-github-btn" class="btn small-btn">
-                        <i class="fab fa-github"></i> Connect GitHub
+                    <span id="db-status-text">Checking...</span>
+                    <span id="db-user-email" style="margin-left: 10px; color: var(--accent-color);"></span>
+                    <button id="connect-google-btn" class="btn small-btn" style="margin-left: 10px;">
+                        <i class="fab fa-google"></i> <span id="google-btn-text">Sign in with Google</span>
                     </button>
                 </div>
 
-                <div class="property-group">
-                    <label class="property-label">
+                <div class="property-group" id="sync-settings" style="display: none;">
+                    <label class="setting-label">
                         <input type="checkbox" id="auto-sync-collections" checked>
-                        Auto-sync collections to database
+                        <span class="checkmark"></span> Auto-sync collections
                     </label>
-                    <div class="setting-description">Automatically save collections to the connected database</div>
+                    <div class="setting-description">Automatically save and load collections to/from the cloud database</div>
                 </div>
 
-                <div class="database-actions">
-                    <button id="load-all-collections-btn" class="btn" style="width: 100%; margin-bottom: 8px;">
-                        <i class="fas fa-download"></i> Load All Collections
-                    </button>
-                    <button id="sync-now-btn" class="btn secondary" style="width: 100%;">
-                        <i class="fas fa-sync"></i> Sync Now
-                    </button>
+                <div class="property-group" id="cloud-actions" style="display: none;">
+                    <label class="property-label">Cloud Database Actions</label>
+                    <div class="database-actions">
+                        <button id="sync-database-btn" class="btn small-btn" title="Download all collections from cloud">
+                            <i class="fas fa-cloud-download-alt"></i> Sync Now
+                        </button>
+                        <button id="save-to-cloud-btn" class="btn small-btn" title="Upload current collections to cloud">
+                            <i class="fas fa-cloud-upload-alt"></i> Save to Cloud
+                        </button>
+                    </div>
+                </div>
+
+                <div class="property-group" id="local-actions">
+                    <label class="property-label">Local Storage Actions</label>
+                    <div class="database-actions">
+                        <button id="save-all-local-btn" class="btn small-btn">
+                            <i class="fas fa-save"></i> Save All Projects
+                        </button>
+                        <button id="load-all-local-btn" class="btn small-btn">
+                            <i class="fas fa-download"></i> Load Projects
+                        </button>
+                    </div>
+                </div>
+
+                <div class="property-group" id="local-collections-count">
+                    <div style="font-size: 0.85rem; color: var(--text-secondary);">
+                        <i class="fas fa-hdd"></i> Local collections: <span id="local-collection-count">0</span>
+                    </div>
                 </div>
             </div>
         `;
@@ -379,66 +488,194 @@ class DatabaseUI {
 
         // Add event listeners
         this.setupEventListeners();
-    }
-
-    setupEventListeners() {
-        // Connect GitHub button
-        document.getElementById('connect-github-btn')?.addEventListener('click', async () => {
-            const result = await this.databaseManager.connectToGitHub();
-            if (result) {
-                this.updateDatabaseStatus();
-            }
-        });
-
-        // Load all collections button
-        document.getElementById('load-all-collections-btn')?.addEventListener('click', async () => {
-            const count = await this.databaseManager.loadCollectionsFromDatabase();
-            if (count > 0) {
-                this.app.notifications.showNotification(`${count} collections loaded`, 'success');
-            }
-        });
-
-        // Sync now button
-        document.getElementById('sync-now-btn')?.addEventListener('click', async () => {
-            // Sync all collections
-            const currentCollection = this.app.collectionManager.getCurrentCollection();
-            if (currentCollection) {
-                await this.databaseManager.saveCollectionToDatabase(currentCollection.id);
-            } else {
-                this.app.notifications.showNotification('No collection selected to sync', 'error');
-            }
-        });
-
-        // Update status initially
+        
+        // Update initial status
         this.updateDatabaseStatus();
     }
 
+    setupEventListeners() {
+        // Google Sign In button
+        document.getElementById('connect-google-btn')?.addEventListener('click', async () => {
+            const isLoggedIn = this.databaseManager.isDatabaseConnected();
+            
+            if (isLoggedIn) {
+                if (confirm('Are you sure you want to sign out?')) {
+                    await this.databaseManager.signOut();
+                    this.updateDatabaseStatus();
+                    this.app.notifications.showNotification('Signed out successfully', 'info');
+                }
+            } else {
+                try {
+                    document.getElementById('google-btn-text').textContent = 'Signing in...';
+                    const user = await this.databaseManager.signInWithGoogle();
+                    
+                    if (user) {
+                        this.updateDatabaseStatus();
+                        
+                        // Auto-sync if enabled
+                        if (this.databaseManager.getAutoSync()) {
+                            const count = await this.databaseManager.loadCollectionsFromDatabase();
+                            if (count > 0) {
+                                this.refreshAllViews();
+                            }
+                        }
+                        
+                        this.app.notifications.showNotification(
+                            `Signed in as ${user.email}`, 
+                            'success'
+                        );
+                    }
+                } catch (error) {
+                    console.error('Sign in failed:', error);
+                    this.app.notifications.showNotification(
+                        'Sign in failed: ' + error.message, 
+                        'error'
+                    );
+                } finally {
+                    document.getElementById('google-btn-text').textContent = 'Sign in with Google';
+                }
+            }
+        });
+
+        // Auto-sync checkbox
+        document.getElementById('auto-sync-collections')?.addEventListener('change', (e) => {
+            this.databaseManager.setAutoSync(e.target.checked);
+            
+            if (e.target.checked && this.databaseManager.isDatabaseConnected()) {
+                // Auto-sync immediately
+                this.databaseManager.loadCollectionsFromDatabase();
+                this.app.notifications.showNotification('Auto-sync enabled', 'success');
+            } else {
+                this.app.notifications.showNotification('Auto-sync disabled', 'info');
+            }
+        });
+
+        // Sync database button
+        document.getElementById('sync-database-btn')?.addEventListener('click', async () => {
+            this.app.notifications.showNotification('Downloading collections from cloud...', 'info');
+            const count = await this.databaseManager.loadCollectionsFromDatabase();
+            
+            if (count > 0) {
+                this.refreshAllViews();
+                this.app.notifications.showNotification(`Synced ${count} collections from cloud`, 'success');
+            } else {
+                this.app.notifications.showNotification('No collections found in cloud database', 'info');
+            }
+        });
+
+        // Save to cloud button
+        document.getElementById('save-to-cloud-btn')?.addEventListener('click', async () => {
+            this.app.notifications.showNotification('Uploading collections to cloud...', 'info');
+            
+            const collections = this.databaseManager.collectionManager.getAllCollections();
+            let savedCount = 0;
+            
+            for (const collection of collections) {
+                const success = await this.databaseManager.saveCollectionToDatabase(collection.id);
+                if (success) savedCount++;
+            }
+            
+            this.app.notifications.showNotification(
+                `Saved ${savedCount}/${collections.length} collections to cloud`,
+                savedCount > 0 ? 'success' : 'error'
+            );
+        });
+
+        // Save all local button
+        document.getElementById('save-all-local-btn')?.addEventListener('click', () => {
+            this.app.saveAllToBrowser();
+        });
+
+        // Load all local button
+        document.getElementById('load-all-local-btn')?.addEventListener('click', () => {
+            const loaded = this.app.loadFromBrowser(false);
+            if (loaded) {
+                this.refreshAllViews();
+            }
+        });
+    }
+
+    /**
+     * Update database status display
+     */
     updateDatabaseStatus() {
         const statusText = document.getElementById('db-status-text');
-        const connectBtn = document.getElementById('connect-github-btn');
+        const userEmail = document.getElementById('db-user-email');
+        const connectBtn = document.getElementById('connect-google-btn');
+        const googleBtnText = document.getElementById('google-btn-text');
+        const syncSettings = document.getElementById('sync-settings');
+        const cloudActions = document.getElementById('cloud-actions');
+        const localCollectionsCount = document.getElementById('local-collection-count');
 
-        if (this.databaseManager.isGitHubConnected()) {
-            if (statusText) statusText.textContent = 'Connected to GitHub';
+        // Update local collections count
+        const localCount = localStorage.length;
+        if (localCollectionsCount) {
+            localCollectionsCount.textContent = localCount;
+        }
+
+        const status = this.databaseManager.getDatabaseStatus();
+        
+        // If Firebase is not configured
+        if (!this.databaseManager.isFirebaseConfigured()) {
+            if (statusText) statusText.textContent = 'Firebase not configured';
+            if (userEmail) userEmail.textContent = '';
             if (connectBtn) {
-                connectBtn.textContent = 'Disconnect';
-                connectBtn.innerHTML = '<i class="fas fa-unlink"></i> Disconnect';
-                connectBtn.onclick = () => {
-                    this.databaseManager.disconnectFromGitHub();
-                    this.updateDatabaseStatus();
-                };
+                connectBtn.innerHTML = '<i class="fas fa-exclamation-circle"></i> Configure Firebase';
+                connectBtn.disabled = true;
+                connectBtn.title = 'Please configure Firebase credentials in js/firebaseConfig.js';
+            }
+            if (syncSettings) syncSettings.style.display = 'none';
+            if (cloudActions) cloudActions.style.display = 'none';
+            return;
+        }
+
+        // If user is logged in
+        if (this.databaseManager.isDatabaseConnected()) {
+            const profile = this.databaseManager.getCurrentUserProfile();
+            
+            if (statusText) statusText.textContent = 'Connected to Cloud DB';
+            if (userEmail) userEmail.textContent = profile?.email || '';
+            if (connectBtn) {
+                connectBtn.innerHTML = '<i class="fas fa-sign-out-alt"></i> Sign Out';
+                connectBtn.title = 'Sign out of Google account';
+            }
+            if (syncSettings) syncSettings.style.display = 'block';
+            if (cloudActions) cloudActions.style.display = 'block';
+            
+            // Update auto-sync checkbox
+            const autoSyncCheckbox = document.getElementById('auto-sync-collections');
+            if (autoSyncCheckbox) {
+                autoSyncCheckbox.checked = this.databaseManager.getAutoSync();
             }
         } else {
+            // Not logged in
             if (statusText) statusText.textContent = 'Not connected';
+            if (userEmail) userEmail.textContent = '';
             if (connectBtn) {
-                connectBtn.textContent = 'Connect GitHub';
-                connectBtn.innerHTML = '<i class="fab fa-github"></i> Connect GitHub';
-                connectBtn.onclick = async () => {
-                    const result = await this.databaseManager.connectToGitHub();
-                    if (result) {
-                        this.updateDatabaseStatus();
-                    }
-                };
+                connectBtn.innerHTML = '<i class="fab fa-google"></i> Sign in with Google';
+                connectBtn.disabled = false;
+                connectBtn.title = 'Sign in with your Google account';
             }
+            if (syncSettings) syncSettings.style.display = 'none';
+            if (cloudActions) cloudActions.style.display = 'none';
+        }
+    }
+
+    /**
+     * Refresh all application views after data changes
+     */
+    refreshAllViews() {
+        // Force a complete refresh of the application state
+        const firstCollection = this.databaseManager.collectionManager.getAllCollections()[0];
+        if (firstCollection) {
+            this.databaseManager.collectionManager.setCurrentCollection(firstCollection.id);
+            
+            // Update UI
+            setTimeout(() => {
+                this.app.layerManager.init();
+                this.app.timeline.init();
+                this.app.collectionUI.init();
+            }, 100);
         }
     }
 }

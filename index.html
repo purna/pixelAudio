@@ -54,6 +54,13 @@
             <button onclick="randomize()" class="tool-btn"><i class="fas fa-random"></i> Randomize</button>
             <div class="separator"></div>
             <button id="exportMixBtn" class="header-btn action"><i class="fas fa-file-export"></i> Export Mix</button>
+            <div class="separator"></div>
+            <button id="google-signin-btn" class="header-btn" title="Sign In with Google">
+                <i class="fab fa-google"></i> <span id="google-btn-label">Cloud Login</span>
+            </button>
+            <div id="user-status" style="display: none;">
+                <span id="user-email" style="color: #4CAF50; font-size: 0.85rem; margin-right: 8px;"></span>
+            </div>
         </div>
     </header>
 
@@ -74,6 +81,9 @@
             <button class="icon-tab-btn" data-panel="settings" data-tooltip-right="Settings">
                 <i class="fas fa-cog"></i>
             </button>
+            <button class="icon-tab-btn" id="tool-ai-scene" data-tooltip="**Magic Audio Generator**
+Describe a audio sound and let AI create it
+Uses Gemini AI for generation" style="cursor: help;"><i class="fas fa-wand-magic-sparkles"></i></button>
         </div>
 
         <!-- MAIN MIDDLE AREA -->
@@ -975,6 +985,12 @@
     </div>
 
     <!-- Scripts -->
+    <script src="js/firebaseConfig.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <script src="js/firebaseAuth.js"></script>
+    <script src="js/firebaseTests.js"></script>
     <script src="js/audioEngine.js"></script>
     <script src="js/soundGenerator.js"></script>
     <script src="js/presets.js"></script>
@@ -992,6 +1008,7 @@
     <script src="js/ui.js"></script>
     <script src="js/fmodManager.js"></script>
     <script src="js/fmodUI.js"></script>
+    <script src="js/gemini.js"></script>
     <script src="js/main.js"></script>
     <!-- Font verification script -->
     <script>
@@ -1014,6 +1031,27 @@
             }
         });
     </script>
+
+    <!-- AI MODAL -->
+    <div class="modal-overlay" id="ai-modal">
+        <div class="modal">
+            <div class="modal-title">
+                <i class="fas fa-sparkles"></i> <span id="modal-title-text">Magic Audio Generator</span>
+            </div>
+            <div style="font-size:0.8rem; color:#94a3b8; margin-bottom:10px;" id="modal-desc">
+                Describe the audio sound you want to create.
+            </div>
+            <textarea id="ai-prompt-input"
+                placeholder="e.g. Rain fall on the beach."
+                style="width: 100%; min-height: 80px; background: var(--bg-light); border: 1px solid var(--border-color); border-radius: 4px; padding: 10px; color: var(--text-primary); resize: vertical; font-family: inherit; font-size: 0.9rem; margin-bottom: 15px;"></textarea>
+            <div class="modal-actions">
+                <div class="loading-spinner" id="ai-spinner" style="display: none;"><i class="fas fa-circle-notch fa-spin"></i> Generating...</div>
+                <button class="btn" id="btn-ai-cancel">Cancel</button>
+                <button class="btn ai-magic" id="btn-ai-generate">Generate ✨</button>
+            </div>
+        </div>
+    </div>
+
 </body>
 
 </html>

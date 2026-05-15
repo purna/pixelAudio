@@ -1172,3 +1172,17 @@ select { width: 100%; background: var(--bg-darkest); color: var(--text-primary);
 #exportDefaultsBtn i, #saveToBrowserBtn i, #loadFromBrowserBtn i {
     font-size: 0.9rem;
 }
+
+/* AI Magic Button */
+.btn.ai-magic {
+    background: linear-gradient(135deg, #a855f7, #ec4899);
+    color: white;
+    border: none;
+    font-weight: 600;
+}
+
+.btn.ai-magic:hover {
+    background: linear-gradient(135deg, #9333ea, #db2777);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(168, 85, 247, 0.4);
+}
