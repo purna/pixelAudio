@@ -148,6 +148,7 @@ class SFXGeneratorApp {
 
         // Load custom presets from localStorage
         this.fileManager.loadCustomPresets();
+
         console.log('Loaded presets. Total presets available:', this.presets.getAll().length);
 
         // Enable auto-save if setting is enabled
@@ -471,7 +472,7 @@ class SFXGeneratorApp {
         const googleSignInBtn = document.getElementById('google-signin-btn');
         if (googleSignInBtn) {
             googleSignInBtn.addEventListener('click', async () => {
-                
+
                 if (this.databaseManager && typeof this.databaseManager.isFirebaseConfigured === 'function' && this.databaseManager.isFirebaseConfigured()) {
                     if (this.databaseManager.isDatabaseConnected()) {
                         // Sign out
@@ -489,17 +490,17 @@ class SFXGeneratorApp {
                         // Sign in
                         const googleBtnLabel = document.getElementById('google-btn-label');
                         if (googleBtnLabel) googleBtnLabel.textContent = 'Signing in...';
-                        
+
                         try {
                             const user = await this.databaseManager.signInWithGoogle();
-                            
+
                             if (user) {
                                 this.updateGoogleButtonState(true, user.email);
                                 this.notifications.showNotification(
-                                    `Signed in as ${user.email}`, 
+                                    `Signed in as ${user.email}`,
                                     'success'
                                 );
-                                
+
                                 // Auto-sync if enabled
                                 if (this.databaseManager.getAutoSync()) {
                                     this.notifications.showNotification('Syncing collections from cloud...', 'info');
@@ -512,7 +513,7 @@ class SFXGeneratorApp {
                         } catch (error) {
                             console.error('Sign in failed:', error);
                             this.notifications.showNotification(
-                                'Sign in failed: ' + error.message, 
+                                'Sign in failed: ' + error.message,
                                 'error'
                             );
                         } finally {
@@ -528,11 +529,11 @@ class SFXGeneratorApp {
                 }
             });
         }
-        
+
         // Update Google button state
         this.updateGoogleButtonState();
     }
-    
+
     /**
      * Update Google sign-in button state
      */
@@ -541,7 +542,7 @@ class SFXGeneratorApp {
         const googleBtnLabel = document.getElementById('google-btn-label');
         const userStatus = document.getElementById('user-status');
         const userEmailSpan = document.getElementById('user-email');
-        
+
         if (!this.databaseManager || typeof this.databaseManager.isFirebaseConfigured !== 'function' || !this.databaseManager.isFirebaseConfigured()) {
             // Firebase not configured
             if (googleSignInBtn) {

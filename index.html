@@ -623,11 +623,14 @@ Uses Gemini AI for generation" style="cursor: help;"><i class="fas fa-wand-magic
                     <div class="preset-grid">
                         <button class="preset-btn" onclick="loadPreset('panel_open')"><i class="fas fa-folder-open"></i>
                             Panel Open</button>
-                        <button class="preset-btn" onclick="loadPreset('panel_close')"><i class="fas fa-folder-minus"></i>
+                        <button class="preset-btn" onclick="loadPreset('panel_close')"><i
+                                class="fas fa-folder-minus"></i>
                             Panel Close</button>
-                        <button class="preset-btn" onclick="loadPreset('button_click')"><i class="fas fa-mouse-pointer"></i>
+                        <button class="preset-btn" onclick="loadPreset('button_click')"><i
+                                class="fas fa-mouse-pointer"></i>
                             Button Click</button>
-                        <button class="preset-btn" onclick="loadPreset('quest_done')"><i class="fas fa-check-circle"></i>
+                        <button class="preset-btn" onclick="loadPreset('quest_done')"><i
+                                class="fas fa-check-circle"></i>
                             Quest Done</button>
                         <button class="preset-btn" onclick="loadPreset('victory')"><i class="fas fa-trophy"></i>
                             Victory</button>
@@ -756,10 +759,20 @@ Uses Gemini AI for generation" style="cursor: help;"><i class="fas fa-wand-magic
                         <button class="preset-btn" onclick="loadPreset('cosmic_journey')"><i
                                 class="fas fa-satellite-dish"></i> Cosmic</button>
                     </div>
+
+                    <div class="preset-category">Nature & Animals</div>
+                    <div class="preset-grid">
+                        <button class="preset-btn" onclick="loadPreset('bird_chirp')"><i class="fas fa-dove"></i> Bird
+                            Chirp</button>
+                        <button class="preset-btn" onclick="loadPreset('cricket')"><i class="fas fa-bug"></i>
+                            Cricket</button>
+                        <button class="preset-btn" onclick="loadPreset('lion_roar')"><i class="fas fa-paw"></i> Lion
+                            Roar</button>
+                        <button class="preset-btn" onclick="loadPreset('wolf_howl')"><i class="fas fa-moon"></i> Wolf
+                            Howl</button>
+                    </div>
                 </div>
-
             </div>
-
         </div>
     </main>
 
@@ -1041,11 +1054,11 @@ Uses Gemini AI for generation" style="cursor: help;"><i class="fas fa-wand-magic
             <div style="font-size:0.8rem; color:#94a3b8; margin-bottom:10px;" id="modal-desc">
                 Describe the audio sound you want to create.
             </div>
-            <textarea id="ai-prompt-input"
-                placeholder="e.g. Rain fall on the beach."
+            <textarea id="ai-prompt-input" placeholder="e.g. Rain fall on the beach."
                 style="width: 100%; min-height: 80px; background: var(--bg-light); border: 1px solid var(--border-color); border-radius: 4px; padding: 10px; color: var(--text-primary); resize: vertical; font-family: inherit; font-size: 0.9rem; margin-bottom: 15px;"></textarea>
             <div class="modal-actions">
-                <div class="loading-spinner" id="ai-spinner" style="display: none;"><i class="fas fa-circle-notch fa-spin"></i> Generating...</div>
+                <div class="loading-spinner" id="ai-spinner" style="display: none;"><i
+                        class="fas fa-circle-notch fa-spin"></i> Generating...</div>
                 <button class="btn" id="btn-ai-cancel">Cancel</button>
                 <button class="btn ai-magic" id="btn-ai-generate">Generate ✨</button>
             </div>

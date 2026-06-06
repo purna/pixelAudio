@@ -37,6 +37,7 @@ Pixel Audio SFX Studio Pro is a powerful tool for game developers, sound designe
 ### 🎯 Preset Library
 - **Game Effects**: Pickups, Lasers, Explosions, Power-ups, Hits, Jumps, Alarms
 - **Footstep Sounds**: Stone, Wood, Sand, Snow, Gravel variations
+- **Nature & Animals**: Bird Chirps, Crickets, and environmental textures
 - **UI Elements**: Click, Hover, Blip, and Synth Pad sounds
 - **Random Generation**: AI-powered random preset generation
 

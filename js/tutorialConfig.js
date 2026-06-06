@@ -52,7 +52,7 @@ class TutorialConfig {
                         arrowPositionOverride: 'middle-third',
                         marginOverride: '60px', // Additional margin for better spacing
                         heading: 'Sound Presets',
-                        content: 'Over 100 pre-configured sound presets for game development! Categories include Core Gameplay, UI Feedback, Environment, Characters, Music, and Special Effects. Click any preset to instantly load its settings.',
+                        content: 'Over 100 pre-configured sound presets for game development! Categories include Core Gameplay, UI Feedback, Environment, Animals, Characters, Music, and Special Effects. Click any preset to instantly load its settings.',
                         showNext: true,
                         showSkip: true
                     },
@@ -71,7 +71,7 @@ class TutorialConfig {
                         id: 'timeline',
                         elementId: 'timeline-controls',
                         position: 'center',
-                        arrowPosition: 'none', 
+                        arrowPosition: 'none',
                         marginOverride: '0px', // More margin for timeline positioning
                         heading: 'Timeline & Transport',
                         content: 'Control playback with the transport buttons. Visualize all your sound layers over time, adjust the total length, and use Undo/Redo to experiment freely. Play individual tracks or the full mix.',
@@ -195,7 +195,7 @@ class TutorialConfig {
      * @returns {string} CSS class for positioning
      */
     getPositionClass(position) {
-        switch(position) {
+        switch (position) {
             case 'top': return 'tutorial-top';
             case 'bottom': return 'tutorial-bottom';
             case 'left': return 'tutorial-left';
