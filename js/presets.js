@@ -1,6 +1,6 @@
 // presets.js — Sound presets and random generation
 //
-// 103 presets across 10 categories.
+// 121 presets across 11 categories.
 // Each preset is tuned and reviewed; see spreadsheet for full change history.
 //
 // Categories:
@@ -14,6 +14,7 @@
 //   Advanced FX   — delay, phasing, harmonics, bitcrush, filters
 //   Music         — chiptune melodies, arpeggios, pads, grooves
 //   Platformer 2D — game-specific UI and action sounds
+//   Birds & Animals — farm animals, wild animals, birds, insects
 
 class Presets {
     constructor() {
@@ -1395,6 +1396,46 @@ class Presets {
             },
 
             // ── NATURE & ANIMALS ──────────────────────────────────────────
+            cow_moo: {
+                _category: 'animals',
+                attack: 0.08, sustain: 0.45, punch: 20, decay: 0.5,
+                frequency: 145, minFreq: 65, slide: -0.18, deltaSlide: 0.04,
+                vibratoEnable: true, vibratoDepth: 16, vibratoSpeed: 5,
+                arpEnable: false,
+                duty: 42, waveform: 'sawtooth',
+                lpfEnable: true, lpf: 1150, lpfResonance: 2,
+                volume: 0.65
+            },
+            sheep_bleat: {
+                _category: 'animals',
+                attack: 0.03, sustain: 0.3, punch: 15, decay: 0.3,
+                frequency: 430, minFreq: 180, slide: -0.12, deltaSlide: 0,
+                vibratoEnable: true, vibratoDepth: 55, vibratoSpeed: 18,
+                arpEnable: false,
+                duty: 48, waveform: 'square',
+                lpfEnable: true, lpf: 2600,
+                volume: 0.5
+            },
+            pig_oink: {
+                _category: 'animals',
+                attack: 0.01, sustain: 0.12, punch: 55, decay: 0.16,
+                frequency: 210, minFreq: 85, slide: -0.38, deltaSlide: 0.08,
+                vibratoEnable: true, vibratoDepth: 22, vibratoSpeed: 12,
+                arpEnable: false,
+                duty: 0, waveform: 'triangle',
+                lpfEnable: true, lpf: 1500, lpfResonance: 4,
+                volume: 0.6
+            },
+            horse_neigh: {
+                _category: 'animals',
+                attack: 0.08, sustain: 0.6, punch: 15, decay: 0.55,
+                frequency: 520, minFreq: 140, slide: 0.22, deltaSlide: -0.16,
+                vibratoEnable: true, vibratoDepth: 48, vibratoSpeed: 9,
+                arpEnable: false,
+                duty: 38, waveform: 'sawtooth',
+                lpfEnable: true, lpf: 3200,
+                volume: 0.55
+            },
             bird_chirp: {
                 _category: 'animals',
                 attack: 0.02, sustain: 0.04, punch: 0, decay: 0.12,
@@ -1433,6 +1474,108 @@ class Presets {
                 duty: 50, waveform: 'sine',
                 lpfEnable: true, lpf: 3500,
                 volume: 0.5
+            },
+            elephant_trumpet: {
+                _category: 'animals',
+                attack: 0.12, sustain: 0.75, punch: 35, decay: 0.65,
+                frequency: 190, minFreq: 70, slide: 0.42, deltaSlide: -0.18,
+                vibratoEnable: true, vibratoDepth: 28, vibratoSpeed: 7,
+                arpEnable: false,
+                duty: 32, waveform: 'sawtooth',
+                lpfEnable: true, lpf: 2800, lpfResonance: 5,
+                volume: 0.72
+            },
+            frog_croak: {
+                _category: 'animals',
+                attack: 0.015, sustain: 0.18, punch: 65, decay: 0.24,
+                frequency: 125, minFreq: 55, slide: -0.15, deltaSlide: 0.04,
+                vibratoEnable: true, vibratoDepth: 30, vibratoSpeed: 22,
+                arpEnable: true, arpMult: 0.72, arpSpeed: 0.09,
+                duty: 0, waveform: 'triangle',
+                lpfEnable: true, lpf: 900, lpfResonance: 6,
+                volume: 0.58
+            },
+            monkey_call: {
+                _category: 'animals',
+                attack: 0.02, sustain: 0.16, punch: 35, decay: 0.22,
+                frequency: 720, minFreq: 210, slide: 0.3, deltaSlide: -0.2,
+                vibratoEnable: true, vibratoDepth: 36, vibratoSpeed: 14,
+                arpEnable: true, arpMult: 1.45, arpSpeed: 0.08,
+                duty: 45, waveform: 'sine',
+                lpfEnable: true, lpf: 4200,
+                volume: 0.52
+            },
+            owl_hoot: {
+                _category: 'animals',
+                attack: 0.08, sustain: 0.38, punch: 5, decay: 0.42,
+                frequency: 430, minFreq: 170, slide: -0.2, deltaSlide: 0.05,
+                vibratoEnable: true, vibratoDepth: 14, vibratoSpeed: 4,
+                arpEnable: false,
+                duty: 0, waveform: 'sine',
+                lpfEnable: true, lpf: 1800,
+                volume: 0.48
+            },
+            crow_caw: {
+                _category: 'animals',
+                attack: 0.015, sustain: 0.16, punch: 45, decay: 0.24,
+                frequency: 620, minFreq: 150, slide: -0.5, deltaSlide: 0.08,
+                vibratoEnable: true, vibratoDepth: 30, vibratoSpeed: 16,
+                arpEnable: false,
+                duty: 35, waveform: 'sawtooth',
+                lpfEnable: true, lpf: 2400,
+                volume: 0.5
+            },
+            duck_quack: {
+                _category: 'animals',
+                attack: 0.01, sustain: 0.12, punch: 60, decay: 0.18,
+                frequency: 390, minFreq: 120, slide: -0.42, deltaSlide: 0.12,
+                vibratoEnable: true, vibratoDepth: 18, vibratoSpeed: 13,
+                arpEnable: false,
+                duty: 28, waveform: 'square',
+                lpfEnable: true, lpf: 2100, lpfResonance: 4,
+                volume: 0.55
+            },
+            woodpecker: {
+                _category: 'animals',
+                attack: 0, sustain: 0.025, punch: 80, decay: 0.055,
+                frequency: 1150, minFreq: 220, slide: -0.3, deltaSlide: 0,
+                vibratoEnable: false,
+                arpEnable: true, arpMult: 0.78, arpSpeed: 0.025,
+                duty: 18, waveform: 'square',
+                lpfEnable: true, lpf: 5200,
+                hpfEnable: true, hpf: 280,
+                volume: 0.48
+            },
+            bee_buzz: {
+                _category: 'animals',
+                attack: 0.04, sustain: 0.7, punch: 0, decay: 0.3,
+                frequency: 245, minFreq: 150, slide: 0.02, deltaSlide: 0,
+                vibratoEnable: true, vibratoDepth: 42, vibratoSpeed: 28,
+                arpEnable: false,
+                duty: 32, waveform: 'sawtooth',
+                lpfEnable: true, lpf: 2200,
+                volume: 0.38
+            },
+            mosquito_whine: {
+                _category: 'animals',
+                attack: 0.12, sustain: 0.8, punch: 0, decay: 0.28,
+                frequency: 1450, minFreq: 850, slide: 0.08, deltaSlide: -0.03,
+                vibratoEnable: true, vibratoDepth: 22, vibratoSpeed: 18,
+                arpEnable: false,
+                duty: 0, waveform: 'sine',
+                hpfEnable: true, hpf: 700,
+                volume: 0.28
+            },
+            cicada: {
+                _category: 'animals',
+                attack: 0.03, sustain: 0.9, punch: 10, decay: 0.25,
+                frequency: 3600, minFreq: 1600, slide: -0.03, deltaSlide: 0,
+                vibratoEnable: true, vibratoDepth: 65, vibratoSpeed: 38,
+                arpEnable: true, arpMult: 1.06, arpSpeed: 0.035,
+                duty: 12, waveform: 'square',
+                lpfEnable: true, lpf: 7800,
+                hpfEnable: true, hpf: 1200,
+                volume: 0.32
             }
         };
     }

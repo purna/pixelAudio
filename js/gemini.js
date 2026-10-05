@@ -111,34 +111,7 @@ class GeminiManager {
     }
 
     async callGemini(userText, systemText, generationConfig = null) {
-        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${this.apiKey}`;
-
-        const payload = {
-            contents: [{ parts: [{ text: userText }] }],
-            system_instruction: { parts: [{ text: systemText }] }
-        };
-
-        if (generationConfig) {
-            payload.generationConfig = generationConfig;
-        }
-
-        const response = await fetch(url, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
-        });
-
-        if (!response.ok) {
-            const text = await response.text();
-            throw new Error(`API Error ${response.status}: ${text}`);
-        }
-
-        const data = await response.json();
-
-        if (data.candidates && data.candidates.length > 0) {
-            return data.candidates[0].content.parts[0].text;
-        } else {
-            throw new Error("No candidates returned");
-        }
+        if (!window.PixelAIProvider) throw new Error("AI provider settings are not ready. Refresh the page and try again.");
+        return window.PixelAIProvider.generateText(userText, systemText, generationConfig);
     }
 }
